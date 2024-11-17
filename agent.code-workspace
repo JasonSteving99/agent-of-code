@@ -1,0 +1,119 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "."
+    },
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "[json][jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript][typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+      }
+    },
+    "[python]": {
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.fixAll.eslint": "never",
+        "source.fixAll.jupyter": "never",
+        "source.fixAll.intellicode": "never",
+        "source.organizeImports": "explicit"
+      }
+    },
+    "isort.args": [
+      "--profile",
+      "black"
+    ],
+    "ruff.lint.args": [
+      "--config",
+      "pyproject.toml"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "files.autoSave": "onWindowChange",
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.DS_Store": true,
+      "**/.git": true
+    },
+    "search.exclude": {
+      "**/.venv": true,
+      "**/node_modules": true
+    },
+    "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/.venv/*": true,
+      "**/node_modules/*/**": true
+    },
+    "black-formatter.importStrategy": "fromEnvironment",
+    "black-formatter.args": [
+      "--config",
+      "pyproject.toml"
+    ],
+    "editor.suggest.localityBonus": true,
+    "editor.suggest.preview": true,
+    "editor.snippetSuggestions": "inline",
+    "editor.inlayHints.enabled": "on",
+    "typescript.inlayHints.parameterNames.enabled": "all",
+    "javascript.inlayHints.parameterNames.enabled": "all",
+    "python.languageServer": "Pylance",
+    "python.analysis.addImport.heuristics": true,
+    "python.analysis.addImport.exactMatchOnly": true,
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.fixAll": [
+      "source.unusedImports",
+      "source.convertImportFormat"
+    ],
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "highlight-bad-chars.additionalUnicodeChars": [
+      "\u201c",
+      "\u201d",
+      "\u2018",
+      "\u2019",
+    ],
+    "workbench.editor.customLabels.patterns": {
+      "/*": "${filename}",
+      "/*.*": "${filename}.${extname}",
+    },
+  },
+  "extensions": {
+    // List of extensions which should be recommended for users of this workspace.
+    "recommendations": [
+      "bungcip.better-toml",
+      "davidanson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "igorsbitnev.error-gutters",
+      "ms-python.python",
+      "usernamehw.errorlens",
+      "redhat.vscode-yaml",
+      "visualstudioexptteam.vscodeintellicode",
+      "ms-python.vscode-pylance",
+      "ms-python.black-formatter",
+      "ms-python.isort",
+      "github.vscode-pull-request-github",
+      "timonwong.shellcheck",
+      "foxundermoon.shell-format",
+      "charliermarsh.ruff",
+      "esbenp.prettier-vscode",
+      "mechatroner.rainbow-csv",
+      "github.copilot-chat",
+      "github.copilot",
+      "wengerk.highlight-bad-chars"
+    ],
+    // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
+    "unwantedRecommendations": []
+  },
+}
