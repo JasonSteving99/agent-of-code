@@ -1,3 +1,5 @@
 aiohttp==3.11.2
 asyncclick==8.1.7.2
 beautifulsoup4==4.12.3
+pydantic==2.9.2
+temporalio==1.7.1
