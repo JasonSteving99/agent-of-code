@@ -4,22 +4,17 @@ import aiohttp
 from bs4 import BeautifulSoup
 import asyncclick as click
 from asyncclick import Choice
-from os import environ
+from agent import settings
+
 
 ProblemPart = Literal[1] | Literal[2]
-
-match environ.get("AOC_COOKIE"):
-    case str(cookie):
-        AOC_COOKIE = cookie
-    case _:
-        raise RuntimeError("You must set the AOC_COOKIE env variable!")
 
 
 async def fetch_problem(
     session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart
 ) -> str:
     url = f"https://adventofcode.com/{year}/day/{day}"
-    headers = {"Cookie": AOC_COOKIE}
+    headers = {"Cookie": settings.AOC_COOKIE}
     async with session.get(url, headers=headers) as response:
         return await response.text()
 

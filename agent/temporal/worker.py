@@ -4,6 +4,7 @@ import asyncclick as click
 from temporalio.worker import Worker
 
 from agent import settings
+from agent.llm.gemini.configure_genai import configure_genai
 from agent.temporal.client import get_temporal_client
 from agent.temporal.workflow import SolveAoCProblemWorkflow
 from agent.temporal import activities
@@ -13,6 +14,9 @@ from agent.temporal import activities
 async def main() -> None:
     # Just for the sake of this demo worker, let's see info logs.
     logging.basicConfig(level=logging.INFO)
+
+    # Configuring this here ensures all activities in this worker are automatically configured.
+    configure_genai()
 
     # Create a worker for the workflow
     worker = Worker(
