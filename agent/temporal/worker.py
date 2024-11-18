@@ -26,6 +26,7 @@ async def main() -> None:
         workflows=[SolveAoCProblemWorkflow],
         activities=[
             activities.extract_problem_part,
+            activities.extract_examples,
         ],
     )
 
