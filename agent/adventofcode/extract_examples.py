@@ -12,7 +12,6 @@ from agent.llm.gemini.prompt import prompt
 
 class AoCProblemExtractedExamples(BaseModel):
     class Example(BaseModel):
-        description: str
         input: str
         output: str
 
@@ -26,6 +25,8 @@ You are a skilled technical reader tasked with extracting input/output examples 
 Ignore all HTML tags and focus solely on the input/output data. Do not attempt to solve the problem; only extract the examples.
 
 Remember to ignore all HTML tags and do not attempt to solve the problem. Extract ONLY the example inputs and outputs in the JSON format specified.
+
+IMPORTANT! You MUST return examples with a SINGLE input mapping to its SINGLE corresponding output.
 """  # noqa: E501
     return await prompt(
         GeminiModel.GEMINI_1_5_PRO,

@@ -22,7 +22,8 @@ async def prompt[ResponseType: BaseModel](
         ).generate_content_async(
             prompt,
             generation_config=genai.GenerationConfig(
-                response_mime_type="application/json", response_schema=response_type
+                response_mime_type="application/json",
+                response_schema=response_type,
             ),
         )
     ).text
