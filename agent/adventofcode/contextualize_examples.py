@@ -3,7 +3,7 @@ from typing import cast
 
 import asyncclick as click
 from asyncclick import Choice
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from agent.adventofcode.extract_examples import (
     AoCProblemExtractedExamples,
@@ -16,8 +16,19 @@ from agent.llm.gemini.prompt import prompt
 
 
 class ExamplesContext(BaseModel):
+    class SuggestedTestedFunctionDetails(BaseModel):
+        name: str = Field(
+            description="Snake case suggested name for the function that these examples would serve as tests for."  # noqa: E501
+        )
+        input_type_annotations: list[str] = Field(
+            description="A list of valid Python 3.12 type annotations representing the arguments to the tested function."  # noqa: E501
+        )
+        output_type_annotation: str = Field(
+            description="A valid Python 3.12 type annotation representing the output of the tested function."  # noqa: E501
+        )
+
     examples_context: str
-    suggested_tested_function_name: str
+    tested_function_details: SuggestedTestedFunctionDetails
 
 
 async def contextualize_examples(

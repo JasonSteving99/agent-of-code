@@ -28,6 +28,7 @@ async def main() -> None:
             activities.extract_problem_part,
             activities.extract_examples,
             activities.get_examples_context,
+            activities.get_generated_unit_tests,
         ],
     )
 
