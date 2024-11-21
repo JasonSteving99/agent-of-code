@@ -5,9 +5,9 @@ from temporalio.worker import Worker
 
 from agent import settings
 from agent.llm.gemini.configure_genai import configure_genai
+from agent.temporal import activities
 from agent.temporal.client import get_temporal_client
 from agent.temporal.workflow import SolveAoCProblemWorkflow
-from agent.temporal import activities
 
 
 @click.command()
@@ -27,6 +27,7 @@ async def main() -> None:
         activities=[
             activities.extract_problem_part,
             activities.extract_examples,
+            activities.get_examples_context,
         ],
     )
 

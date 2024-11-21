@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 from temporalio import activity
+
 from agent.adventofcode import ProblemPart
+from agent.adventofcode.contextualize_examples import (
+    ExamplesContext,
+    contextualize_examples,
+)
 from agent.adventofcode.extract_examples import (
     AoCProblemExtractedExamples,
     extract_examples_from_problem_html,
@@ -33,4 +38,14 @@ async def extract_examples(
 ) -> AoCProblemExtractedExamples:
     return await extract_examples_from_problem_html(
         problem_html=extracted_problem_part.problem_html
+    )
+
+
+@activity.defn
+async def get_examples_context(
+    extracted_problem_part: ExtractedProblemPart,
+    extracted_examples: AoCProblemExtractedExamples,
+) -> ExamplesContext:
+    return await contextualize_examples(
+        problem_html=extracted_problem_part.problem_html, examples=extracted_examples
     )
