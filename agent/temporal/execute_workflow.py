@@ -1,11 +1,12 @@
-import asyncclick as click
 from typing import cast
 
+import asyncclick as click
+
+from agent import settings
 from agent.adventofcode.scrape_problems import ProblemPart
+from agent.temporal.activities import AoCProblem
 from agent.temporal.client import get_temporal_client
 from agent.temporal.workflow import SolveAoCProblemWorkflow
-from agent.temporal.activities import AoCProblem
-from agent import settings
 
 
 @click.command()
@@ -28,7 +29,10 @@ async def main(
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
     )
 
-    click.echo(f"Workflow result: {result}")
+    click.echo("Unit Tests:")
+    click.echo(result["unit_tests"])
+    click.echo("Solution:")
+    click.echo(result["solution"])
 
 
 if __name__ == "__main__":

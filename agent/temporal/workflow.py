@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 
 from temporalio import workflow
@@ -10,6 +11,7 @@ with workflow.unsafe.imports_passed_through():
         extract_examples,
         extract_problem_part,
         get_examples_context,
+        get_generated_implementation,
         get_generated_unit_tests,
     )
 
@@ -17,7 +19,7 @@ with workflow.unsafe.imports_passed_through():
 @workflow.defn
 class SolveAoCProblemWorkflow:
     @workflow.run
-    async def run(self, solve_aoc_problem_req: AoCProblem) -> str:
+    async def run(self, solve_aoc_problem_req: AoCProblem) -> dict:
         workflow.logger.info(
             f"Running SolveAoCProblemWorkflow with parameter {solve_aoc_problem_req}"
         )
@@ -47,11 +49,24 @@ class SolveAoCProblemWorkflow:
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
-        return (
-            await workflow.execute_activity(
+        # Since I don't think I should show the unit tests to the LLM when asking it to generate the
+        # implementation, I can just go ahead and generate the initial implementation concurrently.
+        unit_tests, implementation = await asyncio.gather(
+            workflow.execute_activity(
                 get_generated_unit_tests,
                 args=[extracted_examples, examples_context],
                 start_to_close_timeout=timedelta(seconds=20),
                 retry_policy=RetryPolicy(maximum_attempts=5),
-            )
-        ).generated_unit_test_file_content
+            ),
+            workflow.execute_activity(
+                get_generated_implementation,
+                args=[problem_part, examples_context],
+                start_to_close_timeout=timedelta(seconds=20),
+                retry_policy=RetryPolicy(maximum_attempts=5),
+            ),
+        )
+
+        return {
+            "unit_tests": unit_tests.generated_unit_test_file_content,
+            "solution": implementation.generated_implementation_file_content,
+        }

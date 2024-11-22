@@ -29,6 +29,7 @@ async def main() -> None:
             activities.extract_examples,
             activities.get_examples_context,
             activities.get_generated_unit_tests,
+            activities.get_generated_implementation,
         ],
     )
 

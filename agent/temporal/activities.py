@@ -4,10 +4,12 @@ from temporalio import activity
 from agent.adventofcode import (
     AoCProblemExtractedExamples,
     ExamplesContext,
+    GeneratedImplementation,
     GeneratedUnitTests,
     ProblemPart,
     contextualize_examples,
     extract_examples_from_problem_html,
+    generate_implementation,
     generate_unit_tests,
 )
 from agent.adventofcode.scrape_problems import scrape_aoc
@@ -57,3 +59,13 @@ async def get_generated_unit_tests(
     examples_context: ExamplesContext,
 ) -> GeneratedUnitTests:
     return await generate_unit_tests(examples=examples, examples_context=examples_context)
+
+
+@activity.defn
+async def get_generated_implementation(
+    extracted_problem_part: ExtractedProblemPart,
+    examples_context: ExamplesContext,
+) -> GeneratedImplementation:
+    return await generate_implementation(
+        problem_html=extracted_problem_part.problem_html, examples_context=examples_context
+    )
