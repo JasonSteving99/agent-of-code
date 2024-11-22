@@ -8,6 +8,8 @@ from temporalio.common import RetryPolicy
 with workflow.unsafe.imports_passed_through():
     from agent.temporal.activities import (
         AoCProblem,
+        CommitChangesArgs,
+        commit_changes,
         extract_examples,
         extract_problem_part,
         get_examples_context,
@@ -19,7 +21,7 @@ with workflow.unsafe.imports_passed_through():
 @workflow.defn
 class SolveAoCProblemWorkflow:
     @workflow.run
-    async def run(self, solve_aoc_problem_req: AoCProblem) -> dict:
+    async def run(self, solve_aoc_problem_req: AoCProblem, solutions_dir: str) -> dict:
         workflow.logger.info(
             f"Running SolveAoCProblemWorkflow with parameter {solve_aoc_problem_req}"
         )
@@ -64,6 +66,22 @@ class SolveAoCProblemWorkflow:
                 start_to_close_timeout=timedelta(seconds=20),
                 retry_policy=RetryPolicy(maximum_attempts=5),
             ),
+        )
+
+        # Commit these initial tests and implementation files right away before executing any tests.
+        # At this point, we're just ensuring that we can actually track the progress that this agent
+        # makes since it'll be really interesting to go back through and evaluate this later on.
+        await workflow.execute_activity(
+            commit_changes,
+            CommitChangesArgs(
+                aoc_problem=solve_aoc_problem_req,
+                solutions_dir=solutions_dir,
+                unit_tests=unit_tests,
+                implementation=implementation,
+                commit_message="Initial Attempt",
+            ),
+            start_to_close_timeout=timedelta(seconds=60),
+            retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
         return {

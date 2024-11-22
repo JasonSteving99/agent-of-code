@@ -2,23 +2,19 @@ from pydantic import BaseModel
 from temporalio import activity
 
 from agent.adventofcode import (
+    AoCProblem,
     AoCProblemExtractedExamples,
     ExamplesContext,
+    FileToCommit,
     GeneratedImplementation,
     GeneratedUnitTests,
-    ProblemPart,
     contextualize_examples,
     extract_examples_from_problem_html,
     generate_implementation,
     generate_unit_tests,
+    write_and_commit_changes,
 )
 from agent.adventofcode.scrape_problems import scrape_aoc
-
-
-class AoCProblem(BaseModel):
-    year: int
-    day: int
-    part: ProblemPart
 
 
 class ExtractedProblemPart(BaseModel):
@@ -68,4 +64,32 @@ async def get_generated_implementation(
 ) -> GeneratedImplementation:
     return await generate_implementation(
         problem_html=extracted_problem_part.problem_html, examples_context=examples_context
+    )
+
+
+class CommitChangesArgs(BaseModel):
+    aoc_problem: AoCProblem
+    solutions_dir: str
+    unit_tests: GeneratedUnitTests
+    implementation: GeneratedImplementation
+    commit_message: str
+
+
+@activity.defn
+async def commit_changes(
+    args: CommitChangesArgs,
+) -> None:
+    return write_and_commit_changes(
+        basedir=args.solutions_dir,
+        files=[
+            FileToCommit(
+                filename="tests.py", content=args.unit_tests.generated_unit_test_file_content
+            ),
+            FileToCommit(
+                filename="solution.py",
+                content=args.implementation.generated_implementation_file_content,
+            ),
+        ],
+        aoc_problem=args.aoc_problem,
+        commit_message=args.commit_message,
     )

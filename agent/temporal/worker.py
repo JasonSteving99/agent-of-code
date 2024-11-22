@@ -30,6 +30,7 @@ async def main() -> None:
             activities.get_examples_context,
             activities.get_generated_unit_tests,
             activities.get_generated_implementation,
+            activities.commit_changes,
         ],
     )
 

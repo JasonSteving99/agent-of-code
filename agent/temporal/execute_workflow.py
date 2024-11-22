@@ -1,3 +1,4 @@
+import os
 from typing import cast
 
 import asyncclick as click
@@ -18,13 +19,25 @@ async def main(
     day: int,
     part: str,  # type: ignore - Need to redeclare with a cast after parsing into an int.
 ) -> None:
+    # Need to get the path to the dir where solutions should be written. Implementing this to work
+    # on various machines.
+    aoc_solutions_dir = os.path.realpath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "../../advent_of_code",
+            f"year{year}",
+            f"day{day}",
+            f"part{part}",
+        )
+    )
+
     # Create a client.
     client = await get_temporal_client()
 
     # Start the workflow.
     result = await client.execute_workflow(
         SolveAoCProblemWorkflow.run,
-        AoCProblem(year=year, day=day, part=cast(ProblemPart, int(part))),
+        args=[AoCProblem(year=year, day=day, part=cast(ProblemPart, int(part))), aoc_solutions_dir],
         id=f"solve-aoc-problem-{year}-{day}-{part}",
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
     )

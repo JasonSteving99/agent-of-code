@@ -1,13 +1,13 @@
 import asyncio
-from typing import Literal, cast
+from typing import cast
+
 import aiohttp
-from bs4 import BeautifulSoup
 import asyncclick as click
 from asyncclick import Choice
+from bs4 import BeautifulSoup
+
 from agent import settings
-
-
-ProblemPart = Literal[1] | Literal[2]
+from agent.adventofcode.problem_part import ProblemPart
 
 
 async def fetch_problem(
