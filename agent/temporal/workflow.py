@@ -9,9 +9,11 @@ with workflow.unsafe.imports_passed_through():
     from agent.temporal.activities import (
         AoCProblem,
         CommitChangesArgs,
+        DebugUnitTestFailuresArgs,
         GeneratedSolutionRes,
         TestResults,
         commit_changes,
+        debug_unit_test_failures,
         extract_examples,
         extract_problem_part,
         get_examples_context,
@@ -20,6 +22,8 @@ with workflow.unsafe.imports_passed_through():
         run_generated_solution,
         run_generated_tests,
     )
+
+MAX_UNIT_TEST_FIX_ITERATIONS = 3
 
 
 @workflow.defn
@@ -90,15 +94,37 @@ class SolveAoCProblemWorkflow:
         )
 
         # Now, actually run the generated unit tests to see if we're gonna be able to move forward.
-        unit_test_results = await workflow.execute_activity(
-            run_generated_tests,
-            solve_aoc_problem_req,
-            start_to_close_timeout=timedelta(seconds=30),
-            # Don't allow any retries for these unit tests.
-        )
+        # We'll iterate on making changes to the tests and the implementation itself until we can
+        # get these tests to pass, before we'll move on to executing the full solution on the
+        # overall problem input.
+        unit_test_results: TestResults
+        for i in range(MAX_UNIT_TEST_FIX_ITERATIONS):
+            unit_test_results = await workflow.execute_activity(
+                run_generated_tests,
+                solve_aoc_problem_req,
+                start_to_close_timeout=timedelta(seconds=30),
+                # Don't allow any retries for these unit tests.
+            )
 
-        if isinstance(unit_test_results.result, TestResults.Failure):
-            raise Exception("Unit Tests Failed! Need to figure out how to correct them.")
+            match unit_test_results.result:
+                case TestResults.Failure() as test_failure:
+                    theorized_solution = await workflow.execute_activity(
+                        debug_unit_test_failures,
+                        DebugUnitTestFailuresArgs(
+                            problem_html=problem_part.problem_html,
+                            examples_context=examples_context,
+                            unit_tests_src=unit_tests,
+                            generated_impl_src=implementation,
+                            error_msg=test_failure.err_msg,
+                        ),
+                        start_to_close_timeout=timedelta(seconds=30),
+                        retry_policy=RetryPolicy(maximum_attempts=3),
+                    )
+                    raise Exception(
+                        f"Unit Tests Failed! Need to figure out how to correct them.\n{test_failure.err_msg}\n\n{theorized_solution}"  # noqa: E501
+                    )
+                case _:
+                    break  # The tests passed!
 
         problem_solution_result = await workflow.execute_activity(
             run_generated_solution,

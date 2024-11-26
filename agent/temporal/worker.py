@@ -33,6 +33,7 @@ async def main() -> None:
             activities.commit_changes,
             activities.run_generated_tests,
             activities.run_generated_solution,
+            activities.debug_unit_test_failures,
         ],
     )
 

@@ -3,6 +3,7 @@ from agent.adventofcode.contextualize_examples import (
     ExamplesContext,
     contextualize_examples,
 )
+from agent.adventofcode.debug_errors import theorize_solution
 from agent.adventofcode.execute_generated_code import (
     TestResults,
     execute_generated_solution,
@@ -43,5 +44,6 @@ __all__ = [
     "generate_implementation",
     "generate_unit_tests",
     "scrape_aoc",
+    "theorize_solution",
     "write_and_commit_changes",
 ]

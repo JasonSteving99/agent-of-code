@@ -16,8 +16,10 @@ from agent.adventofcode import (
     extract_examples_from_problem_html,
     generate_implementation,
     generate_unit_tests,
+    theorize_solution,
     write_and_commit_changes,
 )
+from agent.adventofcode.debug_errors import TheorizedSolution
 from agent.adventofcode.execute_generated_code import TestResults
 from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 
@@ -139,3 +141,22 @@ async def run_generated_solution(
             return GeneratedSolutionRes(
                 result=GeneratedSolutionRes.Failure(exit_code=err.returncode, std_err=err.stderr)
             )
+
+
+class DebugUnitTestFailuresArgs(BaseModel):
+    problem_html: str
+    examples_context: ExamplesContext
+    unit_tests_src: GeneratedUnitTests
+    generated_impl_src: GeneratedImplementation
+    error_msg: str
+
+
+@activity.defn
+async def debug_unit_test_failures(args: DebugUnitTestFailuresArgs) -> TheorizedSolution:
+    return await theorize_solution(
+        problem_html=args.problem_html,
+        examples_context=args.examples_context,
+        unit_tests_src=args.unit_tests_src,
+        generated_impl_src=args.generated_impl_src,
+        error_msg=args.error_msg,
+    )
