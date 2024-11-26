@@ -1,10 +1,12 @@
 import asyncio
 from typing import cast
+
+import aiohttp
 import asyncclick as click
 from asyncclick import Choice
 from pydantic import BaseModel
 
-from agent.adventofcode.scrape_problems import scrape_aoc, ProblemPart
+from agent.adventofcode.scrape_problems import ProblemPart, scrape_aoc
 from agent.llm.gemini.configure_genai import configure_genai
 from agent.llm.gemini.models import GeminiModel
 from agent.llm.gemini.prompt import prompt
@@ -46,11 +48,14 @@ async def _cmd(
     part: str,  # type: ignore - Need to redeclare with a cast after parsing into an int.
 ) -> None:
     configure_genai()
-    print(
-        await extract_examples_from_problem_html(
-            await scrape_aoc(year=year, day=day, part=cast(ProblemPart, int(part)))
+    async with aiohttp.ClientSession() as session:
+        print(
+            await extract_examples_from_problem_html(
+                await scrape_aoc(
+                    session=session, year=year, day=day, part=cast(ProblemPart, int(part))
+                )
+            )
         )
-    )
 
 
 if __name__ == "__main__":

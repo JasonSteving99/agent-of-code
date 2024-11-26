@@ -1,6 +1,7 @@
 import asyncio
 from typing import cast
 
+import aiohttp
 import asyncclick as click
 from asyncclick import Choice
 from pydantic import BaseModel, Field
@@ -66,7 +67,10 @@ async def _cmd(
     part: str,  # type: ignore - Need to redeclare with a cast after parsing into an int.
 ) -> None:
     configure_genai()
-    problem_html = await scrape_aoc(year=year, day=day, part=cast(ProblemPart, int(part)))
+    async with aiohttp.ClientSession() as session:
+        problem_html = await scrape_aoc(
+            session=session, year=year, day=day, part=cast(ProblemPart, int(part))
+        )
     examples = await extract_examples_from_problem_html(problem_html=problem_html)
     examples_context = await contextualize_examples(
         problem_html=problem_html,
