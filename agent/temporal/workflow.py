@@ -9,19 +9,23 @@ with workflow.unsafe.imports_passed_through():
     from agent.temporal.activities import (
         AoCProblem,
         CommitChangesArgs,
+        GeneratedSolutionRes,
+        TestResults,
         commit_changes,
         extract_examples,
         extract_problem_part,
         get_examples_context,
         get_generated_implementation,
         get_generated_unit_tests,
+        run_generated_solution,
+        run_generated_tests,
     )
 
 
 @workflow.defn
 class SolveAoCProblemWorkflow:
     @workflow.run
-    async def run(self, solve_aoc_problem_req: AoCProblem, solutions_dir: str) -> dict:
+    async def run(self, solve_aoc_problem_req: AoCProblem, solutions_dir: str) -> str:
         workflow.logger.info(
             f"Running SolveAoCProblemWorkflow with parameter {solve_aoc_problem_req}"
         )
@@ -85,7 +89,27 @@ class SolveAoCProblemWorkflow:
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
-        return {
-            "unit_tests": unit_tests.generated_unit_test_file_content,
-            "solution": implementation.generated_implementation_file_content,
-        }
+        # Now, actually run the generated unit tests to see if we're gonna be able to move forward.
+        unit_test_results = await workflow.execute_activity(
+            run_generated_tests,
+            solve_aoc_problem_req,
+            start_to_close_timeout=timedelta(seconds=30),
+            # Don't allow any retries for these unit tests.
+        )
+
+        if isinstance(unit_test_results.result, TestResults.Failure):
+            raise Exception("Unit Tests Failed! Need to figure out how to correct them.")
+
+        problem_solution_result = await workflow.execute_activity(
+            run_generated_solution,
+            solve_aoc_problem_req,
+            start_to_close_timeout=timedelta(minutes=5),
+            # Don't allow any retries for execution of the actual problem solution.
+        )
+
+        if isinstance(problem_solution_result.result, GeneratedSolutionRes.Failure):
+            raise Exception(
+                "Problem solution threw an exception! Need to figure out how to correct it."
+            )
+
+        return problem_solution_result.result.output

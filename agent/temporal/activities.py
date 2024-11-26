@@ -1,5 +1,6 @@
 import aiohttp
 from pydantic import BaseModel
+from result import Err, Ok
 from temporalio import activity
 
 from agent.adventofcode import (
@@ -10,11 +11,14 @@ from agent.adventofcode import (
     GeneratedImplementation,
     GeneratedUnitTests,
     contextualize_examples,
+    execute_generated_solution,
+    execute_tests,
     extract_examples_from_problem_html,
     generate_implementation,
     generate_unit_tests,
     write_and_commit_changes,
 )
+from agent.adventofcode.execute_generated_code import TestResults
 from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 
 
@@ -104,3 +108,34 @@ async def commit_changes(
         aoc_problem=args.aoc_problem,
         commit_message=args.commit_message,
     )
+
+
+@activity.defn
+async def run_generated_tests(aoc_problem: AoCProblem) -> TestResults:
+    return execute_tests(year=aoc_problem.year, day=aoc_problem.day, part=aoc_problem.part)
+
+
+class GeneratedSolutionRes(BaseModel):
+    class Success(BaseModel):
+        output: str
+
+    class Failure(BaseModel):
+        exit_code: int
+        std_err: str
+
+    result: Success | Failure
+
+
+@activity.defn
+async def run_generated_solution(
+    aoc_problem: AoCProblem,
+) -> GeneratedSolutionRes:
+    match execute_generated_solution(
+        year=aoc_problem.year, day=aoc_problem.day, part=aoc_problem.part
+    ):
+        case Ok(output):
+            return GeneratedSolutionRes(result=GeneratedSolutionRes.Success(output=output))
+        case Err(err):
+            return GeneratedSolutionRes(
+                result=GeneratedSolutionRes.Failure(exit_code=err.returncode, std_err=err.stderr)
+            )

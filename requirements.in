@@ -3,4 +3,6 @@ asyncclick==8.1.7.2
 beautifulsoup4==4.12.3
 google-generativeai==0.8.3
 pydantic==2.9.2
+pytest-json-report==1.5.0
+result==0.17.0
 temporalio==1.7.1

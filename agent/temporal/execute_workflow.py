@@ -42,10 +42,7 @@ async def main(
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
     )
 
-    click.echo("Unit Tests:")
-    click.echo(result["unit_tests"])
-    click.echo("Solution:")
-    click.echo(result["solution"])
+    click.echo(f"Final problem result: {result}")
 
 
 if __name__ == "__main__":

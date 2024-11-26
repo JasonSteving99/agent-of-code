@@ -31,6 +31,8 @@ async def main() -> None:
             activities.get_generated_unit_tests,
             activities.get_generated_implementation,
             activities.commit_changes,
+            activities.run_generated_tests,
+            activities.run_generated_solution,
         ],
     )
 
