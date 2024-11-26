@@ -1,3 +1,4 @@
+import aiohttp
 from pydantic import BaseModel
 from temporalio import activity
 
@@ -14,20 +15,25 @@ from agent.adventofcode import (
     generate_unit_tests,
     write_and_commit_changes,
 )
-from agent.adventofcode.scrape_problems import scrape_aoc
+from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 
 
 class ExtractedProblemPart(BaseModel):
     problem_html: str
+    problem_input: str
 
 
 @activity.defn
 async def extract_problem_part(aoc_problem: AoCProblem) -> ExtractedProblemPart:
-    return ExtractedProblemPart(
-        problem_html=await scrape_aoc(
-            year=aoc_problem.year, day=aoc_problem.day, part=aoc_problem.part
+    async with aiohttp.ClientSession() as session:
+        return ExtractedProblemPart(
+            problem_html=await scrape_aoc(
+                session=session, year=aoc_problem.year, day=aoc_problem.day, part=aoc_problem.part
+            ),
+            problem_input=await fetch_input(
+                session=session, year=aoc_problem.year, day=aoc_problem.day
+            ),
         )
-    )
 
 
 @activity.defn
@@ -72,6 +78,7 @@ class CommitChangesArgs(BaseModel):
     solutions_dir: str
     unit_tests: GeneratedUnitTests
     implementation: GeneratedImplementation
+    problem_input: str
     commit_message: str
 
 
@@ -88,6 +95,10 @@ async def commit_changes(
             FileToCommit(
                 filename="solution.py",
                 content=args.implementation.generated_implementation_file_content,
+            ),
+            FileToCommit(
+                filename="input.txt",
+                content=args.problem_input,
             ),
         ],
         aoc_problem=args.aoc_problem,

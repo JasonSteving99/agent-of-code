@@ -9,13 +9,20 @@ from bs4 import BeautifulSoup
 from agent import settings
 from agent.adventofcode.problem_part import ProblemPart
 
+_HEADERS = {"Cookie": settings.AOC_COOKIE}
+
+
+async def fetch_input(session: aiohttp.ClientSession, year: int, day: int) -> str:
+    url = f"https://adventofcode.com/{year}/day/{day}/input"
+    async with session.get(url, headers=_HEADERS) as response:
+        return await response.text()
+
 
 async def fetch_problem(
     session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart
 ) -> str:
     url = f"https://adventofcode.com/{year}/day/{day}"
-    headers = {"Cookie": settings.AOC_COOKIE}
-    async with session.get(url, headers=headers) as response:
+    async with session.get(url, headers=_HEADERS) as response:
         return await response.text()
 
 
@@ -29,11 +36,11 @@ def parse_problem(html: str, part: ProblemPart):
     return "Problem description not found."
 
 
-async def scrape_aoc(year: int, day: int, part: ProblemPart) -> str:
-    async with aiohttp.ClientSession() as session:
-        html = await fetch_problem(session, year=year, day=day, part=part)
-
-    return parse_problem(html, part=part)
+async def scrape_aoc(session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart) -> str:
+    return parse_problem(
+        await fetch_problem(session, year=year, day=day, part=part),
+        part=part,
+    )
 
 
 @click.command()
@@ -45,7 +52,10 @@ async def _cmd(
     day: int,
     part: str,  # type: ignore - Need to redeclare with a cast after parsing into an int.
 ) -> None:
-    print(await scrape_aoc(year=year, day=day, part=cast(ProblemPart, int(part))))
+    async with aiohttp.ClientSession() as session:
+        print(
+            await scrape_aoc(session=session, year=year, day=day, part=cast(ProblemPart, int(part)))
+        )
 
 
 if __name__ == "__main__":

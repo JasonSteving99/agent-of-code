@@ -78,6 +78,7 @@ class SolveAoCProblemWorkflow:
                 solutions_dir=solutions_dir,
                 unit_tests=unit_tests,
                 implementation=implementation,
+                problem_input=problem_part.problem_input,
                 commit_message="Initial Attempt",
             ),
             start_to_close_timeout=timedelta(seconds=60),
