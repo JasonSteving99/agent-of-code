@@ -21,19 +21,24 @@ def solve(maze: List[str]) -> int:
         if tile == 'S':
             tile = ''
 
-        for dr, dc, valid_pipes in [(-1, 0, '|LJ7'), (1, 0, '|7LF'), (0, -1, '-7FJ'), (0, 1, '-LJF')]:
+        allowed_moves = {
+            '|': {(-1, 0), (1, 0)},
+            '-': {(0, -1), (0, 1)},
+            'L': {(-1, 0), (0, 1)},
+            'J': {(-1, 0), (0, -1)},
+            '7': {(1, 0), (0, -1)},
+            'F': {(1, 0), (0, 1)},
+            '': {(-1, 0), (1, 0), (0, -1), (0, 1)}
+        }
+
+        for dr, dc in allowed_moves[tile]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
                 neighbor_tile = maze[nr][nc]
                 if neighbor_tile == 'S':
                     neighbor_tile = ''
-
-                if tile == '':
-                    neighbors.append((nr, nc))
-                elif (tile in valid_pipes or neighbor_tile in valid_pipes) and \
-                     (tile != '|' or neighbor_tile != '-') and \
-                     (tile != '-' or neighbor_tile != '|'):
-                    neighbors.append((nr, nc))
+                if (dr, dc) in allowed_moves.get(neighbor_tile, {}) or (-dr, -dc) in allowed_moves.get(tile, {}):
+                     neighbors.append((nr, nc))
 
         return neighbors
 
