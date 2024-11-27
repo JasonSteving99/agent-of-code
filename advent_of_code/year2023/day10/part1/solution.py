@@ -1,46 +1,51 @@
 from typing import List
 
-def max_loop_distance(maze: List[str]) -> int:
-    rows = len(maze)
-    cols = len(maze[0])
+def max_loop_distance(maze: str) -> int:
+    maze_lines = maze.strip().split('\n')
+    rows = len(maze_lines)
+    cols = len(maze_lines[0])
     start = None
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] == 'S':
+            if maze_lines[r][c] == 'S':
                 start = (r, c)
                 break
         if start is not None:
             break
     
+    if start is None:
+        return 0
+
     pipes = {'|': {0, 2}, '-': {1, 3}, 'L': {0, 1}, 'J': {0, 3}, '7': {2, 3}, 'F': {1, 2}}
     
     def get_neighbors(r, c):
         neighbors = []
-        if maze[r][c] == 'S':
+        current_symbol = maze_lines[r][c]
+        
+        if current_symbol == 'S':
             symbol = ''
-            if r > 0 and maze[r-1][c] != '.':
-                symbol += '|' if maze[r-1][c] not in '7F' else '7' if maze[r-1][c] == '7' else 'F'
-            if r < rows - 1 and maze[r+1][c] != '.':
-                symbol += '|' if maze[r+1][c] not in 'LJ' else 'L' if maze[r+1][c] == 'L' else 'J'
-            if c > 0 and maze[r][c-1] != '.':
-                symbol += '-' if maze[r][c-1] not in 'JF' else 'J' if maze[r][c-1] == 'J' else 'F'
-            if c < cols - 1 and maze[r][c+1] != '.':
-                symbol += '-' if maze[r][c+1] not in 'L7' else 'L' if maze[r][c+1] == 'L' else '7'
+            if r > 0 and maze_lines[r-1][c] != '.':
+                symbol += '|' if maze_lines[r-1][c] not in '7F' else '7' if maze_lines[r-1][c] == '7' else 'F'
+            if r < rows - 1 and maze_lines[r+1][c] != '.':
+                symbol += '|' if maze_lines[r+1][c] not in 'LJ' else 'L' if maze_lines[r+1][c] == 'L' else 'J'
+            if c > 0 and maze_lines[r][c-1] != '.':
+                symbol += '-' if maze_lines[r][c-1] not in 'JF' else 'J' if maze_lines[r][c-1] == 'J' else 'F'
+            if c < cols - 1 and maze_lines[r][c+1] != '.':
+                symbol += '-' if maze_lines[r][c+1] not in 'L7' else 'L' if maze_lines[r][c+1] == 'L' else '7'
+
+            if len(symbol) > 2 or len(symbol) < 2: 
+                return []  # Invalid 'S' connection
+            if '|' in symbol and '-':
+                symbol = 'L' if 'L' in "L-" else 'J' if 'J' in "J-" else 'F' if 'F' in 'F-' else '7'
                 
-            if len(symbol) > 2: return []
-            if len(symbol) == 1: return []            
-            if '|' in symbol and '-': symbol = 'L' if 'L' in "L-" else 'J' if 'J' in "J-" else 'F' if 'F' in 'F-' else '7'
-            if len(symbol) == 0: return [] 
-                
-            
             for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.' and direction in pipes[symbol if symbol else maze[nr][nc]]:
+                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[symbol]:
                     neighbors.append((nr, nc))
-        else:        
+        else:
             for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.' and direction in pipes[maze[r][c]] and direction in pipes[maze[nr][nc] if maze[nr][nc] != 'S' else symbol]:
+                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[current_symbol] and direction in pipes[maze_lines[nr][nc]]:
                     neighbors.append((nr, nc))
         return neighbors
 
@@ -65,8 +70,7 @@ def solution() -> int:
             input_str += line + "\n"
         except EOFError:
             break
-    maze = input_str.strip().split('\n')
 
-    result = max_loop_distance(maze)
+    result = max_loop_distance(input_str)
 
     return result
