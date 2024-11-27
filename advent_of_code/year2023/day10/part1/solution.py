@@ -1,6 +1,6 @@
 from typing import List
 
-def solve(maze: List[str]) -> int:
+def max_steps_in_pipe_loop(maze: List[str]) -> int:
     rows = len(maze)
     cols = len(maze[0])
     start = None
@@ -36,4 +36,4 @@ def solution() -> int:
             maze.append(line)
         except EOFError:
             break
-    return solve(maze)
+    return max_steps_in_pipe_loop(maze)
