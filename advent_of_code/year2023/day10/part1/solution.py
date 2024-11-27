@@ -1,6 +1,6 @@
 from typing import List
 
-def solve(maze: List[str]) -> int:
+def max_loop_distance(maze: List[str]) -> int:
     rows = len(maze)
     cols = len(maze[0])
     start = None
@@ -67,6 +67,6 @@ def solution() -> int:
             break
     maze = input_str.strip().split('\n')
 
-    result = solve(maze)
+    result = max_loop_distance(maze)
 
     return result
