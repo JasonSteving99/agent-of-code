@@ -11,65 +11,42 @@ def solve(maze: List[str]) -> int:
                 break
         if start is not None:
             break
-
-    if start is None:
-        return 0
-
+    
+    pipes = {'|': {0, 2}, '-': {1, 3}, 'L': {0, 1}, 'J': {0, 3}, '7': {2, 3}, 'F': {1, 2}}
+    
     def get_neighbors(r, c):
         neighbors = []
-
         if maze[r][c] == 'S':
-            possible_pipes = ['|', '-', 'L', 'J', '7', 'F']
-            for pipe in possible_pipes:
-                temp_maze = [row[:] for row in maze]  # create a copy to avoid modifying the original
-                temp_maze[r] = temp_maze[r][:c] + pipe + temp_maze[r][c + 1:]
-                current_neighbors = []
-
-                allowed_moves = {
-                    '|': {(-1, 0), (1, 0)},
-                    '-': {(0, -1), (0, 1)},
-                    'L': {(-1, 0), (0, 1)},
-                    'J': {(-1, 0), (0, -1)},
-                    '7': {(1, 0), (0, -1)},
-                    'F': {(1, 0), (0, 1)},
-                }
-
-                for dr, dc in allowed_moves[pipe]:
-                    nr, nc = r + dr, c + dc
-                    if 0 <= nr < rows and 0 <= nc < cols and temp_maze[nr][nc] != '.':
-                        neighbor_tile = temp_maze[nr][nc]
-                        if neighbor_tile == 'S':
-                            neighbor_tile = pipe # Fix: Set S to current testing pipe
-                        if (dr, dc) in allowed_moves.get(neighbor_tile, {}) or (-dr, -dc) in allowed_moves.get(pipe, {}):
-                            current_neighbors.append((nr, nc))
-                if len(current_neighbors) == 2:
-                    neighbors = current_neighbors
-                    break # Only find one valid pipe type for S
-            return neighbors
-
-        tile = maze[r][c]
-        allowed_moves = {
-            '|': {(-1, 0), (1, 0)},
-            '-': {(0, -1), (0, 1)},
-            'L': {(-1, 0), (0, 1)},
-            'J': {(-1, 0), (0, -1)},
-            '7': {(1, 0), (0, -1)},
-            'F': {(1, 0), (0, 1)},
-        }
-
-        for dr, dc in allowed_moves[tile]:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
-                neighbor_tile = maze[nr][nc]
-                if (dr, dc) in allowed_moves.get(neighbor_tile, {}) or (-dr, -dc) in allowed_moves.get(tile, {}):
-                     neighbors.append((nr, nc))
-
+            symbol = ''
+            if r > 0 and maze[r-1][c] != '.':
+                symbol += '|' if maze[r-1][c] not in '7F' else '7' if maze[r-1][c] == '7' else 'F'
+            if r < rows - 1 and maze[r+1][c] != '.':
+                symbol += '|' if maze[r+1][c] not in 'LJ' else 'L' if maze[r+1][c] == 'L' else 'J'
+            if c > 0 and maze[r][c-1] != '.':
+                symbol += '-' if maze[r][c-1] not in 'JF' else 'J' if maze[r][c-1] == 'J' else 'F'
+            if c < cols - 1 and maze[r][c+1] != '.':
+                symbol += '-' if maze[r][c+1] not in 'L7' else 'L' if maze[r][c+1] == 'L' else '7'
+                
+            if len(symbol) > 2: return []
+            if len(symbol) == 1: return []            
+            if '|' in symbol and '-': symbol = 'L' if 'L' in "L-" else 'J' if 'J' in "J-" else 'F' if 'F' in 'F-' else '7'
+            if len(symbol) == 0: return [] 
+                
+            
+            for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.' and direction in pipes[symbol if symbol else maze[nr][nc]]:
+                    neighbors.append((nr, nc))
+        else:        
+            for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.' and direction in pipes[maze[r][c]] and direction in pipes[maze[nr][nc] if maze[nr][nc] != 'S' else symbol]:
+                    neighbors.append((nr, nc))
         return neighbors
 
     q = [(start, 0)]
     visited = {start}
     max_dist = 0
-
     while q:
         (r, c), dist = q.pop(0)
         max_dist = max(max_dist, dist)
@@ -80,16 +57,16 @@ def solve(maze: List[str]) -> int:
 
     return max_dist
 
-def max_loop_distance(maze: str) -> int:
-    maze_list = maze.splitlines()
-    return solve(maze_list)
-
 def solution() -> int:
-    maze: List[str] = []
+    input_str = ""
     while True:
         try:
             line = input()
-            maze.append(line)
+            input_str += line + "\n"
         except EOFError:
             break
-    return solve(maze)
+    maze = input_str.strip().split('\n')
+
+    result = solve(maze)
+
+    return result
