@@ -17,10 +17,37 @@ def solve(maze: List[str]) -> int:
 
     def get_neighbors(r, c):
         neighbors = []
-        tile = maze[r][c]
-        if tile == 'S':
-            tile = ''
 
+        if maze[r][c] == 'S':
+            possible_pipes = ['|', '-', 'L', 'J', '7', 'F']
+            for pipe in possible_pipes:
+                temp_maze = [row[:] for row in maze]  # create a copy to avoid modifying the original
+                temp_maze[r] = temp_maze[r][:c] + pipe + temp_maze[r][c + 1:]
+                current_neighbors = []
+
+                allowed_moves = {
+                    '|': {(-1, 0), (1, 0)},
+                    '-': {(0, -1), (0, 1)},
+                    'L': {(-1, 0), (0, 1)},
+                    'J': {(-1, 0), (0, -1)},
+                    '7': {(1, 0), (0, -1)},
+                    'F': {(1, 0), (0, 1)},
+                }
+
+                for dr, dc in allowed_moves[pipe]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < rows and 0 <= nc < cols and temp_maze[nr][nc] != '.':
+                        neighbor_tile = temp_maze[nr][nc]
+                        if neighbor_tile == 'S':
+                            neighbor_tile = pipe # Fix: Set S to current testing pipe
+                        if (dr, dc) in allowed_moves.get(neighbor_tile, {}) or (-dr, -dc) in allowed_moves.get(pipe, {}):
+                            current_neighbors.append((nr, nc))
+                if len(current_neighbors) == 2:
+                    neighbors = current_neighbors
+                    break # Only find one valid pipe type for S
+            return neighbors
+
+        tile = maze[r][c]
         allowed_moves = {
             '|': {(-1, 0), (1, 0)},
             '-': {(0, -1), (0, 1)},
@@ -28,15 +55,12 @@ def solve(maze: List[str]) -> int:
             'J': {(-1, 0), (0, -1)},
             '7': {(1, 0), (0, -1)},
             'F': {(1, 0), (0, 1)},
-            '': {(-1, 0), (1, 0), (0, -1), (0, 1)}
         }
 
         for dr, dc in allowed_moves[tile]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
                 neighbor_tile = maze[nr][nc]
-                if neighbor_tile == 'S':
-                    neighbor_tile = ''
                 if (dr, dc) in allowed_moves.get(neighbor_tile, {}) or (-dr, -dc) in allowed_moves.get(tile, {}):
                      neighbors.append((nr, nc))
 
