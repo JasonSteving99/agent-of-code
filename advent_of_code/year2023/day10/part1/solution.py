@@ -21,32 +21,17 @@ def max_loop_distance(maze: str) -> int:
     def get_neighbors(r, c):
         neighbors = []
         current_symbol = maze_lines[r][c]
-        symbol = '' # Initialize symbol here
 
-        if current_symbol == 'S':
-            if r > 0 and maze_lines[r - 1][c] != '.':
-                symbol += '|' if maze_lines[r - 1][c] not in '7F' else '7' if maze_lines[r - 1][c] == '7' else 'F'
-            if r < rows - 1 and maze_lines[r + 1][c] != '.':
-                symbol += '|' if maze_lines[r + 1][c] not in 'LJ' else 'L' if maze_lines[r + 1][c] == 'L' else 'J'
-            if c > 0 and maze_lines[r][c - 1] != '.':
-                symbol += '-' if maze_lines[r][c - 1] not in 'JF' else 'J' if maze_lines[r][c - 1] == 'J' else 'F'
-            if c < cols - 1 and maze_lines[r][c + 1] != '.':
-                symbol += '-' if maze_lines[r][c + 1] not in 'L7' else 'L' if maze_lines[r][c + 1] == 'L' else '7'
-
-            if len(symbol) > 2 or len(symbol) < 2:
-                return []  # Invalid 'S' connection
-            if '|' in symbol and '-':
-                symbol = 'L' if 'L' in "L-" else 'J' if 'J' in "J-" else 'F' if 'F' in 'F-' else '7'
-
-            for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[symbol]:
+        for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.':
+                neighbor_symbol = maze_lines[nr][nc]
+                if current_symbol == 'S' or neighbor_symbol == 'S':
+                    if direction in pipes[current_symbol if current_symbol != 'S' else neighbor_symbol] and (current_symbol == 'S' or direction in pipes[maze_lines[nr][nc]]):
+                        neighbors.append((nr, nc))
+                elif direction in pipes[current_symbol] and direction in pipes[neighbor_symbol]:
                     neighbors.append((nr, nc))
-        else:
-            for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[current_symbol] and direction in pipes[maze_lines[nr][nc]]:
-                    neighbors.append((nr, nc))
+
         return neighbors
 
     q = [(start, 0)]
