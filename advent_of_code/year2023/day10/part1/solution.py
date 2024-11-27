@@ -19,28 +19,22 @@ def solve(maze: List[str]) -> int:
         neighbors = []
         tile = maze[r][c]
         if tile == 'S':
-            tile = '|'
-        
-        if r > 0 and maze[r-1][c] != '.':
-            neighbor_tile = maze[r-1][c]
-            if neighbor_tile == 'S': neighbor_tile = '|'
-            if (tile in '|7FJ' and neighbor_tile in '|LJ7') or (neighbor_tile in '|7FJ' and tile in '|LJ7'):
-                neighbors.append((r - 1, c))
-        if r < rows - 1 and maze[r+1][c] != '.':
-            neighbor_tile = maze[r+1][c]
-            if neighbor_tile == 'S': neighbor_tile = '|'
-            if (tile in '|LF' and neighbor_tile in '|7LF') or (neighbor_tile in '|LF' and tile in '|7LF'):
-                neighbors.append((r + 1, c))
-        if c > 0 and maze[r][c-1] != '.':
-            neighbor_tile = maze[r][c-1]
-            if neighbor_tile == 'S': neighbor_tile = '|'
-            if (tile in '-LJ7' and neighbor_tile in '-7FJ') or (neighbor_tile in '-LJ7' and tile in '-7FJ'):
-                neighbors.append((r, c - 1))
-        if c < cols - 1 and maze[r][c+1] != '.':
-            neighbor_tile = maze[r][c+1]
-            if neighbor_tile == 'S': neighbor_tile = '|'
-            if (tile in '-LF' and neighbor_tile in '-LJF') or (neighbor_tile in '-LF' and tile in '-LJF'):
-                neighbors.append((r, c + 1))
+            tile = ''
+
+        for dr, dc, valid_pipes in [(-1, 0, '|LJ7'), (1, 0, '|7LF'), (0, -1, '-7FJ'), (0, 1, '-LJF')]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
+                neighbor_tile = maze[nr][nc]
+                if neighbor_tile == 'S':
+                    neighbor_tile = ''
+
+                if tile == '':
+                    neighbors.append((nr, nc))
+                elif (tile in valid_pipes or neighbor_tile in valid_pipes) and \
+                     (tile != '|' or neighbor_tile != '-') and \
+                     (tile != '-' or neighbor_tile != '|'):
+                    neighbors.append((nr, nc))
+
         return neighbors
 
     q = [(start, 0)]
