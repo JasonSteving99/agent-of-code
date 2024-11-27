@@ -12,32 +12,32 @@ def max_loop_distance(maze: str) -> int:
                 break
         if start is not None:
             break
-    
+
     if start is None:
         return 0
 
-    pipes = {'|': {0, 2}, '-': {1, 3}, 'L': {0, 1}, 'J': {0, 3}, '7': {2, 3}, 'F': {1, 2}}
-    
+    pipes = {'|': {0, 2}, '-': {1, 3}, 'L': {0, 1}, 'J': {0, 3}, '7': {2, 3}, 'F': {1, 2}, 'S': {0, 1, 2, 3}}
+
     def get_neighbors(r, c):
         neighbors = []
         current_symbol = maze_lines[r][c]
-        
+
         if current_symbol == 'S':
             symbol = ''
-            if r > 0 and maze_lines[r-1][c] != '.':
-                symbol += '|' if maze_lines[r-1][c] not in '7F' else '7' if maze_lines[r-1][c] == '7' else 'F'
-            if r < rows - 1 and maze_lines[r+1][c] != '.':
-                symbol += '|' if maze_lines[r+1][c] not in 'LJ' else 'L' if maze_lines[r+1][c] == 'L' else 'J'
-            if c > 0 and maze_lines[r][c-1] != '.':
-                symbol += '-' if maze_lines[r][c-1] not in 'JF' else 'J' if maze_lines[r][c-1] == 'J' else 'F'
-            if c < cols - 1 and maze_lines[r][c+1] != '.':
-                symbol += '-' if maze_lines[r][c+1] not in 'L7' else 'L' if maze_lines[r][c+1] == 'L' else '7'
+            if r > 0 and maze_lines[r - 1][c] != '.':
+                symbol += '|' if maze_lines[r - 1][c] not in '7F' else '7' if maze_lines[r - 1][c] == '7' else 'F'
+            if r < rows - 1 and maze_lines[r + 1][c] != '.':
+                symbol += '|' if maze_lines[r + 1][c] not in 'LJ' else 'L' if maze_lines[r + 1][c] == 'L' else 'J'
+            if c > 0 and maze_lines[r][c - 1] != '.':
+                symbol += '-' if maze_lines[r][c - 1] not in 'JF' else 'J' if maze_lines[r][c - 1] == 'J' else 'F'
+            if c < cols - 1 and maze_lines[r][c + 1] != '.':
+                symbol += '-' if maze_lines[r][c + 1] not in 'L7' else 'L' if maze_lines[r][c + 1] == 'L' else '7'
 
-            if len(symbol) > 2 or len(symbol) < 2: 
+            if len(symbol) > 2 or len(symbol) < 2:
                 return []  # Invalid 'S' connection
             if '|' in symbol and '-':
                 symbol = 'L' if 'L' in "L-" else 'J' if 'J' in "J-" else 'F' if 'F' in 'F-' else '7'
-                
+
             for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[symbol]:
@@ -45,7 +45,7 @@ def max_loop_distance(maze: str) -> int:
         else:
             for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[current_symbol] and direction in pipes[maze_lines[nr][nc]]:
+                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[current_symbol if current_symbol != 'S' else symbol ] and direction in pipes[maze_lines[nr][nc] if maze_lines[nr][nc] != 'S' else symbol]:
                     neighbors.append((nr, nc))
         return neighbors
 
