@@ -7,34 +7,38 @@ def get_neighbors(maze: List[str], row: int, col: int) -> List[Tuple[int, int]]:
     piece = maze[row][col]
 
     if piece in ['|', 'S', 'L', 'J']:
-        if row > 0 and maze[row - 1][col] != '.':
+        if row > 0 and maze[row - 1][col] in ['|', 'S', '7', 'F', 'L', 'J', '-']:
             neighbors.append((row - 1, col))
     if piece in ['|', 'S', '7', 'F']:
-        if row < rows - 1 and maze[row + 1][col] != '.':
+        if row < rows - 1 and maze[row + 1][col] in ['|', 'S', '7', 'F', 'L', 'J', '-']:
             neighbors.append((row + 1, col))
     if piece in ['-', 'S', 'F', 'L']:
-        if col < cols - 1 and maze[row][col + 1] != '.':
+        if col < cols - 1 and maze[row][col + 1] in ['|', 'S', '7', 'F', 'L', 'J', '-']:
             neighbors.append((row, col + 1))
     if piece in ['-', 'S', '7', 'J']:
-        if col > 0 and maze[row][col - 1] != '.':
+        if col > 0 and maze[row][col - 1] in ['|', 'S', '7', 'F', 'L', 'J', '-']:
             neighbors.append((row, col - 1))
 
     return neighbors
 
-def max_steps_in_pipe_loop(maze: List[str]) -> int:
+def max_steps_in_pipe_loop(maze_str: str) -> int:
+    maze = maze_str.strip().splitlines()
     rows = len(maze)
     cols = len(maze[0])
-    start = None
+    start_row, start_col = -1, -1
     for r in range(rows):
         for c in range(cols):
             if maze[r][c] == 'S':
-                start = (r, c)
+                start_row, start_col = r, c
                 break
-        if start is not None:
+        if start_row != -1:
             break
 
-    q = [(start, 0)]
-    visited = {start}
+    if start_row == -1:
+        return 0
+
+    q = [((start_row, start_col), 0)]
+    visited = {(start_row, start_col)}
     max_dist = 0
 
     while q:
@@ -57,5 +61,4 @@ def solution() -> int:
         except EOFError:
             break
 
-    maze = maze_str.strip().split('\n')
-    return max_steps_in_pipe_loop(maze)
+    return max_steps_in_pipe_loop(maze_str)
