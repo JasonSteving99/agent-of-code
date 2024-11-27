@@ -53,6 +53,11 @@ def solve(maze: List[str]) -> int:
     return max_dist
 
 
+def max_steps_in_loop(maze: str) -> int:
+    maze_lines = maze.splitlines()
+    return solve(maze_lines)
+
+
 def solution() -> int:
     maze_lines: List[str] = []
     while True:
