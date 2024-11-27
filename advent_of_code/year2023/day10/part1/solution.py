@@ -22,12 +22,13 @@ def get_neighbors(maze: List[str], row: int, col: int) -> List[Tuple[int, int]]:
     return neighbors
 
 def max_steps_in_pipe_loop(maze_str: str) -> int:
-    maze = maze_str.strip().splitlines()
+    maze = [row.rstrip() for row in maze_str.strip().splitlines()]
     rows = len(maze)
-    cols = len(maze[0])
+    cols = 0
     start_row, start_col = -1, -1
     for r in range(rows):
-        for c in range(cols):
+        cols = max(cols, len(maze[r]))
+        for c in range(len(maze[r])):  # Iterate up to current row length
             if maze[r][c] == 'S':
                 start_row, start_col = r, c
                 break
