@@ -15,21 +15,33 @@ def max_loop_distance(maze: str) -> int:
             break
 
     if start_row == -1:
-        return 0  # Handle cases where 'S' is not found
+        return 0
 
     def get_neighbors(r, c):
         neighbors = []
-        for dr, dc, pipe_char in [(0, 1, '-'), (0, -1, '-'), (1, 0, '|'), (-1, 0, '|')]:
+        for dr, dc, char in [(0, 1, '-'), (0, -1, '-'), (1, 0, '|'), (-1, 0, '|')]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
                 neighbor_char = maze_lines[nr][nc]
                 if neighbor_char != '.':
-                    if neighbor_char == 'S' or neighbor_char == pipe_char or \
-                       (pipe_char == '|' and neighbor_char in 'LJ7F') or \
-                       (pipe_char == '-' and neighbor_char in '7FJL'):
+                    if neighbor_char == 'S':
                         neighbors.append((nr, nc))
+                    elif neighbor_char == char:
+                        neighbors.append((nr, nc))
+                    elif char == '-' and neighbor_char in 'LJ7F':
+                        if (neighbor_char == 'L' and dc == 1) or \
+                           (neighbor_char == 'J' and dc == -1) or \
+                           (neighbor_char == '7' and dc == 1) or \
+                           (neighbor_char == 'F' and dc == -1):
+                            neighbors.append((nr, nc))
+                    elif char == '|' and neighbor_char in 'LJ7F':
+                        if (neighbor_char == 'L' and dr == -1) or \
+                           (neighbor_char == 'J' and dr == -1) or \
+                           (neighbor_char == '7' and dr == 1) or \
+                           (neighbor_char == 'F' and dr == 1):
+                            neighbors.append((nr, nc))
         return neighbors
-
+    
     q = [((start_row, start_col), 0)]
     visited = {(start_row, start_col)}
     max_dist = 0
@@ -39,12 +51,8 @@ def max_loop_distance(maze: str) -> int:
         max_dist = max(max_dist, dist)
         for nr, nc in get_neighbors(r, c):
             if (nr, nc) not in visited:
-
-                neighbor_count = len(get_neighbors(nr, nc))           
-                is_start = maze_lines[nr][nc] == 'S'
-                if  is_start or neighbor_count == 2:
-                    visited.add((nr, nc))
-                    q.append(((nr, nc), dist + 1))
+                visited.add((nr, nc))
+                q.append(((nr, nc), dist + 1))
 
     return max_dist
 
