@@ -12,6 +12,9 @@ def solve(maze: List[str]) -> int:
         if start is not None:
             break
 
+    if start is None:
+        return 0  # Handle cases where 'S' is not found
+
     def get_neighbors(r, c):
         neighbors = []
         if maze[r][c] == '|' or maze[r][c] == 'L' or maze[r][c] == 'J' or maze[r][c] == 'S':
