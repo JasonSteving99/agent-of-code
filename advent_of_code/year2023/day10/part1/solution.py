@@ -4,57 +4,49 @@ def max_loop_distance(maze: str) -> int:
     maze_lines = maze.splitlines()
     rows = len(maze_lines)
     cols = len(maze_lines[0])
-    start = None
+
+    start_row, start_col = -1, -1
     for r in range(rows):
         for c in range(cols):
             if maze_lines[r][c] == 'S':
-                start = (r, c)
+                start_row, start_col = r, c
                 break
-        if start is not None:
+        if start_row != -1:
             break
 
-    q = [(start, 0)]
-    visited = {start}
-    graph = {}
+    if start_row == -1:
+        return 0  # Handle cases where 'S' is not found
 
-    while q:
-        (r, c), dist = q.pop(0)
-
+    def get_neighbors(r, c):
         neighbors = []
-        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check all 4 directions
+        for dr, dc, pipe_char in [(0, 1, '-'), (0, -1, '-'), (1, 0, '|'), (-1, 0, '|')]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
-                if maze_lines[nr][nc] != '.':
-                    neighbors.append((nr, nc))
+                neighbor_char = maze_lines[nr][nc]
+                if neighbor_char != '.':
+                    if neighbor_char == 'S' or neighbor_char == pipe_char or \
+                       (pipe_char == '|' and neighbor_char in 'LJ7F') or \
+                       (pipe_char == '-' and neighbor_char in '7FJL'):
+                        neighbors.append((nr, nc))
+        return neighbors
 
-        if (r, c) not in graph:
-            graph[(r, c)] = []
-        for nr, nc in neighbors:
-            if (nr, nc) not in graph:
-                graph[(nr, nc)] = []
-            graph[(r, c)].append((nr, nc))
-            graph[(nr, nc)].append((r, c))
-
-        for nr, nc in neighbors:
-            if (nr, nc) not in visited:
-                visited.add((nr, nc))
-                q.append(((nr, nc), dist + 1))
-
-    distances = {start: 0}
-    q = [(start, 0)]
-    max_loop_dist = 0
-    visited = {start}
+    q = [((start_row, start_col), 0)]
+    visited = {(start_row, start_col)}
+    max_dist = 0
 
     while q:
         (r, c), dist = q.pop(0)
-        max_loop_dist = max(max_loop_dist, dist)
-        if (r,c) in graph:
-            for neighbor in graph[(r, c)]:
-                if neighbor not in visited:
-                    if len(graph.get(neighbor, [])) == 2 or neighbor == start:
-                        visited.add(neighbor)
-                        q.append((neighbor, dist + 1))
-    return max_loop_dist
+        max_dist = max(max_dist, dist)
+        for nr, nc in get_neighbors(r, c):
+            if (nr, nc) not in visited:
+
+                neighbor_count = len(get_neighbors(nr, nc))           
+                is_start = maze_lines[nr][nc] == 'S'
+                if  is_start or neighbor_count == 2:
+                    visited.add((nr, nc))
+                    q.append(((nr, nc), dist + 1))
+
+    return max_dist
 
 def solution() -> int:
     maze_str: str = ""
