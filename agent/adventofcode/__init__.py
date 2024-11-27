@@ -3,7 +3,6 @@ from agent.adventofcode.contextualize_examples import (
     ExamplesContext,
     contextualize_examples,
 )
-from agent.adventofcode.debug_errors import theorize_solution
 from agent.adventofcode.execute_generated_code import (
     TestResults,
     execute_generated_solution,
@@ -13,13 +12,11 @@ from agent.adventofcode.extract_examples import (
     AoCProblemExtractedExamples,
     extract_examples_from_problem_html,
 )
-from agent.adventofcode.generate_implementation import (
-    GeneratedImplementation,
+from agent.adventofcode.generate_code.generate_implementation import (
     generate_implementation,
 )
-from agent.adventofcode.generate_unit_tests import (
-    GeneratedUnitTests,
-    generate_unit_tests,
+from agent.adventofcode.generate_code.GeneratedImplementation import (
+    GeneratedImplementation,
 )
 from agent.adventofcode.problem_part import ProblemPart
 from agent.adventofcode.scrape_problems import scrape_aoc
@@ -34,7 +31,6 @@ __all__ = [
     "ExamplesContext",
     "FileToCommit",
     "GeneratedImplementation",
-    "GeneratedUnitTests",
     "ProblemPart",
     "TestResults",
     "execute_generated_solution",
@@ -42,8 +38,6 @@ __all__ = [
     "contextualize_examples",
     "extract_examples_from_problem_html",
     "generate_implementation",
-    "generate_unit_tests",
     "scrape_aoc",
-    "theorize_solution",
     "write_and_commit_changes",
 ]

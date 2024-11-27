@@ -3,30 +3,33 @@ from typing import cast
 
 import aiohttp
 import asyncclick as click
-from asyncclick import Choice
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from agent.adventofcode.contextualize_examples import (
     ExamplesContext,
     contextualize_examples,
 )
+from agent.adventofcode.debug.DebuggingPrompt import DebuggingPrompt
 from agent.adventofcode.extract_examples import extract_examples_from_problem_html
-from agent.adventofcode.scrape_problems import ProblemPart, scrape_aoc
+from agent.adventofcode.generate_code.GeneratedImplementation import (
+    GeneratedImplementation,
+)
+from agent.adventofcode.problem_part import ProblemPart
+from agent.adventofcode.scrape_problems import scrape_aoc
 from agent.llm.gemini.configure_genai import configure_genai
 from agent.llm.gemini.models import GeminiModel
-from agent.llm.gemini.prompt import prompt
+from agent.llm.gemini.prompt import ModelMessage, PromptHistory, UserMessage, prompt
 
 
-class GeneratedImplementation(BaseModel):
-    generated_implementation_file_content: str = Field(
-        description="The full text contents of a valid Python 3.12 file called `solution.py`."  # noqa: E501
-    )
+class GenerateImplementationOutput(PromptHistory, BaseModel):
+    generated_implementation: GeneratedImplementation
 
 
 async def generate_implementation(
     problem_html: str,
     examples_context: ExamplesContext,
-) -> GeneratedImplementation:
+    debugging_prompt: DebuggingPrompt | None = None,
+) -> GenerateImplementationOutput:
     system_prompt_text = """
 You are a skilled software engineer, proficient at evaluating coding problems and writing simple and correct solutions using Python 3.12.
 
@@ -45,24 +48,71 @@ IMPORTANT: Your implementation MUST include an implementation of the function fo
 IMPORTANT: The overall solution MUST be implemented as a function named `solution` that takes no args, reads the problem input from stdin, and returns the result (not printing anything to stdout).
 IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just print the result to stdout.
 """  # noqa: E501
-    return await prompt(
+    generate_implementation_prompt = _get_generate_implementation_prompt(
+        problem_html=problem_html,
+        examples_context=examples_context,
+        debugging_prompt=debugging_prompt,
+    )
+    generated_implementation = await prompt(
         GeminiModel.GEMINI_1_5_PRO,
         system_prompt=system_prompt_text,
-        prompt=f"""
+        prompt=generate_implementation_prompt,
+        response_type=GeneratedImplementation,
+    )
+    return GenerateImplementationOutput(
+        prompt_history=[
+            *generate_implementation_prompt,
+            ModelMessage(msg=generated_implementation.model_dump()),
+        ],
+        generated_implementation=generated_implementation,
+    )
+
+
+def _get_generate_implementation_prompt(
+    problem_html: str,
+    examples_context: ExamplesContext,
+    debugging_prompt: DebuggingPrompt | None = None,
+) -> list[UserMessage | ModelMessage]:
+    prompt: list[UserMessage | ModelMessage]
+
+    if debugging_prompt:
+        prompt = [
+            *debugging_prompt.prior_msg_history,
+            UserMessage(
+                msg=f"""
+The solution you previously generated was not completely correct, an issue was encountered when trying to run it.
+Follow the error message below to correct any issues in the generated solution.
+
+IMPORTANT: Change as little code as possible to address the recommended fix.
+
+### Problem Explanation:
+{debugging_prompt.theorized_solution.problem_explanation}
+
+### Suggested Fix:
+{debugging_prompt.theorized_solution.optional_theorized_implementation_fix}
+"""  # noqa: E501
+            ),
+        ]
+    else:
+        prompt = [
+            UserMessage(
+                msg=f"""
 ### Problem Statement HTML:
 {problem_html}
 
 ### Existing Unit Tests:
 {examples_context.model_dump_json(indent=2)}
 """,
-        response_type=GeneratedImplementation,
-    )
+            )
+        ]
+
+    return prompt
 
 
 @click.command()
 @click.option("--year", required=True)
 @click.option("--day", required=True)
-@click.option("--part", type=Choice(["1", "2"]), default="1")
+@click.option("--part", type=click.Choice(["1", "2"]), default="1")
 async def _cmd(
     year: int,
     day: int,

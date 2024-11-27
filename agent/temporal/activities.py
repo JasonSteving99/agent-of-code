@@ -8,19 +8,28 @@ from agent.adventofcode import (
     AoCProblemExtractedExamples,
     ExamplesContext,
     FileToCommit,
-    GeneratedImplementation,
-    GeneratedUnitTests,
     contextualize_examples,
     execute_generated_solution,
     execute_tests,
     extract_examples_from_problem_html,
     generate_implementation,
-    generate_unit_tests,
-    theorize_solution,
     write_and_commit_changes,
 )
-from agent.adventofcode.debug_errors import TheorizedSolution
+from agent.adventofcode.debug.debug_errors import theorize_solution
+from agent.adventofcode.debug.DebuggingPrompt import DebuggingPrompt
+from agent.adventofcode.debug.TheorizedSolution import TheorizedSolution
 from agent.adventofcode.execute_generated_code import TestResults
+from agent.adventofcode.generate_code.generate_implementation import (
+    GenerateImplementationOutput,
+)
+from agent.adventofcode.generate_code.generate_unit_tests import (
+    GenerateUnitTestsOutput,
+    generate_unit_tests,
+)
+from agent.adventofcode.generate_code.GeneratedImplementation import (
+    GeneratedImplementation,
+)
+from agent.adventofcode.generate_code.GeneratedUnitTests import GeneratedUnitTests
 from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 
 
@@ -61,21 +70,35 @@ async def get_examples_context(
     )
 
 
+class GetGeneratedUnitTestsArgs(BaseModel):
+    examples: AoCProblemExtractedExamples
+    examples_context: ExamplesContext
+    debugging_prompt: DebuggingPrompt | None = None
+
+
 @activity.defn
-async def get_generated_unit_tests(
-    examples: AoCProblemExtractedExamples,
-    examples_context: ExamplesContext,
-) -> GeneratedUnitTests:
-    return await generate_unit_tests(examples=examples, examples_context=examples_context)
+async def get_generated_unit_tests(args: GetGeneratedUnitTestsArgs) -> GenerateUnitTestsOutput:
+    return await generate_unit_tests(
+        examples=args.examples,
+        examples_context=args.examples_context,
+        debugging_prompt=args.debugging_prompt,
+    )
+
+
+class GetGeneratedImplementationArgs(BaseModel):
+    extracted_problem_part: ExtractedProblemPart
+    examples_context: ExamplesContext
+    debugging_prompt: DebuggingPrompt | None = None
 
 
 @activity.defn
 async def get_generated_implementation(
-    extracted_problem_part: ExtractedProblemPart,
-    examples_context: ExamplesContext,
-) -> GeneratedImplementation:
+    args: GetGeneratedImplementationArgs,
+) -> GenerateImplementationOutput:
     return await generate_implementation(
-        problem_html=extracted_problem_part.problem_html, examples_context=examples_context
+        problem_html=args.extracted_problem_part.problem_html,
+        examples_context=args.examples_context,
+        debugging_prompt=args.debugging_prompt,
     )
 
 

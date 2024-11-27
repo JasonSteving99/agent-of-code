@@ -3,7 +3,7 @@ import json
 import subprocess
 import sys
 from importlib import import_module
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
 import asyncclick as click
 import pytest
@@ -95,17 +95,45 @@ def execute_tests(year: int, day: int, part: ProblemPart) -> TestResults:
     )
     report_json = json.loads(result.stdout)
 
-    if report_json["exitcode"] == 0:
-        return TestResults(result=TestResults.Success())
-    else:
-        test_file = f"advent_of_code/year{year}/day{day}/part{part}/tests.py"
-        return TestResults(
-            result=TestResults.Failure(
-                err_msg=next(
-                    x["longrepr"] for x in report_json["collectors"] if x["nodeid"] == test_file
+    match report_json["exitcode"]:
+        case 0:
+            return TestResults(result=TestResults.Success())
+        case 2:
+            # The tests themselves are broken.
+            test_file = f"advent_of_code/year{year}/day{day}/part{part}/tests.py"
+            return TestResults(
+                result=TestResults.Failure(
+                    err_msg=next(
+                        x["longrepr"] for x in report_json["collectors"] if x["nodeid"] == test_file
+                    )
                 )
             )
-        )
+        case 1:
+            summary = report_json["summary"]
+            return TestResults(
+                result=TestResults.Failure(
+                    err_msg=f"""Unit Test Results: {summary["failed"]} of {summary["total"]} Failed 
+
+{
+    "\n\n".join(
+        _fmt_unit_test_failure_msg(unit_test_failure) 
+        for unit_test_failure in report_json["tests"] 
+        if unit_test_failure["outcome"] == "failed"
+    )
+}
+"""  # noqa: E501
+                )
+            )
+        case exit_code:
+            raise ValueError(f"Encountered unexpected Pytest exit code: {exit_code}")
+
+
+def _fmt_unit_test_failure_msg(unit_test_failure: dict[str, Any]) -> str:
+    return f"""
+### {unit_test_failure["nodeid"].split("::")[-1]} at line {unit_test_failure["lineno"]}
+{unit_test_failure["call"]["longrepr"]}
+
+"""
 
 
 @cli_group.command()

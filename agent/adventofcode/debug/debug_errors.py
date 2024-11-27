@@ -1,22 +1,11 @@
-from pydantic import BaseModel, Field
-
 from agent.adventofcode.contextualize_examples import ExamplesContext
-from agent.adventofcode.generate_implementation import GeneratedImplementation
-from agent.adventofcode.generate_unit_tests import GeneratedUnitTests
+from agent.adventofcode.debug.TheorizedSolution import TheorizedSolution
+from agent.adventofcode.generate_code.GeneratedImplementation import (
+    GeneratedImplementation,
+)
+from agent.adventofcode.generate_code.GeneratedUnitTests import GeneratedUnitTests
 from agent.llm.gemini.models import GeminiModel
 from agent.llm.gemini.prompt import prompt
-
-
-class TheorizedSolution(BaseModel):
-    problem_explanation: str = Field(
-        description="A detailed description of the problem with the given program. This should NOT include a solution to the problem, just an explanation of the problem itself."  # noqa: E501
-    )
-    optional_theorized_unit_test_fix: str | None = Field(
-        description="ONLY SET THIS FIELD IF THERE'S A PROBLEM IN THE UNIT TEST CODE (tests.py) ITSELF. A detailed theory on how to FIX the problem in the given UNIT TESTS. This may include code snippets, but should be primarily expressed in clear and concise English."  # noqa: E501
-    )
-    optional_theorized_implementation_fix: str | None = Field(
-        description="ONLY SET THIS FIELD IF THERE'S A PROBLEM IN THE CODE OF THE IMPLEMENTATION (solution.py) ITSELF. A detailed theory on how to FIX the problem in the given IMPLEMENTATION. This may include code snippets, but should be primarily expressed in clear and concise English."  # noqa: E501
-    )
 
 
 async def theorize_solution(
