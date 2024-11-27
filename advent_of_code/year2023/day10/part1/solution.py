@@ -1,12 +1,13 @@
 from typing import List
 
-def max_loop_distance(maze: List[str]) -> int:
-    rows = len(maze)
-    cols = len(maze[0])
+def max_loop_distance(maze: str) -> int:
+    maze_lines = maze.splitlines()
+    rows = len(maze_lines)
+    cols = len(maze_lines[0])
     start = None
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] == 'S':
+            if maze_lines[r][c] == 'S':
                 start = (r, c)
                 break
         if start is not None:
@@ -14,26 +15,24 @@ def max_loop_distance(maze: List[str]) -> int:
 
     q = [(start, 0)]
     visited = {start}
-    max_dist = 0
     graph = {}
-    
+
     while q:
         (r, c), dist = q.pop(0)
-        max_dist = max(max_dist, dist)
 
         neighbors = []
         for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check all 4 directions
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
-                if maze[nr][nc] != '.':
+                if maze_lines[nr][nc] != '.':
                     neighbors.append((nr, nc))
-                    
-        if (r,c) not in graph:
-            graph[(r,c)] = []
+
+        if (r, c) not in graph:
+            graph[(r, c)] = []
         for nr, nc in neighbors:
             if (nr, nc) not in graph:
                 graph[(nr, nc)] = []
-            graph[(r,c)].append((nr, nc))
+            graph[(r, c)].append((nr, nc))
             graph[(nr, nc)].append((r, c))
 
         for nr, nc in neighbors:
@@ -41,29 +40,28 @@ def max_loop_distance(maze: List[str]) -> int:
                 visited.add((nr, nc))
                 q.append(((nr, nc), dist + 1))
 
-    
     distances = {start: 0}
     q = [(start, 0)]
     max_loop_dist = 0
     visited = {start}
-    
+
     while q:
-        (r,c), dist = q.pop(0)
+        (r, c), dist = q.pop(0)
         max_loop_dist = max(max_loop_dist, dist)
-        for neighbor in graph[(r,c)]:
-            if neighbor not in visited:
-                if len(graph[neighbor]) == 2 or neighbor == start:
-                    visited.add(neighbor)
-                    q.append((neighbor, dist + 1))
+        if (r,c) in graph:
+            for neighbor in graph[(r, c)]:
+                if neighbor not in visited:
+                    if len(graph.get(neighbor, [])) == 2 or neighbor == start:
+                        visited.add(neighbor)
+                        q.append((neighbor, dist + 1))
     return max_loop_dist
 
 def solution() -> int:
-    maze: List[str] = []
+    maze_str: str = ""
     while True:
         try:
             line = input()
-            maze.append(line)
+            maze_str += line + "\n"
         except EOFError:
             break
-
-    return max_loop_distance(maze)
+    return max_loop_distance(maze_str)
