@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Tuple, Dict
 
 
 def solve(maze: List[str]) -> int:
     rows = len(maze)
     cols = len(maze[0])
-    start = (-1, -1)
+    start: Tuple[int, int] = (-1, -1)
     for r in range(rows):
         for c in range(cols):
             if maze[r][c] == 'S':
@@ -16,49 +16,50 @@ def solve(maze: List[str]) -> int:
     if start == (-1, -1):
         raise ValueError("Start position 'S' not found in the maze.")
 
-    directions = {'|': ((-1, 0), (1, 0)), '-': ((0, -1), (0, 1)), 'L': ((-1, 0), (0, 1)),
-                  'J': ((-1, 0), (0, -1)), '7': ((1, 0), (0, -1)), 'F': ((1, 0), (0, 1))}
+    r, c = start
 
-    def get_neighbors(r, c):
-        if maze[r][c] == 'S':
-            neighbors = []
-            connected_pipes = []
-            for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check surrounding pipes to infer 'S' type
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
-                    connected_pipes.append((dr, dc))
+    connected_pipes = []
+    for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check surrounding pipes to infer 'S' type
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
+            connected_pipes.append((dr, dc))
 
-            if len(connected_pipes) == 2:
-                if tuple(sorted(connected_pipes)) == ((-1, 0), (1, 0)):
-                    current_directions = directions['|']
-                elif tuple(sorted(connected_pipes)) == ((0, -1), (0, 1)):
-                    current_directions = directions['-']
-                elif tuple(sorted(connected_pipes)) == ((-1, 0), (0, -1)):
-                    current_directions = directions['J']
-                elif tuple(sorted(connected_pipes)) == ((-1, 0), (0, 1)):
-                    current_directions = directions['L']
-                elif tuple(sorted(connected_pipes)) == ((1, 0), (0, -1)):
-                    current_directions = directions['7']
-                elif tuple(sorted(connected_pipes)) == ((0, 1), (1, 0)):
-                    current_directions = directions['F']
-                else:
-                    raise ValueError("Start position 'S' is invalid because it's not connected to a valid pipe.")
+    if len(connected_pipes) != 2:
+        raise ValueError("Invalid input: 'S' must be connected to exactly two pipes.")
+    
+    s_type = ""
+    if tuple(sorted(connected_pipes)) == ((-1, 0), (1, 0)):
+        s_type = "|"
+    elif tuple(sorted(connected_pipes)) == ((0, -1), (0, 1)):
+        s_type = "-"
+    elif tuple(sorted(connected_pipes)) == ((-1, 0), (0, -1)):
+        s_type = "J"
+    elif tuple(sorted(connected_pipes)) == ((-1, 0), (0, 1)):
+        s_type = "L"
+    elif tuple(sorted(connected_pipes)) == ((1, 0), (0, -1)):
+        s_type = "7"
+    elif tuple(sorted(connected_pipes)) == ((0, 1), (1, 0)):
+         s_type = "F"
+    else:
+        raise ValueError("Invalid input: Invalid pipe configuration around 'S'")
 
-                for dr, dc in current_directions:
-                    nr, nc = r + dr, c + dc
-                    if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
-                        neighbors.append((nr, nc))
-            else:
-                raise ValueError("Start position 'S' is invalid because it's not connected to exactly two pipes.")
-            return neighbors
+    directions: Dict[str, Tuple[Tuple[int, int], Tuple[int, int]]] = {
+        '|': ((-1, 0), (1, 0)), '-': ((0, -1), (0, 1)),
+        'L': ((-1, 0), (0, 1)), 'J': ((-1, 0), (0, -1)),
+        '7': ((1, 0), (0, -1)), 'F': ((1, 0), (0, 1))
+    }
 
-        else:
-            neighbors = []
-            for dr, dc in directions[maze[r][c]]:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
-                    neighbors.append((nr, nc))
-            return neighbors
+    def get_neighbors(r: int, c: int) -> List[Tuple[int, int]]:
+        current_type = maze[r][c]
+        if current_type == 'S':
+            current_type = s_type
+            
+        neighbors = []
+        for dr, dc in directions[current_type]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] != '.':
+                neighbors.append((nr, nc))
+        return neighbors
 
     q = [(start, 0)]
     visited = {start}
@@ -67,6 +68,7 @@ def solve(maze: List[str]) -> int:
     while q:
         (r, c), dist = q.pop(0)
         max_dist = max(max_dist, dist)
+
         for nr, nc in get_neighbors(r, c):
             if (nr, nc) not in visited:
                 visited.add((nr, nc))
