@@ -21,9 +21,9 @@ def max_loop_distance(maze: str) -> int:
     def get_neighbors(r, c):
         neighbors = []
         current_symbol = maze_lines[r][c]
+        symbol = '' # Initialize symbol here
 
         if current_symbol == 'S':
-            symbol = ''
             if r > 0 and maze_lines[r - 1][c] != '.':
                 symbol += '|' if maze_lines[r - 1][c] not in '7F' else '7' if maze_lines[r - 1][c] == '7' else 'F'
             if r < rows - 1 and maze_lines[r + 1][c] != '.':
@@ -45,7 +45,7 @@ def max_loop_distance(maze: str) -> int:
         else:
             for dr, dc, direction in [(0, 1, 1), (0, -1, 3), (1, 0, 2), (-1, 0, 0)]: 
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[current_symbol if current_symbol != 'S' else symbol ] and direction in pipes[maze_lines[nr][nc] if maze_lines[nr][nc] != 'S' else symbol]:
+                if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and direction in pipes[current_symbol] and direction in pipes[maze_lines[nr][nc]]:
                     neighbors.append((nr, nc))
         return neighbors
 
