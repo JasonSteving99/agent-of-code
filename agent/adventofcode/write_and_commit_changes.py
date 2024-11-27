@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from pydantic import BaseModel
 
@@ -24,3 +25,6 @@ def write_and_commit_changes(
         f"Coding-Agent ({aoc_problem.year}.{aoc_problem.day}.{aoc_problem.part}): {commit_message}"
     )
     print(agent_commit_message)
+    subprocess.run(["git", "add", basedir], check=True)
+    subprocess.run(["git", "commit", "-m", agent_commit_message], check=True)
+    subprocess.run(["git", "push", "origin", "main"], check=True)

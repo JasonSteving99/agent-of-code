@@ -83,6 +83,9 @@ Follow the error message below to correct any issues in the generated unit tests
 
 IMPORTANT: Change as little code as possible to address the recommended fix.
 
+### Error Message:
+{debugging_prompt.error_msg}
+
 ### Problem Explanation:
 {debugging_prompt.theorized_solution.problem_explanation}
 

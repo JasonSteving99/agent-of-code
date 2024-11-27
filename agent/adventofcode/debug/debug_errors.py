@@ -23,9 +23,12 @@ In the spirit of "TDD" (test-driven-development) another engineer has run unit t
 
 Just for context, you will also be given the coding problem that they're trying to solve. Ignore all HTML tags in the problem statement and focus on how you will implement a valid solution to the problem.
 
+IMPORTANT!! Focus on a SINGLE concrete suggestion in your response. If there are multiple problems, don't try to solve everything all at once.
+
 You MUST respond with the specified JSON format.
 """  # noqa: E501
-    return await prompt(
+
+    theorized_solution = await prompt(
         GeminiModel.GEMINI_1_5_PRO,
         system_prompt=system_prompt_text,
         prompt=f"""
@@ -55,3 +58,14 @@ IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just pri
 """,
         response_type=TheorizedSolution,
     )
+
+    # Ensure that the theorized solution generates at least one actionable code change.
+    if not (
+        theorized_solution.optional_theorized_unit_test_fix
+        or theorized_solution.optional_theorized_implementation_fix
+    ):
+        raise ValueError(
+            "Invalid TheorizedSolution should come up with at least one actionable code change."
+        )
+
+    return theorized_solution

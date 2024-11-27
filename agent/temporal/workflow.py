@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from temporalio import workflow
 from temporalio.common import RetryPolicy
+from temporalio.exceptions import ApplicationError
 
 # Imports passed through Temporal's sandbox without overriding stdlib.
 with workflow.unsafe.imports_passed_through():
@@ -35,7 +36,7 @@ with workflow.unsafe.imports_passed_through():
         run_generated_tests,
     )
 
-MAX_UNIT_TEST_FIX_ITERATIONS = 3
+MAX_UNIT_TEST_FIX_ITERATIONS = 6
 
 
 @workflow.defn
@@ -131,7 +132,7 @@ class SolveAoCProblemWorkflow:
         )
 
         if isinstance(problem_solution_result.result, GeneratedSolutionRes.Failure):
-            raise Exception(
+            raise ApplicationError(
                 "Problem solution threw an exception! Need to figure out how to correct it."
             )
 
@@ -155,7 +156,7 @@ async def iteratively_make_unit_tests_pass(
         attempt += 1
         match unit_test_results.result:
             case TestResults.Failure() as test_failure:
-                if attempt == MAX_UNIT_TEST_FIX_ITERATIONS:
+                if attempt >= MAX_UNIT_TEST_FIX_ITERATIONS:
                     break  # Failed too many times, fallthrough to throwing exception.
 
                 theorized_solution = await workflow.execute_activity(
@@ -167,7 +168,7 @@ async def iteratively_make_unit_tests_pass(
                         generated_impl_src=implementation.generated_implementation,
                         error_msg=test_failure.err_msg,
                     ),
-                    start_to_close_timeout=timedelta(seconds=30),
+                    start_to_close_timeout=timedelta(seconds=60),
                     retry_policy=RetryPolicy(maximum_attempts=3),
                 )
 
@@ -179,6 +180,7 @@ async def iteratively_make_unit_tests_pass(
                             examples_context=examples_context,
                             debugging_prompt=DebuggingPrompt(
                                 prior_msg_history=unit_tests.prompt_history,
+                                error_msg=test_failure.err_msg,
                                 theorized_solution=theorized_solution,
                             ),
                         ),
@@ -193,13 +195,21 @@ async def iteratively_make_unit_tests_pass(
                             extracted_problem_part=problem_part,
                             examples_context=examples_context,
                             debugging_prompt=DebuggingPrompt(
-                                prior_msg_history=unit_tests.prompt_history,
+                                prior_msg_history=implementation.prompt_history,
+                                error_msg=test_failure.err_msg,
                                 theorized_solution=theorized_solution,
                             ),
                         ),
                         start_to_close_timeout=timedelta(seconds=60),
                         retry_policy=RetryPolicy(maximum_attempts=5),
                     )
+                    # TODO(steving) Reconsider if this may be helpful.
+                    # return GenerateImplementationOutput(
+                    #     # Let's just keep the context short for now and only include the original
+                    #     # prompt and the latest implementation.
+                    #     prompt_history=[res.prompt_history[0], res.prompt_history[-1]],
+                    #     generated_implementation=res.generated_implementation,
+                    # )
 
                 # Determine which source files the LLM wants to make changes to. Separate cases
                 # for now literally just to execute these in parallel if LLM decides it needs to
@@ -247,7 +257,7 @@ async def iteratively_make_unit_tests_pass(
                 # The tests passed! Return the latest updated source code.
                 return unit_tests, implementation
 
-    raise Exception(
+    raise ApplicationError(
         f"Failed to pass unit tests after {MAX_UNIT_TEST_FIX_ITERATIONS} debugging iterations."
     )
 

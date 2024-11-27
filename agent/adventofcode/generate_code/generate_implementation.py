@@ -43,10 +43,10 @@ Remember to ignore all HTML tags and carefully attempt to solve the problem.
 
 You MUST respond with a single complete Python 3.12 program with full type annotations. 
 IMPORTANT: ONLY use imports from Python's stdlib. DO NOT use any third party libraries whatsoever in your implementation.
-IMPORTANT: Your implementation MUST ONLY do I/O to read the problem input from stdin.
+IMPORTANT: Your implementation MUST ONLY do I/O to read the problem input from stdin. You MUST NOT open any files.
 IMPORTANT: Your implementation MUST include an implementation of the function for which unit tests have already been implemented.
-IMPORTANT: The overall solution MUST be implemented as a function named `solution` that takes no args, reads the problem input from stdin, and returns the result (not printing anything to stdout).
-IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just print the result to stdout.
+IMPORTANT: The solution() function MUST take no args and read the input from stdin.
+IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not print anything to stdout.
 """  # noqa: E501
     generate_implementation_prompt = _get_generate_implementation_prompt(
         problem_html=problem_html,
@@ -84,6 +84,9 @@ The solution you previously generated was not completely correct, an issue was e
 Follow the error message below to correct any issues in the generated solution.
 
 IMPORTANT: Change as little code as possible to address the recommended fix.
+
+### Error Message:
+{debugging_prompt.error_msg}
 
 ### Problem Explanation:
 {debugging_prompt.theorized_solution.problem_explanation}
