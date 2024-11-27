@@ -17,18 +17,14 @@ def solve(maze: List[str]) -> int:
 
     def get_neighbors(r, c):
         neighbors = []
-        if maze[r][c] in ('|', 'L', 'J', '7', 'F', 'S'):
-            if r > 0 and maze[r - 1][c] in ('|', '7', 'L', 'J', 'S'):
-                neighbors.append((r - 1, c))
-        if maze[r][c] in ('|', '7', 'F', 'L', 'J', 'S'):
-            if r < rows - 1 and maze[r + 1][c] in ('|', 'F', 'L', 'J', '7', 'S'):
-                neighbors.append((r + 1, c))
-        if maze[r][c] in ('-', 'L', 'F', '7', 'J', 'S'):
-            if c < cols - 1 and maze[r][c + 1] in ('-', 'F', 'J', 'L', 'S'):
-                neighbors.append((r, c + 1))
-        if maze[r][c] in ('-', 'J', '7', 'L', 'F', 'S'):
-            if c > 0 and maze[r][c - 1] in ('-', 'L', '7', 'J', 'S'):
-                neighbors.append((r, c - 1))
+        if r > 0 and maze[r-1][c] != '.':
+            neighbors.append((r-1, c))
+        if r < rows - 1 and maze[r+1][c] != '.':
+            neighbors.append((r+1, c))
+        if c > 0 and maze[r][c-1] != '.':
+            neighbors.append((r, c-1))
+        if c < cols - 1 and maze[r][c+1] != '.':
+            neighbors.append((r, c+1))
         return neighbors
 
     q = [(start, 0)]
