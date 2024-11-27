@@ -8,12 +8,11 @@ def extract_calibration_value(line: str) -> str:
 
 def solution() -> int:
     total: int = 0
-    while True:
-        try:
-            line: str = input()
+    try:
+        while True:
+            line = input()
             total += int(extract_calibration_value(line))
-        except EOFError:
-            break
-    return total
+    except EOFError:
+        pass
 
-print(solution())
+    return total
