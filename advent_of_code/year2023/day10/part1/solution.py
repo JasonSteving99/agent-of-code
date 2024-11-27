@@ -41,6 +41,10 @@ def solve(maze: List[str]) -> int:
                 q.append(((nr, nc), dist + 1))
     return max_dist
 
+def max_loop_distance(maze: str) -> int:
+    maze_list = maze.splitlines()
+    return solve(maze_list)
+
 def solution() -> int:
     maze: List[str] = []
     while True:
@@ -50,4 +54,3 @@ def solution() -> int:
         except EOFError:
             break
     return solve(maze)
-
