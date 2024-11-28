@@ -18,27 +18,41 @@ def farthest_point_in_loop(maze: str) -> int:
         for c in range(cols):
             if maze_rows[r][c] != '.':
                 neighbors = []
-                if maze_rows[r][c] in ('|', 'L', 'J', 'S'):
+                char = maze_rows[r][c]
+                if char in ('|', 'L', 'J', '7', 'F', 'S'):
                     if r > 0 and maze_rows[r - 1][c] != '.':
                         neighbors.append((r - 1, c))
                     if r < rows - 1 and maze_rows[r + 1][c] != '.':
                         neighbors.append((r + 1, c))
-                if maze_rows[r][c] in ('-', 'L', 'F', 'S'):
+                if char in ('-', 'L', 'F', 'J', '7', 'S'):
                     if c > 0 and maze_rows[r][c - 1] != '.':
                         neighbors.append((r, c - 1))
                     if c < cols - 1 and maze_rows[r][c + 1] != '.':
                         neighbors.append((r, c + 1))
-                if maze_rows[r][c] in ('J', '7', 'S'):
-                    if r > 0 and c > 0 and maze_rows[r-1][c-1] != '.' and maze_rows[r][c] == 'S':
-                        neighbors.append((r-1,c-1))
-                    if r < rows -1 and c < cols -1 and maze_rows[r+1][c+1] != '.' and maze_rows[r][c] == 'S':
-                        neighbors.append((r+1,c+1))
-                if maze_rows[r][c] in ('F', '7', 'S'):
-                     if r > 0 and c < cols -1 and maze_rows[r-1][c+1] != '.' and maze_rows[r][c] == 'S':
-                        neighbors.append((r-1,c+1))
-                     if r < rows -1 and c > 0 and maze_rows[r+1][c-1] != '.' and maze_rows[r][c] == 'S':
-                        neighbors.append((r+1,c-1))
                 graph[(r, c)] = neighbors
+
+    if start:
+        r, c = start
+        pipe_type_start = ''
+        neighbors_start = graph[start]
+        if (r > 0 and (r - 1, c) in neighbors_start) or (r < rows - 1 and (r + 1, c) in neighbors_start):
+            pipe_type_start += '|'
+        if (c > 0 and (r, c - 1) in neighbors_start) or (c < cols - 1 and (r, c + 1) in neighbors_start):
+            pipe_type_start += '-'
+
+        if not pipe_type_start:
+            for dr, dc in [(-1,-1), (-1,1), (1,-1), (1,1)]:  # Check diagonals ONLY if no vertical or horizontal neighbors exist
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and maze_rows[nr][nc] != '.':
+                    graph[start].append((nr,nc))
+
+        else: #start is not a cross
+            graph[start] = []
+            for nr, nc in neighbors_start:
+                if maze_rows[nr][nc] != '.':
+                    if ('|' in pipe_type_start and nr == r) or ('-' in pipe_type_start and nc == c):
+                        continue  # Skip horizontal/vertical connection if it is part of a L,F,7,J shape
+                    graph[start].append((nr, nc))
 
     distances = {start: 0}
     queue = [start]
@@ -47,7 +61,10 @@ def farthest_point_in_loop(maze: str) -> int:
 
     while queue:
         curr = queue.pop(0)
+        if curr not in graph:
+          break
         for neighbor in graph[curr]:
+
             if neighbor not in distances:
                 distances[neighbor] = distances[curr] + 1
                 queue.append(neighbor)
