@@ -9,44 +9,54 @@ def solve(maze: List[str]) -> int:
             if maze[r][c] == 'S':
                 start = (r, c)
                 break
-        if start:
+        if start is not None:
             break
-    
-    pipes = {'|': {(-1, 0), (1, 0)}, '-': {(0, -1), (0, 1)}, 'L': {(1, 0), (0, 1)}, 'J': {(1, 0), (0, -1)}, '7': {(-1, 0), (0, -1)}, 'F': {(-1, 0), (0, 1)}}
-    
-    def get_neighbors(r: int, c: int) -> List[tuple[int, int]]:
-        neighbors = []
-        for dr, dc in pipes.get(maze[r][c], []):
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and (dr, dc) in pipes.get(maze[nr][nc], []):
-                neighbors.append((nr, nc))
-        return neighbors
-    
-    q = [(start, 0)]
-    visited = {start}
-    max_dist = 0
-    
-    while q:
-        (r, c), dist = q.pop(0)
-        max_dist = max(max_dist, dist)
-        
-        for nr, nc in get_neighbors(r, c):
-            if (nr, nc) != start and (nr, nc) in visited:
-                continue
-            visited.add((nr, nc))
-            q.append(((nr, nc), dist + 1))
-            
 
-    return max_dist
+    graph = {}
+    for r in range(rows):
+        for c in range(cols):
+            if maze[r][c] != '.':
+                neighbors = []
+                if maze[r][c] in ('|', 'L', 'J', 'S'):
+                    if r > 0 and maze[r - 1][c] != '.':
+                        neighbors.append((r - 1, c))
+                if maze[r][c] in ('|', '7', 'F', 'S'):
+                    if r < rows - 1 and maze[r + 1][c] != '.':
+                        neighbors.append((r + 1, c))
+                if maze[r][c] in ('-', 'L', 'F', 'S'):
+                    if c < cols - 1 and maze[r][c + 1] != '.':
+                        neighbors.append((r, c + 1))
+                if maze[r][c] in ('-', 'J', '7', 'S'):
+                    if c > 0 and maze[r][c - 1] != '.':
+                        neighbors.append((r, c - 1))
+                graph[(r, c)] = neighbors
+
+    distances = {node: -1 for node in graph}
+    distances[start] = 0
+    queue = [start]
+    while queue:
+        current = queue.pop(0)
+        for neighbor in graph[current]:
+            if distances[neighbor] == -1:
+                distances[neighbor] = distances[current] + 1
+                queue.append(neighbor)
+
+    max_distance = 0
+    for node, distance in distances.items():
+        if distance > max_distance:
+            max_distance = distance
+
+    return max_distance
 
 def solution() -> int:
-    maze_str = ""
+    maze: List[str] = []
     while True:
         try:
             line = input()
-            maze_str += line + "\n"
+            maze.append(line)
         except EOFError:
             break
-    
-    maze = maze_str.strip().split('\n')
+
     return solve(maze)
+
+

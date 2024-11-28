@@ -1,9 +1,7 @@
+# This test suite covers the calculation of the maximum distance from 'S' within the main loop of a pipe maze.
+
 from solution import max_loop_distance
 import pytest
-
-# This test suite covers the calculation of the maximum distance from the start ('S')
-# in various loop configurations, including simple square loops and more complex ones,
-# with the presence of additional disconnected pipes that should not affect the result.
 
 @pytest.mark.parametrize("maze, expected_distance", [
     (".....\n.F-7.\n.|.|.\n.L-J.\n.....", 4),
@@ -13,4 +11,4 @@ import pytest
 ])
 def test_max_loop_distance(maze, expected_distance):
     actual_distance = max_loop_distance(maze)
-    assert actual_distance == expected_distance, f"For maze:\n{maze}\nExpected max distance: {expected_distance}, but got {actual_distance}"
+    assert actual_distance == expected_distance, f"Input maze: {maze}. Expected max distance: {expected_distance}. Actual max distance: {actual_distance}"
