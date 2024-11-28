@@ -1,12 +1,13 @@
 from typing import List
 
-def farthest_point_in_loop(maze: List[str]) -> int:
-    rows = len(maze)
-    cols = len(maze[0])
+def farthest_point_in_loop(maze: str) -> int:
+    maze_rows: List[str] = maze.splitlines()
+    rows = len(maze_rows)
+    cols = len(maze_rows[0])
     start = None
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] == 'S':
+            if maze_rows[r][c] == 'S':
                 start = (r, c)
                 break
         if start:
@@ -15,30 +16,29 @@ def farthest_point_in_loop(maze: List[str]) -> int:
     graph = {}
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] != '.':
+            if maze_rows[r][c] != '.':
                 neighbors = []
-                if maze[r][c] in ('|', 'L', 'J', 'S'):
-                    if r > 0 and maze[r - 1][c] != '.':
+                if maze_rows[r][c] in ('|', 'L', 'J', 'S'):
+                    if r > 0 and maze_rows[r - 1][c] != '.':
                         neighbors.append((r - 1, c))
-                    if r < rows - 1 and maze[r + 1][c] != '.':
+                    if r < rows - 1 and maze_rows[r + 1][c] != '.':
                         neighbors.append((r + 1, c))
-                if maze[r][c] in ('-', 'L', 'F', 'S'):
-                    if c > 0 and maze[r][c - 1] != '.':
+                if maze_rows[r][c] in ('-', 'L', 'F', 'S'):
+                    if c > 0 and maze_rows[r][c - 1] != '.':
                         neighbors.append((r, c - 1))
-                    if c < cols - 1 and maze[r][c + 1] != '.':
+                    if c < cols - 1 and maze_rows[r][c + 1] != '.':
                         neighbors.append((r, c + 1))
-                if maze[r][c] in ('J', '7', 'S'):
-                    if r > 0 and c > 0 and maze[r-1][c-1] != '.' and maze[r][c] == 'S':
+                if maze_rows[r][c] in ('J', '7', 'S'):
+                    if r > 0 and c > 0 and maze_rows[r-1][c-1] != '.' and maze_rows[r][c] == 'S':
                         neighbors.append((r-1,c-1))
-                    if r < rows -1 and c < cols -1 and maze[r+1][c+1] != '.' and maze[r][c] == 'S':
+                    if r < rows -1 and c < cols -1 and maze_rows[r+1][c+1] != '.' and maze_rows[r][c] == 'S':
                         neighbors.append((r+1,c+1))
-                if maze[r][c] in ('F', '7', 'S'):
-                     if r > 0 and c < cols -1 and maze[r-1][c+1] != '.' and maze[r][c] == 'S':
+                if maze_rows[r][c] in ('F', '7', 'S'):
+                     if r > 0 and c < cols -1 and maze_rows[r-1][c+1] != '.' and maze_rows[r][c] == 'S':
                         neighbors.append((r-1,c+1))
-                     if r < rows -1 and c > 0 and maze[r+1][c-1] != '.' and maze[r][c] == 'S':
+                     if r < rows -1 and c > 0 and maze_rows[r+1][c-1] != '.' and maze_rows[r][c] == 'S':
                         neighbors.append((r+1,c-1))
                 graph[(r, c)] = neighbors
-
 
     distances = {start: 0}
     queue = [start]
@@ -58,11 +58,11 @@ def farthest_point_in_loop(maze: List[str]) -> int:
     return max_dist
 
 def solution() -> int:
-    maze: List[str] = []
+    maze: str = ""
     while True:
         try:
             line = input()
-            maze.append(line)
+            maze += line + "\n"
         except EOFError:
             break
     return farthest_point_in_loop(maze)
