@@ -1,6 +1,6 @@
 from typing import List
 
-def solve(maze: List[str]) -> int:
+def farthest_point_in_loop(maze: List[str]) -> int:
     rows = len(maze)
     cols = len(maze[0])
     start = None
@@ -65,4 +65,4 @@ def solution() -> int:
             maze.append(line)
         except EOFError:
             break
-    return solve(maze)
+    return farthest_point_in_loop(maze)
