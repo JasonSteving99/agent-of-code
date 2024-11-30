@@ -1,18 +1,25 @@
 from typing import List
 
-def extract_calibration_value(line: str) -> str:
-    digits: List[str] = [char for char in line if char.isdigit()]
-    if not digits:
-        return "0"
-    return digits[0] + digits[-1]
+
+def get_calibration_value(line: str) -> str:
+    digits = [char for char in line if char.isdigit()]
+    if digits:
+        return digits[0] + digits[-1]
+    return ""
+
 
 def solution() -> int:
-    total: int = 0
-    try:
-        while True:
+    total = 0
+    while True:
+        try:
             line = input()
-            total += int(extract_calibration_value(line))
-    except EOFError:
-        pass
-
+            calibration_value = get_calibration_value(line)
+            if calibration_value:
+                total += int(calibration_value)
+        except EOFError:
+            break
     return total
+
+
+if __name__ == "__main__":
+    print(solution())
