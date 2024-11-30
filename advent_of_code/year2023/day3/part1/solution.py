@@ -20,7 +20,7 @@ def sum_part_numbers(schematic: str) -> int:
                         if dr == 0 and dc == 0:
                             continue
                         nr = r + dr
-                        nc = c + dc
+                        nc = start_c + dc
                         if 0 <= nr < len(lines) and 0 <= nc < len(lines[nr]) and is_symbol(lines[nr][nc]):
                             is_part_number = True
                             break
