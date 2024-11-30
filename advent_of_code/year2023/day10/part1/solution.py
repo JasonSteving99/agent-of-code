@@ -4,36 +4,15 @@ from typing import List, Tuple
 def get_neighbors(grid: List[str], r: int, c: int) -> List[Tuple[int, int]]:
     n, m = len(grid), len(grid[0])
     neighbors = []
-    if grid[r][c] in "|-S":
-        if r > 0 and grid[r - 1][c] != '.':
-            neighbors.append((r - 1, c))
-        if r < n - 1 and grid[r + 1][c] != '.':
-            neighbors.append((r + 1, c))
-    if grid[r][c] in "-S":
-        if c > 0 and grid[r][c - 1] != '.':
-            neighbors.append((r, c - 1))
-        if c < m - 1 and grid[r][c + 1] != '.':
-            neighbors.append((r, c + 1))
-    if grid[r][c] in "L7S":
-        if r > 0 and grid[r - 1][c] != '.':
-            neighbors.append((r - 1, c))
-        if c < m - 1 and grid[r][c + 1] != '.':
-            neighbors.append((r, c + 1))
-    if grid[r][c] in "JFS":
-        if r > 0 and grid[r - 1][c] != '.':
-            neighbors.append((r - 1, c))
-        if c > 0 and grid[r][c - 1] != '.':
-            neighbors.append((r, c - 1))
-    if grid[r][c] in "F|S":
-        if r < n - 1 and grid[r + 1][c] != '.':
-            neighbors.append((r + 1, c))
-        if c < m - 1 and grid[r][c + 1] != '.':
-            neighbors.append((r, c + 1))
-    if grid[r][c] in "7-S":
-        if r < n - 1 and grid[r + 1][c] != '.':
-            neighbors.append((r + 1, c))
-        if c > 0 and grid[r][c - 1] != '.':
-            neighbors.append((r, c - 1))
+    for dr, dc, char1, char2 in [(0, 1, "-", "-"), (0, -1, "-", "-"), (1, 0, "|", "|"), (-1, 0, "|", "|"),
+                                     (0, 1, "L", "-"), (0, 1, "F", "-"),
+                                     (-1, 0, "L", "|"), (-1, 0, "J", "|"),
+                                     (0, -1, "J", "-"), (0, -1, "7", "-"),
+                                     (1, 0, "F", "|"), (1, 0, "7", "|"),
+                                      (0, 1, "S", "-"), (0, -1, "S", "-"), (1, 0, "S", "|"), (-1, 0, "S", "|")]:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < n and 0 <= nc < m and grid[r][c] in [char1, 'S'] and grid[nr][nc] in [char2, 'S'] and grid[nr][nc] != '.':
+            neighbors.append((nr, nc))
     return neighbors
 
 
