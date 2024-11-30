@@ -35,13 +35,13 @@ def get_pipe_char(grid: List[str], r: int, c: int) -> str:
 
 def get_neighbors(grid: List[str], r: int, c: int) -> List[Tuple[int, int]]:
     n, m = len(grid), len(grid[0])
-
     neighbors = []
     for dr, dc, char1, char2 in [(0, 1, "-", "-"), (0, -1, "-", "-"), (1, 0, "|", "|"), (-1, 0, "|", "|"),
-                                 (0, 1, "L", "-"), (0, 1, "F", "-"),
-                                 (-1, 0, "L", "|"), (-1, 0, "J", "|"),
-                                 (0, -1, "J", "-"), (0, -1, "7", "-"),
-                                 (1, 0, "F", "|"), (1, 0, "7", "|")]:
+                                     (0, 1, "L", "-"), (0, 1, "F", "-"),
+                                     (-1, 0, "L", "|"), (-1, 0, "J", "|"),
+                                     (0, -1, "J", "-"), (0, -1, "7", "-"),
+                                     (1, 0, "F", "|"), (1, 0, "7", "|"),
+                                     (0, 1, "S", "-"), (0, -1, "S", "-"), (1, 0, "S", "|"), (-1, 0, "S", "|")]:
         nr, nc = r + dr, c + dc
         if 0 <= nr < n and 0 <= nc < m and grid[r][c] in [char1, 'S'] and grid[nr][nc] in [char2, 'S'] and grid[nr][nc] != '.':
             neighbors.append((nr, nc))
@@ -73,8 +73,8 @@ def max_loop_distance(grid_str: str) -> int:
         max_dist = max(max_dist, dist)
 
         for nr, nc in get_neighbors(grid, r, c):
-            if len(get_neighbors(grid, nr, nc)) > 0:
-                q.append((nr, nc, dist + 1))
+
+            q.append((nr, nc, dist + 1))
 
     return max_dist
 
