@@ -13,35 +13,32 @@ def max_loop_distance(maze: str) -> int:
         if start is not None:
             break
 
-    q = [(start, 0)]
-    visited = {start}
-    max_dist = 0
     graph = {}
+    q = [start]
+    visited = {start}
 
     while q:
-        (r, c), dist = q.pop(0)
-        max_dist = max(max_dist, dist)
-
+        r, c = q.pop(0)
         neighbors = []
-        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check all 4 directions
+
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]: 
             nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                if maze_lines[nr][nc] != '.':
-                    neighbors.append((nr, nc))
-                    
-        if (r,c) not in graph:
-            graph[(r,c)] = []
-        
-        if len(neighbors) == 2:
-            for nr, nc in neighbors:
-                if (nr, nc) not in visited:
-                    q.append(((nr, nc), dist + 1))
-                    visited.add((nr, nc))
-                    if (nr,nc) not in graph:
-                        graph[(nr,nc)] = []
-                    graph[(r,c)].append((nr,nc))
-                    graph[(nr,nc)].append((r,c))
-                    
+            if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.':
+                neighbors.append((nr, nc))
+
+        if (r, c) not in graph:
+            graph[(r, c)] = []
+
+        for nr, nc in neighbors:
+            if (nr, nc) not in graph:
+                graph[(nr, nc)] = []
+            graph[(r,c)].append((nr, nc))
+            graph[(nr, nc)].append((r,c))
+            if (nr, nc) not in visited:
+                q.append((nr, nc))
+                visited.add((nr, nc))
+                
+    
     q = [(start, 0)]
     visited = {start}
     max_dist = 0
@@ -54,6 +51,7 @@ def max_loop_distance(maze: str) -> int:
             if neighbor not in visited:
                 visited.add(neighbor)
                 q.append((neighbor, dist + 1))
+
     return max_dist
 
 def solution() -> int:
@@ -64,5 +62,4 @@ def solution() -> int:
             maze_str += line + "\n"
         except EOFError:
             break
-    
     return max_loop_distance(maze_str.strip())
