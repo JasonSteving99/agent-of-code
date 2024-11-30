@@ -1,6 +1,6 @@
 from typing import List
 
-def solve(maze: List[str]) -> int:
+def furthest_point_in_pipe_maze(maze: List[str]) -> int:
     rows = len(maze)
     cols = len(maze[0])
     start_row, start_col = -1, -1
@@ -58,5 +58,5 @@ def solution() -> int:
         except EOFError:
             break
     maze = maze_str.strip().split('\n')
-    result = solve(maze)
+    result = furthest_point_in_pipe_maze(maze)
     return result
