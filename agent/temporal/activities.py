@@ -15,7 +15,8 @@ from agent.adventofcode import (
     generate_implementation,
     write_and_commit_changes,
 )
-from agent.adventofcode.debug.debug_errors import theorize_solution
+from agent.adventofcode.debug.RefactoringPlan import RefactoringPlan
+from agent.adventofcode.debug.debug_errors import theorize_solution, get_refactoring_plan
 from agent.adventofcode.debug.DebuggingPrompt import DebuggingPrompt
 from agent.adventofcode.debug.TheorizedSolution import TheorizedSolution
 from agent.adventofcode.execute_generated_code import TestResults
@@ -182,4 +183,21 @@ async def debug_unit_test_failures(args: DebugUnitTestFailuresArgs) -> Theorized
         unit_tests_src=args.unit_tests_src,
         generated_impl_src=args.generated_impl_src,
         error_msg=args.error_msg,
+    )
+
+class PlanImplRefactoringArgs(BaseModel):
+    examples: AoCProblemExtractedExamples
+    examples_context: ExamplesContext
+    generated_impl_src: GeneratedImplementation
+    theorized_solution: TheorizedSolution
+
+@activity.defn
+async def plan_impl_refactoring(args: PlanImplRefactoringArgs) -> RefactoringPlan:
+    assert args.theorized_solution.optional_theorized_implementation_fix, "Expected a theorized impl fix to be set."
+
+    return await get_refactoring_plan(
+        examples=args.examples,
+        examples_context=args.examples_context,
+        generated_impl_src=args.generated_impl_src,
+        theorized_implementation_fix=args.theorized_solution.optional_theorized_implementation_fix,
     )

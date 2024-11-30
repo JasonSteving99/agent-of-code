@@ -24,6 +24,7 @@ with workflow.unsafe.imports_passed_through():
         GeneratedSolutionRes,
         GetGeneratedImplementationArgs,
         GetGeneratedUnitTestsArgs,
+        PlanImplRefactoringArgs,
         TestResults,
         commit_changes,
         debug_unit_test_failures,
@@ -32,6 +33,7 @@ with workflow.unsafe.imports_passed_through():
         get_examples_context,
         get_generated_implementation,
         get_generated_unit_tests,
+        plan_impl_refactoring,
         run_generated_solution,
         run_generated_tests,
     )
@@ -61,14 +63,14 @@ class SolveAoCProblemWorkflow:
         extracted_examples = await workflow.execute_activity(
             extract_examples,
             problem_part,
-            start_to_close_timeout=timedelta(seconds=20),
+            start_to_close_timeout=timedelta(seconds=60),
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
         examples_context = await workflow.execute_activity(
             get_examples_context,
             args=[problem_part, extracted_examples],
-            start_to_close_timeout=timedelta(seconds=20),
+            start_to_close_timeout=timedelta(seconds=60),
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
@@ -171,6 +173,19 @@ async def iteratively_make_unit_tests_pass(
                     start_to_close_timeout=timedelta(seconds=60),
                     retry_policy=RetryPolicy(maximum_attempts=3),
                 )
+                if theorized_solution.optional_theorized_implementation_fix:
+                    # Use the theorized solution to plan a refactoring.
+                    impl_refactoring_plan = await workflow.execute_activity(
+                        plan_impl_refactoring,
+                        PlanImplRefactoringArgs(
+                            examples=extracted_examples,
+                            examples_context=examples_context,
+                            generated_impl_src=implementation.generated_implementation,
+                            theorized_solution=theorized_solution,
+                        ),
+                        start_to_close_timeout=timedelta(seconds=60),
+                        retry_policy=RetryPolicy(maximum_attempts=3),
+                    )
 
                 async def fix_unit_tests() -> GenerateUnitTestsOutput:
                     return await workflow.execute_activity(
@@ -182,6 +197,7 @@ async def iteratively_make_unit_tests_pass(
                                 prior_msg_history=unit_tests.prompt_history,
                                 error_msg=test_failure.err_msg,
                                 theorized_solution=theorized_solution,
+                                impl_refactoring_plan=None,
                             ),
                         ),
                         start_to_close_timeout=timedelta(seconds=60),
@@ -198,6 +214,7 @@ async def iteratively_make_unit_tests_pass(
                                 prior_msg_history=implementation.prompt_history,
                                 error_msg=test_failure.err_msg,
                                 theorized_solution=theorized_solution,
+                                impl_refactoring_plan=impl_refactoring_plan,
                             ),
                         ),
                         start_to_close_timeout=timedelta(seconds=60),
@@ -244,7 +261,10 @@ async def iteratively_make_unit_tests_pass(
 ### Theorized solution:
 ```json
 {theorized_solution.model_dump_json(indent=4)}
-```
+```{f"""
+### Implementation refactoring plan:
+{impl_refactoring_plan.model_dump_json(indent=4)}
+""" if theorized_solution.optional_theorized_implementation_fix else ""}
 """,
                     ),
                     start_to_close_timeout=timedelta(seconds=60),
