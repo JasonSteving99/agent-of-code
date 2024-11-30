@@ -3,19 +3,29 @@ from typing import List, Tuple, Dict
 def build_loop_graph(maze_lines: List[str], r: int, c: int, graph: Dict[Tuple[int, int], List[Tuple[int, int]]], visited: set) -> None:
     rows = len(maze_lines)
     cols = len(maze_lines[0])
-
+    current_pipe = maze_lines[r][c]
     visited.add((r, c))
     if (r, c) not in graph:
         graph[(r, c)] = []
 
-    for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]: 
+    for dr, dc, valid_pipes in [
+        (0, 1, "|-F7"), (0, -1, "|-LJ"), (1, 0, "7FL|"), (-1, 0, "J7L-")  # E, W, S, N
+    ]:
         nr, nc = r + dr, c + dc
-        if 0 <= nr < rows and 0 <= nc < cols and maze_lines[nr][nc] != '.' and (nr, nc) not in visited:
-            graph[(r, c)].append((nr, nc))
-            if (nr, nc) not in graph:
-                graph[(nr, nc)] = []
-            graph[(nr, nc)].append((r, c))
-            build_loop_graph(maze_lines, nr, nc, graph, visited)
+        if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
+            next_pipe = maze_lines[nr][nc]
+            if next_pipe == 'S' or current_pipe == 'S':
+                graph[(r, c)].append((nr, nc))
+                if (nr, nc) not in graph:
+                    graph[(nr, nc)] = []
+                graph[(nr, nc)].append((r, c))
+                build_loop_graph(maze_lines, nr, nc, graph, visited)
+            elif next_pipe in valid_pipes:
+                graph[(r, c)].append((nr, nc))
+                if (nr, nc) not in graph:
+                    graph[(nr, nc)] = []
+                graph[(nr, nc)].append((r, c))
+                build_loop_graph(maze_lines, nr, nc, graph, visited)
 
 def max_loop_distance(maze: str) -> int:
     maze_lines = maze.splitlines()
