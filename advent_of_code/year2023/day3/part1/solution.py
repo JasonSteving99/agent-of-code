@@ -28,7 +28,7 @@ def sum_part_numbers(schematic: str) -> int:
                     for j in range(start_c - 1, temp_c + 1):
                         if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]) and not (i == r and start_c <= j < temp_c):
                             is_part_num = True
-                            break
+                            break  # Optimization: No need to check further
                     if is_part_num:
                         break
 
