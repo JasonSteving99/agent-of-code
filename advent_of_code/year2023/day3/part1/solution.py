@@ -15,6 +15,7 @@ def sum_part_numbers(schematic: str) -> int:
             if lines[r][c].isdigit():
                 num_str = ''
                 is_part_num = False
+                start_c = c
 
                 # Extract the entire number
                 temp_c = c
@@ -22,19 +23,18 @@ def sum_part_numbers(schematic: str) -> int:
                     num_str += lines[r][temp_c]
                     temp_c += 1
 
-                # Check adjacency to symbols
+                # Check adjacency to symbols, excluding the number's own digits
                 for i in range(r - 1, r + 2):
-                    for j in range(c - 1, temp_c + 1):
-                        if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]):
+                    for j in range(start_c - 1, temp_c + 1):
+                        if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]) and not (i == r and start_c <= j < temp_c):
                             is_part_num = True
-                            break  # Optimization: No need to check further neighbors for this number
+                            break
                     if is_part_num:
-                        break  # Optimization: No need to check further rows for this number
+                        break
 
                 if is_part_num:
                     total_sum += int(num_str)
 
-                # Optimization: Move 'c' forward to skip processing already checked digits within the number
                 c = temp_c - 1
 
     return total_sum
