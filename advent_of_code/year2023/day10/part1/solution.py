@@ -13,6 +13,9 @@ def max_loop_distance(maze: str) -> int:
         if start is not None:
             break
 
+    if start is None:
+        return 0  # Handle cases where 'S' is not found
+
     graph = {}
     q = [start]
     visited = {start}
@@ -32,13 +35,14 @@ def max_loop_distance(maze: str) -> int:
         for nr, nc in neighbors:
             if (nr, nc) not in graph:
                 graph[(nr, nc)] = []
-            graph[(r,c)].append((nr, nc))
-            graph[(nr, nc)].append((r,c))
+            if (nr, nc) not in graph[(r, c)]:
+                graph[(r, c)].append((nr, nc))
+            if (r,c) not in graph[(nr, nc)]:
+                graph[(nr, nc)].append((r, c))
             if (nr, nc) not in visited:
                 q.append((nr, nc))
                 visited.add((nr, nc))
-                
-    
+
     q = [(start, 0)]
     visited = {start}
     max_dist = 0
@@ -47,7 +51,7 @@ def max_loop_distance(maze: str) -> int:
         (r, c), dist = q.pop(0)
         max_dist = max(max_dist, dist)
 
-        for neighbor in graph.get((r,c), []):
+        for neighbor in graph.get((r, c), []):
             if neighbor not in visited:
                 visited.add(neighbor)
                 q.append((neighbor, dist + 1))
