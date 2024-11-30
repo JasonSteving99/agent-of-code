@@ -44,6 +44,10 @@ def solve(maze: List[str]) -> int:
 
     return max_dist
 
+def max_loop_distance(maze_str: str) -> int:
+    maze: List[str] = maze_str.split('\n')
+    return solve(maze)
+
 def solution() -> int:
     maze: List[str] = []
     while True:
