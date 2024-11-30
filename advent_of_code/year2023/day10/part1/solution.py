@@ -1,10 +1,11 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
-def build_loop_graph(maze_lines: List[str], r: int, c: int, graph: Dict[Tuple[int, int], List[Tuple[int, int]]], visited: set) -> None:
+def build_loop_graph(maze_lines: List[str], r: int, c: int, graph: Dict[Tuple[int, int], List[Tuple[int, int]]], visited: Set[Tuple[int, int]], loop_members: Set[Tuple[int, int]]) -> None:
     rows = len(maze_lines)
     cols = len(maze_lines[0])
     current_pipe = maze_lines[r][c]
     visited.add((r, c))
+    loop_members.add((r,c))
     if (r, c) not in graph:
         graph[(r, c)] = []
 
@@ -19,13 +20,13 @@ def build_loop_graph(maze_lines: List[str], r: int, c: int, graph: Dict[Tuple[in
                 if (nr, nc) not in graph:
                     graph[(nr, nc)] = []
                 graph[(nr, nc)].append((r, c))
-                build_loop_graph(maze_lines, nr, nc, graph, visited)
+                build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
             elif next_pipe in valid_pipes:
                 graph[(r, c)].append((nr, nc))
                 if (nr, nc) not in graph:
                     graph[(nr, nc)] = []
                 graph[(nr, nc)].append((r, c))
-                build_loop_graph(maze_lines, nr, nc, graph, visited)
+                build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
 
 def max_loop_distance(maze: str) -> int:
     maze_lines = maze.splitlines()
@@ -45,7 +46,8 @@ def max_loop_distance(maze: str) -> int:
 
     graph = {}
     visited = set()
-    build_loop_graph(maze_lines, start[0], start[1], graph, visited)
+    loop_members = set()
+    build_loop_graph(maze_lines, start[0], start[1], graph, visited, loop_members)
 
     q = [(start, 0)]
     visited = {start}
@@ -56,7 +58,7 @@ def max_loop_distance(maze: str) -> int:
         max_dist = max(max_dist, dist)
 
         for neighbor in graph.get((r, c), []):
-            if neighbor not in visited:
+            if neighbor not in visited and neighbor in loop_members:
                 visited.add(neighbor)
                 q.append((neighbor, dist + 1))
 
