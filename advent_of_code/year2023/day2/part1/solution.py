@@ -1,19 +1,28 @@
 from typing import List
 
-def is_game_possible(game_str: str) -> str:
-    game_id_str, reveals_str = game_str.split(':')
+def is_game_possible(input: str) -> str:
+    game_id_str, rounds_str = input.split(':')
     game_id = int(game_id_str.split()[1])
-    reveals = reveals_str.split(';')
-    for reveal in reveals:
-        counts = {"red": 0, "green": 0, "blue": 0}
-        for cube_count in reveal.split(','):
-            count, color = cube_count.strip().split()
-            counts[color] = int(count)
-        if counts["red"] > 12 or counts["green"] > 13 or counts["blue"] > 14:
-            return ""
+    rounds = rounds_str.split(';')
+    for round in rounds:
+        red = 0
+        green = 0
+        blue = 0
+        cubes = round.split(',')
+        for cube in cubes:
+            count, color = cube.strip().split()
+            count = int(count)
+            if color == 'red':
+                red = count
+            elif color == 'green':
+                green = count
+            elif color == 'blue':
+                blue = count
+        if red > 12 or green > 13 or blue > 14:
+            return ''
     return str(game_id)
 
-def solution() -> str:
+def solution() -> int:
     total = 0
     while True:
         try:
@@ -23,5 +32,4 @@ def solution() -> str:
                 total += int(result)
         except EOFError:
             break
-    return str(total)
-
+    return total
