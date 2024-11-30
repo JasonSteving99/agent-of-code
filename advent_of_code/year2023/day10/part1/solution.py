@@ -1,12 +1,13 @@
 from typing import List
 
-def max_pipe_loop_distance(grid: List[str]) -> int:
-    rows = len(grid)
-    cols = len(grid[0])
+def max_pipe_loop_distance(grid: str) -> int:
+    grid_list = grid.splitlines()
+    rows = len(grid_list)
+    cols = len(grid_list[0])
     start = None
     for r in range(rows):
         for c in range(cols):
-            if grid[r][c] == 'S':
+            if grid_list[r][c] == 'S':
                 start = (r, c)
                 break
         if start is not None:
@@ -15,19 +16,19 @@ def max_pipe_loop_distance(grid: List[str]) -> int:
     connections = {}
     for r in range(rows):
         for c in range(cols):
-            if grid[r][c] != '.':
+            if grid_list[r][c] != '.':
                 neighbors = []
-                if grid[r][c] in ('|', 'L', 'J', 'S'):
-                    if r > 0 and grid[r - 1][c] != '.':
+                if grid_list[r][c] in ('|', 'L', 'J', 'S'):
+                    if r > 0 and grid_list[r - 1][c] != '.':
                         neighbors.append((r - 1, c))
-                if grid[r][c] in ('|', 'F', '7', 'S'):
-                    if r < rows - 1 and grid[r + 1][c] != '.':
+                if grid_list[r][c] in ('|', 'F', '7', 'S'):
+                    if r < rows - 1 and grid_list[r + 1][c] != '.':
                         neighbors.append((r + 1, c))
-                if grid[r][c] in ('-', 'L', 'F', 'S'):
-                    if c < cols - 1 and grid[r][c + 1] != '.':
+                if grid_list[r][c] in ('-', 'L', 'F', 'S'):
+                    if c < cols - 1 and grid_list[r][c + 1] != '.':
                         neighbors.append((r, c + 1))
-                if grid[r][c] in ('-', 'J', '7', 'S'):
-                    if c > 0 and grid[r][c - 1] != '.':
+                if grid_list[r][c] in ('-', 'J', '7', 'S'):
+                    if c > 0 and grid_list[r][c - 1] != '.':
                         neighbors.append((r, c - 1))
                 connections[(r, c)] = neighbors
 
@@ -45,11 +46,12 @@ def max_pipe_loop_distance(grid: List[str]) -> int:
     return max_dist
 
 def solution() -> int:
-    grid = []
+    grid = ""
     while True:
         try:
             line = input()
-            grid.append(line)
+            grid += line + "\n"
         except EOFError:
             break
+
     return max_pipe_loop_distance(grid)
