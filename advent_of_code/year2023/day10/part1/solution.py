@@ -1,12 +1,12 @@
 from typing import List
 
-def solve(maze: List[str]) -> int:
-    rows = len(maze)
-    cols = len(maze[0])
+def solve(grid: List[str]) -> int:
+    rows = len(grid)
+    cols = len(grid[0])
     start = None
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] == 'S':
+            if grid[r][c] == 'S':
                 start = (r, c)
                 break
         if start is not None:
@@ -15,19 +15,19 @@ def solve(maze: List[str]) -> int:
     connections = {}
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] != '.':
+            if grid[r][c] != '.':
                 neighbors = []
-                if maze[r][c] in ('|', 'L', 'J', 'S'):
-                    if r > 0 and maze[r - 1][c] != '.':
+                if grid[r][c] in ('|', 'L', 'J', 'S'):
+                    if r > 0 and grid[r - 1][c] != '.':
                         neighbors.append((r - 1, c))
-                if maze[r][c] in ('|', 'F', '7', 'S'):
-                    if r < rows - 1 and maze[r + 1][c] != '.':
+                if grid[r][c] in ('|', 'F', '7', 'S'):
+                    if r < rows - 1 and grid[r + 1][c] != '.':
                         neighbors.append((r + 1, c))
-                if maze[r][c] in ('-', 'L', 'F', 'S'):
-                    if c < cols - 1 and maze[r][c + 1] != '.':
+                if grid[r][c] in ('-', 'L', 'F', 'S'):
+                    if c < cols - 1 and grid[r][c + 1] != '.':
                         neighbors.append((r, c + 1))
-                if maze[r][c] in ('-', 'J', '7', 'S'):
-                    if c > 0 and maze[r][c - 1] != '.':
+                if grid[r][c] in ('-', 'J', '7', 'S'):
+                    if c > 0 and grid[r][c - 1] != '.':
                         neighbors.append((r, c - 1))
                 connections[(r, c)] = neighbors
 
@@ -44,17 +44,12 @@ def solve(maze: List[str]) -> int:
 
     return max_dist
 
-def max_loop_distance(maze_str: str) -> int:
-    maze: List[str] = maze_str.split('\n')
-    return solve(maze)
-
 def solution() -> int:
-    maze: List[str] = []
+    grid = []
     while True:
         try:
             line = input()
-            maze.append(line)
+            grid.append(line)
         except EOFError:
             break
-
-    return solve(maze)
+    return solve(grid)
