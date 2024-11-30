@@ -1,97 +1,57 @@
-from typing import List, Tuple, Dict, Set
+from typing import List
 
-def build_loop_graph(maze_lines: List[str], r: int, c: int, graph: Dict[Tuple[int, int], List[Tuple[int, int]]], visited: Set[Tuple[int, int]], loop_members: Set[Tuple[int, int]]) -> None:
-    rows = len(maze_lines)
-    cols = len(maze_lines[0])
-    current_pipe = maze_lines[r][c]
-    visited.add((r, c))
-    loop_members.add((r, c))
-    if (r, c) not in graph:
-        graph[(r, c)] = []
-
-    valid_pipes = {
-        '|' : [(1, 0), (-1, 0)],
-        '-' : [(0, 1), (0, -1)],
-        'L' : [(0, 1), (-1, 0)],
-        'J' : [(0, -1), (-1, 0)],
-        '7' : [(1, 0), (0, -1)],
-        'F' : [(1, 0), (0, 1)],
-    }
-    
-    if current_pipe != 'S':
-        for dr, dc in valid_pipes.get(current_pipe, []):
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
-                next_pipe = maze_lines[nr][nc]
-                valid_reverse_pipes = {
-                    '|' : [(1, 0), (-1, 0)],
-                    '-' : [(0, 1), (0, -1)],
-                    'L' : [(0, -1), (1,0)],
-                    'J' : [(0, 1), (1, 0)],
-                    '7' : [(-1,0), (0, 1)],
-                    'F' : [(-1, 0), (0, -1)],
-                }
-                ndr, ndc = r - dr, c -dc
-                if next_pipe == 'S' or (ndr, ndc) in valid_reverse_pipes.get(next_pipe, []):
-                    graph[(r, c)].append((nr, nc))
-                    if (nr, nc) not in graph:
-                        graph[(nr, nc)] = []
-                    graph[(nr, nc)].append((r, c))
-                    build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
-    else:
-        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
-                next_pipe = maze_lines[nr][nc]
-                if next_pipe != '.':
-                    graph[(r, c)].append((nr, nc))
-                    if (nr, nc) not in graph:
-                        graph[(nr, nc)] = []
-                    graph[(nr, nc)].append((r, c))
-                    build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
-
-def max_loop_distance(maze: str) -> int:
-    maze_lines = maze.splitlines()
-    rows = len(maze_lines)
-    cols = len(maze_lines[0])
-    start = None
+def solve(grid: List[str]) -> int:
+    rows, cols = len(grid), len(grid[0])
+    start_row, start_col = -1, -1
     for r in range(rows):
         for c in range(cols):
-            if maze_lines[r][c] == 'S':
-                start = (r, c)
+            if grid[r][c] == 'S':
+                start_row, start_col = r, c
                 break
-        if start is not None:
-            break
 
-    if start is None:
-        return 0
+    def get_neighbors(r, c):
+        neighbors = []
+        for dr, dc, char1, char2 in [(0, 1, '-', '|'), (0, -1, '-', '|'), (1, 0, '|', '-'), (-1, 0, '|', '-')]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and (grid[nr][nc] == char1 or grid[nr][nc] == char2 or grid[nr][nc] == 'S'):
+                neighbors.append((nr, nc))
+            elif 0 <= nr < rows and 0 <= nc < cols:
+                if dr == 0 and dc == 1 and (grid[nr][nc] == 'L' or grid[nr][nc] == 'F' or grid[nr][nc] == 'J' or grid[nr][nc] == '7'):
+                        neighbors.append((nr,nc))
+                elif dr == 0 and dc == -1 and (grid[nr][nc] == 'L' or grid[nr][nc] == 'F' or grid[nr][nc] == 'J' or grid[nr][nc] == '7'):
+                    neighbors.append((nr, nc))
+                elif dr == 1 and dc == 0 and (grid[nr][nc] == 'L' or grid[nr][nc] == 'F' or grid[nr][nc] == 'J' or grid[nr][nc] == '7'):
+                    neighbors.append((nr, nc))
+                elif dr == -1 and dc == 0 and (grid[nr][nc] == 'L' or grid[nr][nc] == 'F' or grid[nr][nc] == 'J' or grid[nr][nc] == '7'):
+                    neighbors.append((nr, nc))
+                
 
-    graph = {}
-    visited = set()
-    loop_members = set()
-    build_loop_graph(maze_lines, start[0], start[1], graph, visited, loop_members)
 
-    q = [(start, 0)]
-    visited = {start}
+        return neighbors
+
+    q = [(start_row, start_col, 0)]
+    visited = set([(start_row, start_col)])
     max_dist = 0
 
     while q:
-        (r, c), dist = q.pop(0)
+        r, c, dist = q.pop(0)
         max_dist = max(max_dist, dist)
 
-        for neighbor in graph.get((r, c), []):
-            if neighbor not in visited and neighbor in loop_members:
-                visited.add(neighbor)
-                q.append((neighbor, dist + 1))
+        for nr, nc in get_neighbors(r, c):
+            if (nr, nc) not in visited:
+                visited.add((nr, nc))
+                q.append((nr, nc, dist + 1))
 
     return max_dist
 
 def solution() -> int:
-    maze_str = ""
+    grid_str = "" 
     while True:
         try:
-            line = input()
-            maze_str += line + "\n"
+           line = input()
+           grid_str += line + "\n"
         except EOFError:
             break
-    return max_loop_distance(maze_str.strip())
+
+    grid = grid_str.strip().split('\n')
+    return solve(grid)
