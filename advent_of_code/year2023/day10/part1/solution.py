@@ -3,13 +3,24 @@ from typing import List, Tuple
 
 def get_neighbors(grid: List[str], r: int, c: int) -> List[Tuple[int, int]]:
     n, m = len(grid), len(grid[0])
+    if grid[r][c] == 'S':
+        neighbors = []
+        if r > 0 and grid[r - 1][c] != '.':
+            neighbors.append((r - 1, c))
+        if r < n - 1 and grid[r + 1][c] != '.':
+            neighbors.append((r + 1, c))
+        if c > 0 and grid[r][c - 1] != '.':
+            neighbors.append((r, c - 1))
+        if c < m - 1 and grid[r][c + 1] != '.':
+            neighbors.append((r, c + 1))
+        return [n for n in neighbors if grid[n[0]][n[1]] != '.'][:2] # keep at most two valid neighbors for S
+
     neighbors = []
     for dr, dc, char1, char2 in [(0, 1, "-", "-"), (0, -1, "-", "-"), (1, 0, "|", "|"), (-1, 0, "|", "|"),
-                                     (0, 1, "L", "-"), (0, 1, "F", "-"),
-                                     (-1, 0, "L", "|"), (-1, 0, "J", "|"),
-                                     (0, -1, "J", "-"), (0, -1, "7", "-"),
-                                     (1, 0, "F", "|"), (1, 0, "7", "|"),
-                                      (0, 1, "S", "-"), (0, -1, "S", "-"), (1, 0, "S", "|"), (-1, 0, "S", "|")]:
+                                 (0, 1, "L", "-"), (0, 1, "F", "-"),
+                                 (-1, 0, "L", "|"), (-1, 0, "J", "|"),
+                                 (0, -1, "J", "-"), (0, -1, "7", "-"),
+                                 (1, 0, "F", "|"), (1, 0, "7", "|")]:
         nr, nc = r + dr, c + dc
         if 0 <= nr < n and 0 <= nc < m and grid[r][c] in [char1, 'S'] and grid[nr][nc] in [char2, 'S'] and grid[nr][nc] != '.':
             neighbors.append((nr, nc))
