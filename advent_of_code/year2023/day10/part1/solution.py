@@ -1,6 +1,6 @@
 from typing import List
 
-def solve(grid: List[str]) -> int:
+def max_pipe_loop_distance(grid: List[str]) -> int:
     rows = len(grid)
     cols = len(grid[0])
     start = None
@@ -52,4 +52,4 @@ def solution() -> int:
             grid.append(line)
         except EOFError:
             break
-    return solve(grid)
+    return max_pipe_loop_distance(grid)
