@@ -1,19 +1,40 @@
 from typing import List, Tuple
 
 
+def get_pipe_char(grid: List[str], r: int, c: int) -> str:
+    neighbors = []
+    n, m = len(grid), len(grid[0])
+    if r > 0 and grid[r - 1][c] != '.':
+        neighbors.append((r - 1, c))
+    if r < n - 1 and grid[r + 1][c] != '.':
+        neighbors.append((r + 1, c))
+    if c > 0 and grid[r][c - 1] != '.':
+        neighbors.append((r, c - 1))
+    if c < m - 1 and grid[r][c + 1] != '.':
+        neighbors.append((r, c + 1))
+
+    if len(neighbors) != 2:
+        return 'S'  # Should not happen in valid input.
+
+    n1, n2 = neighbors
+
+    if (n1[0] == r - 1 and n2[0] == r + 1) or (n2[0] == r - 1 and n1[0] == r + 1):
+        return "|"
+    if (n1[1] == c - 1 and n2[1] == c + 1) or (n2[1] == c - 1 and n1[1] == c + 1):
+        return "-"
+    if (n1[0] == r - 1 and n2[1] == c + 1) or (n2[0] == r - 1 and n1[1] == c + 1):
+        return "L"
+    if (n1[0] == r - 1 and n2[1] == c - 1) or (n2[0] == r - 1 and n1[1] == c - 1):
+        return "J"
+    if (n1[0] == r + 1 and n2[1] == c - 1) or (n2[0] == r + 1 and n1[1] == c - 1):
+        return "7"
+    if (n1[0] == r + 1 and n2[1] == c + 1) or (n2[0] == r + 1 and n1[1] == c + 1):
+        return "F"
+    return 'S'
+
+
 def get_neighbors(grid: List[str], r: int, c: int) -> List[Tuple[int, int]]:
     n, m = len(grid), len(grid[0])
-    if grid[r][c] == 'S':
-        neighbors = []
-        if r > 0 and grid[r - 1][c] != '.':
-            neighbors.append((r - 1, c))
-        if r < n - 1 and grid[r + 1][c] != '.':
-            neighbors.append((r + 1, c))
-        if c > 0 and grid[r][c - 1] != '.':
-            neighbors.append((r, c - 1))
-        if c < m - 1 and grid[r][c + 1] != '.':
-            neighbors.append((r, c + 1))
-        return [n for n in neighbors if grid[n[0]][n[1]] != '.'][:2] # keep at most two valid neighbors for S
 
     neighbors = []
     for dr, dc, char1, char2 in [(0, 1, "-", "-"), (0, -1, "-", "-"), (1, 0, "|", "|"), (-1, 0, "|", "|"),
@@ -31,10 +52,12 @@ def max_loop_distance(grid_str: str) -> int:
     grid: List[str] = grid_str.splitlines()
     n, m = len(grid), len(grid[0])
     start_r, start_c = -1, -1
+
     for r in range(n):
         for c in range(m):
             if grid[r][c] == 'S':
                 start_r, start_c = r, c
+                grid[r] = grid[r][:c] + get_pipe_char(grid, r, c) + grid[r][c+1:]
                 break
 
     q = [(start_r, start_c, 0)]
@@ -45,11 +68,13 @@ def max_loop_distance(grid_str: str) -> int:
         r, c, dist = q.pop(0)
         if (r, c) in visited:
             continue
+
         visited.add((r, c))
         max_dist = max(max_dist, dist)
 
         for nr, nc in get_neighbors(grid, r, c):
-            q.append((nr, nc, dist + 1))
+            if len(get_neighbors(grid, nr, nc)) > 0:
+                q.append((nr, nc, dist + 1))
 
     return max_dist
 
@@ -62,5 +87,5 @@ def solution() -> int:
             grid_str += line + "\n"
         except EOFError:
             break
-
     return max_loop_distance(grid_str)
+
