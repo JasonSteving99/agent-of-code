@@ -53,5 +53,4 @@ def solution() -> int:
             grid += line + "\n"
         except EOFError:
             break
-
     return max_pipe_loop_distance(grid)
