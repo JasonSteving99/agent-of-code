@@ -23,19 +23,20 @@ def sum_part_numbers(schematic: str) -> int:
                     num_str += lines[r][temp_c]
                     temp_c += 1
 
-                # Check adjacency to symbols, excluding the number's own digits
+                # Check adjacency to symbols around the entire number
                 for i in range(r - 1, r + 2):
                     for j in range(start_c - 1, temp_c + 1):
-                        if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]) and not (i == r and start_c <= j < temp_c):
+                        if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]):
                             is_part_num = True
-                            break  # Optimization: No need to check further
+                            break  # Optimization: Exit inner loop early
                     if is_part_num:
-                        break
+                        break # Optimization: Exit outer loop early
 
                 if is_part_num:
                     total_sum += int(num_str)
-
-                c = temp_c - 1
+                    c = temp_c -1 # Skip already processed digits
+                else:
+                    c = temp_c - 1
 
     return total_sum
 
