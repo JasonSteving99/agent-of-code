@@ -1,54 +1,58 @@
 from typing import List
 
-
-def furthest_point_in_pipe_maze(maze_str: str) -> int:
-    maze = maze_str.strip().split('\n')
+def solve(maze: List[str]) -> int:
     rows = len(maze)
     cols = len(maze[0])
-    start_row, start_col = -1, -1
+    start = None
     for r in range(rows):
         for c in range(cols):
             if maze[r][c] == 'S':
-                start_row, start_col = r, c
+                start = (r, c)
                 break
+        if start is not None:
+            break
 
-    def get_neighbors(r, c):
-        neighbors = []
-        if maze[r][c] in ('-', 'L', 'F','S'):
-            if c > 0 and maze[r][c - 1] in ('-', 'J', '7','S'):
-                neighbors.append((r, c - 1))
-            if c < cols - 1 and maze[r][c + 1] in ('-', 'F', 'L','S'):
-                neighbors.append((r, c + 1))
-        if maze[r][c] in ('|', 'L', 'J', 'S'):
-            if r > 0 and maze[r - 1][c] in ('|', '7', 'F','S'):
-                neighbors.append((r - 1, c))
-            if r < rows - 1 and maze[r + 1][c] in ('|', 'L', 'J', 'S'):
-                neighbors.append((r + 1, c))
-        if maze[r][c] in ('J','7','S'):
-            if r > 0 and c > 0 and maze[r-1][c-1] in ('J','7','S'):
-                   neighbors.append((r-1,c-1))
-            if r < rows-1 and c < cols-1 and maze[r+1][c+1] in ('J','7','S'):
-                    neighbors.append((r+1,c+1))
-        if maze[r][c] in ('L','F','S'):
-            if r > 0 and c < cols-1 and maze[r-1][c+1] in ('L','F','S'):
-                neighbors.append((r-1,c+1))
-            if r< rows -1 and c>0 and maze[r+1][c-1] in ('L','F', 'S'):
-                neighbors.append((r+1,c-1))
-        return neighbors
-
-    q = [(start_row, start_col, 0)]
-    visited = set()
+    q = [(start, 0)]
+    visited = {start}
     max_dist = 0
-    while q:
-        r, c, dist = q.pop(0)
-        if (r, c) in visited:
-            continue
-        visited.add((r, c))
-        max_dist = max(max_dist, dist)
-        for nr, nc in get_neighbors(r, c):
-            if (nr, nc) not in visited:
-                q.append((nr, nc, dist + 1))
+    graph = {}
 
+    while q:
+        (r, c), dist = q.pop(0)
+        max_dist = max(max_dist, dist)
+
+        neighbors = []
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check all 4 directions
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                if maze[nr][nc] != '.':
+                    neighbors.append((nr, nc))
+                    
+        if (r,c) not in graph:
+            graph[(r,c)] = []
+        
+        if len(neighbors) == 2:
+            for nr, nc in neighbors:
+                if (nr, nc) not in visited:
+                    q.append(((nr, nc), dist + 1))
+                    visited.add((nr, nc))
+                    if (nr,nc) not in graph:
+                        graph[(nr,nc)] = []
+                    graph[(r,c)].append((nr,nc))
+                    graph[(nr,nc)].append((r,c))
+                    
+    q = [(start, 0)]
+    visited = {start}
+    max_dist = 0
+
+    while q:
+        (r, c), dist = q.pop(0)
+        max_dist = max(max_dist, dist)
+
+        for neighbor in graph.get((r,c), []):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                q.append((neighbor, dist + 1))
     return max_dist
 
 def solution() -> int:
@@ -59,6 +63,5 @@ def solution() -> int:
             maze_str += line + "\n"
         except EOFError:
             break
-
-    result = furthest_point_in_pipe_maze(maze_str)
-    return result
+    maze = maze_str.strip().split('\n')
+    return solve(maze)
