@@ -1,4 +1,3 @@
-import re
 from typing import List
 
 def is_symbol(char: str) -> bool:
@@ -6,44 +5,43 @@ def is_symbol(char: str) -> bool:
 
 def sum_part_numbers(schematic: str) -> int:
     lines: List[str] = schematic.splitlines()
-    rows = len(lines)
-    cols = len(lines[0]) if rows > 0 else 0
-    total_sum = 0
-
-    for r in range(rows):
-        for c in range(cols):
+    total_sum: int = 0
+    for r in range(len(lines)):
+        c = 0
+        while c < len(lines[r]):
             if lines[r][c].isdigit():
-                num_str = ''
-                is_part_num = False
                 start_c = c
+                while c < len(lines[r]) and lines[r][c].isdigit():
+                    c += 1
+                num_str = lines[r][start_c:c]
+                is_part_number = False
+                for dr in [-1, 0, 1]:
+                    for dc in [-1, 0, 1]:
+                        if dr == 0 and dc == 0:
+                            continue
+                        nr = r + dr
+                        nc = start_c + dc
+                        if 0 <= nr < len(lines) and 0 <= nc < len(lines[r]):
+                            if is_symbol(lines[nr][nc]):
+                                is_part_number = True
+                                break
+                    if is_part_number:
+                        break
 
-                # Extract the entire number
-                temp_c = c
-                while temp_c < cols and lines[r][temp_c].isdigit():
-                    num_str += lines[r][temp_c]
-                    temp_c += 1
-
-                # Check adjacency to symbols around the entire number
-                for i in range(r - 1, r + 2):
-                    for j in range(start_c - 1, temp_c + 1):
-                        if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]):
-                            is_part_num = True
-                            break  # Optimization: No need to check further
-                    if is_part_num:
-                        break  # Optimization: No need to check further
-                if is_part_num:
+                if is_part_number:
                     total_sum += int(num_str)
-
-                c = temp_c - 1
-
+            else:
+                c += 1
     return total_sum
 
 def solution() -> int:
-    input_str = ""
-    while True:
-        try:
+    schematic: str = ""
+    try:
+        while True:
             line = input()
-            input_str += line + "\n"
-        except EOFError:
-            break
-    return sum_part_numbers(input_str)
+            schematic += line + "\n"
+    except EOFError:
+        pass
+
+    result: int = sum_part_numbers(schematic)
+    return result
