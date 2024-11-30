@@ -25,17 +25,28 @@ def furthest_point_in_pipe_maze(maze_str: str) -> int:
             if c < cols - 1 and maze[r][c + 1] in ('-', 'F', 'L', '7', 'J', 'S'):
                 neighbors.append((r, c + 1))
 
-        if maze[r][c] in ('L', '7', 'S'):
+        if maze[r][c] in ('L', 'F', '7', 'J', 'S'):
             if r > 0 and c > 0 and maze[r-1][c-1] in ('L', '7', 'F', 'J', 'S'):
-                neighbors.append((r-1, c-1))
+                if maze[r][c] in ('L', '7', 'S') and maze[r-1][c-1] in ('7', 'L','S', 'F','J'):
+                    neighbors.append((r-1, c-1))
+                elif maze[r][c] in ('J', 'F', 'S') and maze[r-1][c-1] in ('F', 'J', 'S','L','7'):
+                    neighbors.append((r-1,c-1))
             if r < rows-1 and c < cols -1 and maze[r+1][c+1] in ('L', '7', 'F', 'J', 'S'):
-                neighbors.append((r+1,c+1))
-        if maze[r][c] in ('J', 'F', 'S'):
+                if maze[r][c] in ('L', '7', 'S') and maze[r+1][c+1] in ('L', '7','S', 'F', 'J'):
+                    neighbors.append((r+1,c+1))
+                elif maze[r][c] in ('J', 'F','S') and maze[r+1][c+1] in ('F','J','S', '7', 'L'):
+                    neighbors.append((r+1,c+1))
             if r > 0 and c < cols - 1 and maze[r - 1][c + 1] in ('J', 'F','L', '7', 'S'):
-                neighbors.append((r - 1, c + 1))
-            if r < rows - 1 and c > 0 and maze[r + 1][c - 1] in ('J', 'F','L', '7', 'S'):
-                neighbors.append((r + 1, c - 1))
+                if maze[r][c] in ('J','F','S') and maze[r-1][c+1] in ('J','F','S', 'L','7'):
+                    neighbors.append((r - 1, c + 1))
+                elif maze[r][c] in ('L', '7','S') and maze[r-1][c+1] in ('L', '7','S','J','F'):
+                    neighbors.append((r - 1, c + 1))
 
+            if r < rows - 1 and c > 0 and maze[r + 1][c - 1] in ('J', 'F','L', '7', 'S'):
+                if maze[r][c] in ('J','F','S') and maze[r + 1][c - 1] in ('F','J','S','7', 'L'):
+                    neighbors.append((r + 1, c - 1))
+                elif maze[r][c] in ('7', 'L', 'S') and maze[r+1][c-1] in ('7', 'L', 'S', 'J','F'):
+                    neighbors.append((r + 1, c - 1))
         return neighbors
 
     q = [(start_row, start_col, 0)]
