@@ -21,10 +21,9 @@ def sum_part_numbers(schematic: str) -> int:
                             continue
                         nr = r + dr
                         nc = start_c + dc
-                        if 0 <= nr < len(lines) and 0 <= nc < len(lines[r]):
-                            if is_symbol(lines[nr][nc]):
-                                is_part_number = True
-                                break
+                        if 0 <= nr < len(lines) and 0 <= nc < len(lines[nr]) and is_symbol(lines[nr][nc]):
+                            is_part_number = True
+                            break
                     if is_part_number:
                         break
 
