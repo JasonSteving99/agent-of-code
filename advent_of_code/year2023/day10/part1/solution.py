@@ -24,8 +24,6 @@ def solve(grid: List[str]) -> int:
                     neighbors.append((nr, nc))
                 elif dr == -1 and dc == 0 and (grid[nr][nc] == 'L' or grid[nr][nc] == 'F' or grid[nr][nc] == 'J' or grid[nr][nc] == '7'):
                     neighbors.append((nr, nc))
-                
-
 
         return neighbors
 
@@ -44,6 +42,10 @@ def solve(grid: List[str]) -> int:
 
     return max_dist
 
+def max_steps_in_loop(grid_str: str) -> int:
+    grid = grid_str.strip().split('\n')
+    return solve(grid)
+
 def solution() -> int:
     grid_str = "" 
     while True:
@@ -53,5 +55,4 @@ def solution() -> int:
         except EOFError:
             break
 
-    grid = grid_str.strip().split('\n')
-    return solve(grid)
+    return max_steps_in_loop(grid_str)
