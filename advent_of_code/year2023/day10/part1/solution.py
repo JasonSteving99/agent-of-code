@@ -16,33 +16,39 @@ def build_loop_graph(maze_lines: List[str], r: int, c: int, graph: Dict[Tuple[in
         'J' : [(0, -1), (-1, 0)],
         '7' : [(1, 0), (0, -1)],
         'F' : [(1, 0), (0, 1)],
-        'S' : [(0, 1), (0, -1), (1, 0), (-1, 0)]
     }
     
-    for dr, dc in valid_pipes.get(current_pipe, []):
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
-            next_pipe = maze_lines[nr][nc]
-            
-            valid_reverse_pipes = {
-                '|' : [(1, 0), (-1, 0)],
-                '-' : [(0, 1), (0, -1)],
-                'L' : [(0, -1), (1,0)],
-                'J' : [(0, 1), (1, 0)],
-                '7' : [(-1,0), (0, 1)],
-                'F' : [(-1, 0), (0, -1)],
-                'S' : [(0, 1), (0, -1), (1, 0), (-1, 0)]
-            }
-            
-            ndr, ndc = r - dr, c -dc #we need the reverse
-            
-            if next_pipe == 'S' or current_pipe == 'S' or (ndr, ndc) in valid_reverse_pipes.get(next_pipe, []):
-                graph[(r, c)].append((nr, nc))
-                if (nr, nc) not in graph:
-                    graph[(nr, nc)] = []
-                graph[(nr, nc)].append((r, c))
-                build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
-
+    if current_pipe != 'S':
+        for dr, dc in valid_pipes.get(current_pipe, []):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
+                next_pipe = maze_lines[nr][nc]
+                valid_reverse_pipes = {
+                    '|' : [(1, 0), (-1, 0)],
+                    '-' : [(0, 1), (0, -1)],
+                    'L' : [(0, -1), (1,0)],
+                    'J' : [(0, 1), (1, 0)],
+                    '7' : [(-1,0), (0, 1)],
+                    'F' : [(-1, 0), (0, -1)],
+                }
+                ndr, ndc = r - dr, c -dc
+                if next_pipe == 'S' or (ndr, ndc) in valid_reverse_pipes.get(next_pipe, []):
+                    graph[(r, c)].append((nr, nc))
+                    if (nr, nc) not in graph:
+                        graph[(nr, nc)] = []
+                    graph[(nr, nc)].append((r, c))
+                    build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
+    else:
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited:
+                next_pipe = maze_lines[nr][nc]
+                if next_pipe != '.':
+                    graph[(r, c)].append((nr, nc))
+                    if (nr, nc) not in graph:
+                        graph[(nr, nc)] = []
+                    graph[(nr, nc)].append((r, c))
+                    build_loop_graph(maze_lines, nr, nc, graph, visited, loop_members)
 
 def max_loop_distance(maze: str) -> int:
     maze_lines = maze.splitlines()
