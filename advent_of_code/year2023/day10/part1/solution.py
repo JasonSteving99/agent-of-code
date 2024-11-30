@@ -1,62 +1,60 @@
 from typing import List
 
-def farthest_point_in_loop(maze: str) -> int:
-    maze_rows: List[str] = maze.splitlines()
-    rows = len(maze_rows)
-    cols = len(maze_rows[0])
-    start = None
-    for r in range(rows):
-        for c in range(cols):
-            if maze_rows[r][c] == 'S':
-                start = (r, c)
-                break
-        if start:
-            break
+def solve(maze: str) -> int:
+    grid = [list(row) for row in maze.splitlines()]
+    rows = len(grid)
+    cols = len(grid[0])
 
-    graph = {}
-    for r in range(rows):
-        for c in range(cols):
-            if maze_rows[r][c] != '.':
-                neighbors = []
-                char = maze_rows[r][c]
-                if char in ('|', 'L', 'J', '7', 'F', 'S'):
-                    if r > 0 and maze_rows[r - 1][c] != '.':
-                        neighbors.append((r - 1, c))
-                    if r < rows - 1 and maze_rows[r + 1][c] != '.':
-                        neighbors.append((r + 1, c))
-                if char in ('-', 'L', 'F', 'J', '7', 'S'):
-                    if c > 0 and maze_rows[r][c - 1] != '.':
-                        neighbors.append((r, c - 1))
-                    if c < cols - 1 and maze_rows[r][c + 1] != '.':
-                        neighbors.append((r, c + 1))
-                graph[(r, c)] = neighbors
+    def find_start():
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == 'S':
+                    return r, c
+        return None
 
-    distances = {start: 0} if start is not None else {}
-    queue = [start] if start is not None else []
+    start_row, start_col = find_start()
+
+    connections = {
+        '|': {(-1, 0), (1, 0)},
+        '-': {(0, -1), (0, 1)},
+        'L': {(0, 1), (-1, 0)},
+        'J': {(0, -1), (-1, 0)},
+        '7': {(1, 0), (0, -1)},
+        'F': {(1, 0), (0, 1)},
+    }
+
+    def get_neighbors(r, c):
+        neighbors = []
+        for dr, dc in connections.get(grid[r][c], []):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                for dr2, dc2 in connections.get(grid[nr][nc], []):
+                    if (nr + dr2 == r and nc + dc2 == c):
+                        neighbors.append((nr, nc))
+                        break
+        return neighbors
+
+    q = [(start_row, start_col, 0)]
+    visited = set([(start_row, start_col)])
     max_dist = 0
-    farthest_node = start
 
-    while queue:
-        curr = queue.pop(0)
-        if curr not in graph:
-            break
-        for neighbor in graph[curr]:
-            if neighbor not in distances:
-                distances[neighbor] = distances[curr] + 1
-                queue.append(neighbor)
-                if distances[neighbor] > max_dist:
-                    max_dist = distances[neighbor]
-                    farthest_node = neighbor
+    while q:
+        r, c, dist = q.pop(0)
+        max_dist = max(max_dist, dist)
+
+        for nr, nc in get_neighbors(r,c):
+            if (nr, nc) not in visited:
+                visited.add((nr, nc))
+                q.append((nr, nc, dist + 1))
 
     return max_dist
 
 def solution() -> int:
-    maze: str = ""
+    maze_str: str = ""
     while True:
         try:
             line = input()
-            maze += line + "\n"
+            maze_str += line + "\n"
         except EOFError:
             break
-
-    return farthest_point_in_loop(maze)
+    return solve(maze_str[:-1])
