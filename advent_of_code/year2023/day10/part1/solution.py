@@ -1,12 +1,13 @@
 from typing import List
 
-def max_loop_distance(maze: List[str]) -> int:
-    rows = len(maze)
-    cols = len(maze[0])
+def max_loop_distance(maze: str) -> int:
+    maze_lines = maze.splitlines()
+    rows = len(maze_lines)
+    cols = len(maze_lines[0])
     start = None
     for r in range(rows):
         for c in range(cols):
-            if maze[r][c] == 'S':
+            if maze_lines[r][c] == 'S':
                 start = (r, c)
                 break
         if start is not None:
@@ -25,7 +26,7 @@ def max_loop_distance(maze: List[str]) -> int:
         for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:  # Check all 4 directions
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
-                if maze[nr][nc] != '.':
+                if maze_lines[nr][nc] != '.':
                     neighbors.append((nr, nc))
                     
         if (r,c) not in graph:
@@ -63,5 +64,5 @@ def solution() -> int:
             maze_str += line + "\n"
         except EOFError:
             break
-    maze = maze_str.strip().split('\n')
-    return max_loop_distance(maze)
+    
+    return max_loop_distance(maze_str.strip())
