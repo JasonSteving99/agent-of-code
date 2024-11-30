@@ -1,27 +1,25 @@
-from solution import max_pipe_loop_distance
+# This test suite covers the calculation of the maximum distance from 'S' within a pipe loop.
 
-"""
-Test cases for the function max_pipe_loop_distance.
+from solution import max_loop_distance
+import pytest
 
-The function takes a grid layout string as input. The goal is to calculate the maximum number of steps
-required to reach the farthest point within a continuous pipe loop starting from 'S' on a grid.
-Disconnected pipes should be ignored.
-"""
-
-def test_max_pipe_loop_distance_example1():
-    grid = ".....\n.F-7.\n.|.|.\n.L-J.\n....."
-    expected_distance = 4
-    actual_distance = max_pipe_loop_distance(grid)
-    assert actual_distance == expected_distance, f"For the input grid:\n{grid}\nExpected distance: {expected_distance}, but got: {actual_distance}"
-
-def test_max_pipe_loop_distance_example2():
-    grid = "7-F7-\n.FJ|7\nSJLL7\n|F--J\nLJ.LJ"
-    expected_distance = 8
-    actual_distance = max_pipe_loop_distance(grid)
-    assert actual_distance == expected_distance, f"For the input grid:\n{grid}\nExpected distance: {expected_distance}, but got: {actual_distance}"
-
-def test_max_pipe_loop_distance_example3():
-    grid = "..F7.\n.FJ|.\nSJ.L7\n|F--J\nLJ..."
-    expected_distance = 8
-    actual_distance = max_pipe_loop_distance(grid)
-    assert actual_distance == expected_distance, f"For the input grid:\n{grid}\nExpected distance: {expected_distance}, but got: {actual_distance}"
+@pytest.mark.parametrize("maze, expected_distance", [
+    (".....
+.F-7.
+.|.|.
+.L-J.
+.....", 4),
+    ("7-F7-
+.FJ|7
+SJLL7
+|F--J
+LJ.LJ", 8),
+    ("..F7.
+.FJ|.
+SJ.L7
+|F--J
+LJ...", 8),
+])
+def test_max_loop_distance(maze, expected_distance):
+    actual_distance = max_loop_distance(maze)
+    assert actual_distance == expected_distance, f"For the maze:\n{maze}\nExpected max distance: {expected_distance}, but got: {actual_distance}"

@@ -1,56 +1,76 @@
-from typing import List
+from typing import List, Tuple
 
-def max_pipe_loop_distance(grid: str) -> int:
-    grid_list = grid.splitlines()
-    rows = len(grid_list)
-    cols = len(grid_list[0])
-    start = None
-    for r in range(rows):
-        for c in range(cols):
-            if grid_list[r][c] == 'S':
-                start = (r, c)
+
+def get_neighbors(grid: List[str], r: int, c: int) -> List[Tuple[int, int]]:
+    n, m = len(grid), len(grid[0])
+    neighbors = []
+    if grid[r][c] in "|-S":
+        if r > 0 and grid[r - 1][c] != '.':
+            neighbors.append((r - 1, c))
+        if r < n - 1 and grid[r + 1][c] != '.':
+            neighbors.append((r + 1, c))
+    if grid[r][c] in "-S":
+        if c > 0 and grid[r][c - 1] != '.':
+            neighbors.append((r, c - 1))
+        if c < m - 1 and grid[r][c + 1] != '.':
+            neighbors.append((r, c + 1))
+    if grid[r][c] in "L7S":
+        if r > 0 and grid[r - 1][c] != '.':
+            neighbors.append((r - 1, c))
+        if c < m - 1 and grid[r][c + 1] != '.':
+            neighbors.append((r, c + 1))
+    if grid[r][c] in "JFS":
+        if r > 0 and grid[r - 1][c] != '.':
+            neighbors.append((r - 1, c))
+        if c > 0 and grid[r][c - 1] != '.':
+            neighbors.append((r, c - 1))
+    if grid[r][c] in "F|S":
+        if r < n - 1 and grid[r + 1][c] != '.':
+            neighbors.append((r + 1, c))
+        if c < m - 1 and grid[r][c + 1] != '.':
+            neighbors.append((r, c + 1))
+    if grid[r][c] in "7-S":
+        if r < n - 1 and grid[r + 1][c] != '.':
+            neighbors.append((r + 1, c))
+        if c > 0 and grid[r][c - 1] != '.':
+            neighbors.append((r, c - 1))
+    return neighbors
+
+
+def max_loop_distance(grid_str: str) -> int:
+    grid: List[str] = grid_str.splitlines()
+    n, m = len(grid), len(grid[0])
+    start_r, start_c = -1, -1
+    for r in range(n):
+        for c in range(m):
+            if grid[r][c] == 'S':
+                start_r, start_c = r, c
                 break
-        if start is not None:
-            break
 
-    connections = {}
-    for r in range(rows):
-        for c in range(cols):
-            if grid_list[r][c] != '.':
-                neighbors = []
-                if grid_list[r][c] in ('|', 'L', 'J', 'S'):
-                    if r > 0 and grid_list[r - 1][c] != '.':
-                        neighbors.append((r - 1, c))
-                if grid_list[r][c] in ('|', 'F', '7', 'S'):
-                    if r < rows - 1 and grid_list[r + 1][c] != '.':
-                        neighbors.append((r + 1, c))
-                if grid_list[r][c] in ('-', 'L', 'F', 'S'):
-                    if c < cols - 1 and grid_list[r][c + 1] != '.':
-                        neighbors.append((r, c + 1))
-                if grid_list[r][c] in ('-', 'J', '7', 'S'):
-                    if c > 0 and grid_list[r][c - 1] != '.':
-                        neighbors.append((r, c - 1))
-                connections[(r, c)] = neighbors
-
-    q = [(start, 0)]
-    visited = {start}
+    q = [(start_r, start_c, 0)]
+    visited = set()
     max_dist = 0
+
     while q:
-        (r, c), dist = q.pop(0)
+        r, c, dist = q.pop(0)
+        if (r, c) in visited:
+            continue
+        visited.add((r, c))
         max_dist = max(max_dist, dist)
-        for nr, nc in connections[(r, c)]:
-            if (nr, nc) not in visited:
-                visited.add((nr, nc))
-                q.append(((nr, nc), dist + 1))
+
+        for nr, nc in get_neighbors(grid, r, c):
+            q.append((nr, nc, dist + 1))
 
     return max_dist
 
+
 def solution() -> int:
-    grid = ""
+    grid_str = ""
     while True:
         try:
             line = input()
-            grid += line + "\n"
+            grid_str += line + "\n"
         except EOFError:
             break
-    return max_pipe_loop_distance(grid)
+
+    return max_loop_distance(grid_str)
