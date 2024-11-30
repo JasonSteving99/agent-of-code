@@ -28,15 +28,14 @@ def sum_part_numbers(schematic: str) -> int:
                     for j in range(start_c - 1, temp_c + 1):
                         if 0 <= i < rows and 0 <= j < cols and is_symbol(lines[i][j]):
                             is_part_num = True
-                            break  # Optimization: Exit inner loop early
+                            break
                     if is_part_num:
-                        break # Optimization: Exit outer loop early
+                        break
 
                 if is_part_num:
                     total_sum += int(num_str)
-                    c = temp_c -1 # Skip already processed digits
-                else:
-                    c = temp_c - 1
+
+                c = temp_c - 1
 
     return total_sum
 
