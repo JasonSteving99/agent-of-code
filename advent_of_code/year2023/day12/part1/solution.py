@@ -8,10 +8,8 @@ def is_valid_pattern(pattern: str, groups: List[int]) -> bool:
     return damaged_groups == groups
 
 
-def count_spring_arrangements(line: str) -> int:
-    # Split input line into pattern and groups
-    pattern, groups_str = line.strip().split()
-    groups = [int(x) for x in groups_str.split(',')]
+def count_spring_arrangements(springs: str, groups: List[int]) -> int:
+    pattern = springs.split()[0]
 
     @functools.lru_cache(maxsize=None)
     def solve(pidx: int, gidx: int, curr_len: int) -> int:
@@ -53,7 +51,11 @@ def solution() -> int:
     # Process each line and sum up the results
     total = 0
     for line in lines:
-        total += count_spring_arrangements(line)
+        parts = line.split()
+        springs_pattern = parts[0]
+        groups_str = parts[1]
+        groups_list = [int(x) for x in groups_str.split(',')]
+        total += count_spring_arrangements(springs_pattern, groups_list)
 
     return total
 
