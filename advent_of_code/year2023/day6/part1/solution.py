@@ -23,14 +23,14 @@ def count_winning_options(time: int, distance: int) -> int:
         return 0
 
     # Find roots
-    sqrt_discriminant = int(math.sqrt(discriminant))
-    x1 = int((time - sqrt_discriminant) / 2)
-    x2 = int((time + sqrt_discriminant) / 2)
-    
-    lower = math.ceil(x1)
-    upper = math.floor(x2)
+    sqrt_discriminant = math.sqrt(discriminant)
+    x1 = (time - sqrt_discriminant) / 2
+    x2 = (time + sqrt_discriminant) / 2
 
-    return max(0, int(upper) - int(lower) + 1)
+    lower = int(math.ceil(x1))
+    upper = int(math.floor(x2))
+
+    return max(0, upper - lower + 1)
 
 
 def calculate_winning_durations_product(input_str: str) -> int:
