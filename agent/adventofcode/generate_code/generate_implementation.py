@@ -76,22 +76,17 @@ async def generate_implementation(
             response_type=GeneratedImplementation,
         )
     else:
-        assert isinstance(
-            generate_implementation_prompt, str
-        ), "Lazy coding, expecting the prompt to be a string."
+        assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
         generated_implementation = await anthropic_prompt(
             model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
             system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-            prompt=cast(str, generate_implementation_prompt),
+            prompt=generate_implementation_prompt[0].msg,
             response_type=GeneratedImplementation,
         )
-        generate_implementation_prompt = [
-            UserMessage(msg=cast(str, generate_implementation_prompt))
-        ]
 
     return GenerateImplementationOutput(
         prompt_history=[
-            *cast(list[UserMessage | ModelMessage], generate_implementation_prompt),
+            *generate_implementation_prompt,
             ModelMessage(msg=generated_implementation.model_dump()),
         ],
         generated_implementation=generated_implementation,
@@ -102,8 +97,8 @@ def _get_generate_implementation_prompt(
     problem_html: str,
     examples_context: ExamplesContext,
     debugging_prompt: DebuggingPrompt | None = None,
-) -> str | list[UserMessage | ModelMessage]:
-    prompt: str | list[UserMessage | ModelMessage]
+) -> list[UserMessage | ModelMessage]:
+    prompt: list[UserMessage | ModelMessage]
 
     if debugging_prompt:
         assert (
@@ -130,13 +125,17 @@ IMPORTANT: Follow the given refactoring plan EXACTLY to fix the problem.
             ),
         ]
     else:
-        prompt = f"""
+        prompt = [
+            UserMessage(
+                msg=f"""
 ### Problem Statement HTML:
 {problem_html}
 
 ### Existing Unit Tests:
 {examples_context.model_dump_json(indent=2)}
 """
+            )
+        ]
 
     return prompt
 

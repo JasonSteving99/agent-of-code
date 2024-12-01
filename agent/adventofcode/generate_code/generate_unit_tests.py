@@ -17,9 +17,16 @@ from agent.adventofcode.extract_examples import (
 )
 from agent.adventofcode.generate_code.GeneratedUnitTests import GeneratedUnitTests
 from agent.adventofcode.scrape_problems import ProblemPart, scrape_aoc
+from agent.llm.anthropic.models import AnthropicModel
+from agent.llm.anthropic.prompt import prompt as anthropic_prompt
 from agent.llm.gemini.configure_genai import configure_genai
 from agent.llm.gemini.models import GeminiModel
-from agent.llm.gemini.prompt import ModelMessage, PromptHistory, UserMessage, prompt
+from agent.llm.gemini.prompt import (
+    ModelMessage,
+    PromptHistory,
+    UserMessage,
+    prompt as gemini_prompt,
+)
 
 
 class GenerateUnitTestsOutput(PromptHistory, BaseModel):
@@ -51,12 +58,24 @@ IMPORTANT: Make sure that any assertions provide EXPLICIT context on the input(s
         examples_context=examples_context,
         debugging_prompt=debugging_prompt,
     )
-    generated_unit_tests = await prompt(
-        GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=system_prompt_text,
-        prompt=generate_unit_tests_prompt,
-        response_type=GeneratedUnitTests,
-    )
+    # The initial prompt will use the more capable Clause Sonnet 3.5 model, but subsequent debugging
+    # requests will use Gemini 1.5 Pro.
+    if debugging_prompt:
+        generated_unit_tests = await gemini_prompt(
+            GeminiModel.GEMINI_1_5_PRO,
+            system_prompt=system_prompt_text,
+            prompt=generate_unit_tests_prompt,
+            response_type=GeneratedUnitTests,
+        )
+    else:
+        assert isinstance(generate_unit_tests_prompt[0], UserMessage), "Lazy coding"
+        generated_unit_tests = await anthropic_prompt(
+            AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
+            system_prompt=system_prompt_text,
+            prompt=generate_unit_tests_prompt[0].msg,
+            response_type=GeneratedUnitTests,
+        )
+
     return GenerateUnitTestsOutput(
         prompt_history=[
             *generate_unit_tests_prompt,

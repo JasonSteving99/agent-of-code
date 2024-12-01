@@ -27,6 +27,10 @@ def max_loop_distance(grid_str: str) -> int:
         if start_pos:
             break
 
+    # Handle case where no 'S' is found
+    if start_pos is None:
+        return 0 # Return 0 when no 'S' is found
+
     # Define valid connections for each pipe type
     connections = {
         '|': [(-1, 0), (1, 0)],   # North and South
