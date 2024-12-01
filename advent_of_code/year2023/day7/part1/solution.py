@@ -1,77 +1,87 @@
-"""Solution to Camel Cards problem."""
 from collections import Counter
-from enum import IntEnum
+from dataclasses import dataclass
+from enum import IntEnum, auto
 from typing import List, Tuple
 
+
 class HandType(IntEnum):
-    """Enum for hand types from weakest to strongest."""
-    HIGH_CARD = 1
-    ONE_PAIR = 2
-    TWO_PAIR = 3
-    THREE_OF_KIND = 4
-    FULL_HOUSE = 5
-    FOUR_OF_KIND = 6
-    FIVE_OF_KIND = 7
+    HIGH_CARD = auto()
+    ONE_PAIR = auto()
+    TWO_PAIR = auto()
+    THREE_OF_KIND = auto()
+    FULL_HOUSE = auto()
+    FOUR_OF_KIND = auto()
+    FIVE_OF_KIND = auto()
 
-def parse_input(input_str: str) -> List[Tuple[str, int]]:
-    """Parse the input string into a list of (hand, bid) tuples."""
-    result = []
-    for line in input_str.strip().split('\n'):
-        hand, bid = line.split()
-        result.append((hand, int(bid)))
-    return result
 
-def get_card_strength(card: str) -> int:
-    """Get the numeric strength of a card."""
-    strengths = {str(i): i for i in range(2, 10)}
-    strengths.update({'T': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14})
-    return strengths[card]
+@dataclass
+class Hand:
+    cards: str
+    bid: int
+    type: HandType
 
-def get_hand_type(hand: str) -> HandType:
-    """Determine the type of a hand."""
-    counts = Counter(hand)
-    sorted_counts = sorted(counts.values(), reverse=True)
-    
-    if sorted_counts[0] == 5:
-        return HandType.FIVE_OF_KIND
-    elif sorted_counts[0] == 4:
-        return HandType.FOUR_OF_KIND
-    elif sorted_counts[0] == 3 and sorted_counts[1] == 2:
-        return HandType.FULL_HOUSE
-    elif sorted_counts[0] == 3:
-        return HandType.THREE_OF_KIND
-    elif sorted_counts[0] == 2 and sorted_counts[1] == 2:
-        return HandType.TWO_PAIR
-    elif sorted_counts[0] == 2:
-        return HandType.ONE_PAIR
-    return HandType.HIGH_CARD
+    def _get_hand_type(self) -> HandType:
+        counts = Counter(self.cards)
+        freq = sorted(counts.values(), reverse=True)
 
-def compare_hands(hand1: str, hand2: str) -> bool:
-    """Compare two hands, return True if hand1 is stronger than hand2."""
-    type1 = get_hand_type(hand1)
-    type2 = get_hand_type(hand2)
-    
-    if type1 != type2:
-        return type1 > type2
-        
-    # If types are equal, compare cards one by one
-    for c1, c2 in zip(hand1, hand2):
-        if c1 != c2:
-            return get_card_strength(c1) > get_card_strength(c2)
-    return False
+        if freq[0] == 5:
+            return HandType.FIVE_OF_KIND
+        elif freq[0] == 4:
+            return HandType.FOUR_OF_KIND
+        elif freq[0] == 3 and freq[1] == 2:
+            return HandType.FULL_HOUSE
+        elif freq[0] == 3:
+            return HandType.THREE_OF_KIND
+        elif freq[0] == 2 and freq[1] == 2:
+            return HandType.TWO_PAIR
+        elif freq[0] == 2:
+            return HandType.ONE_PAIR
+        return HandType.HIGH_CARD
+
+    def __lt__(self, other: 'Hand') -> bool:
+        if self.type != other.type:
+            return self.type.value < other.type.value
+
+        # Map cards to their relative strengths for comparison
+        card_strength = {card: idx for idx, card in enumerate(
+            ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+        )}
+
+        for s, o in zip(self.cards, other.cards):
+            if s != o:
+                return card_strength[s] < card_strength[o]
+        return False
+
+
+def parse_input(input_data: str) -> List[Tuple[str, int]]:
+    hands = []
+    for line in input_data.strip().split('\n'):
+        cards, bid = line.split()
+        hands.append((cards, int(bid)))
+    return hands
+
 
 def calculate_total_winnings(input_str: str) -> int:
-    """Calculate total winnings for all hands in the input."""
-    hands_and_bids = parse_input(input_str)
+    # Parse input into hands and bids
+    hand_data = parse_input(input_str)
     
-    # Sort hands based on strength (weakest to strongest)
-    sorted_hands = sorted(hands_and_bids, 
-                        key=lambda x: (get_hand_type(x[0]), 
-                                     [get_card_strength(c) for c in x[0]]))
+    # Create Hand objects with type information
+    hands = []
+    for cards, bid in hand_data:
+        hand = Hand(cards, bid, None)
+        hand.type = hand._get_hand_type()
+        hands.append(hand)
     
-    # Calculate total winnings
-    total = 0
-    for rank, (hand, bid) in enumerate(sorted_hands, 1):
-        total += rank * bid
+    # Sort hands and calculate winnings
+    hands.sort()  # Uses the __lt__ method defined in Hand class
     
-    return total
+    total_winnings = 0
+    for rank, hand in enumerate(hands, 1):
+        total_winnings += hand.bid * rank
+    
+    return total_winnings
+
+
+def solution() -> int:
+    import sys
+    return calculate_total_winnings(sys.stdin.read())

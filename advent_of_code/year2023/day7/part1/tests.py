@@ -1,5 +1,5 @@
-# Unit tests for Camel Cards problem.
-# These tests cover the calculation of total winnings based on hand ranks and bids.
+# Unit tests for the 'calculate_total_winnings' function covering basic examples.
+# These tests check the total winnings calculation based on hand rankings and bids.
 
 from solution import calculate_total_winnings
 import pytest
