@@ -1,94 +1,92 @@
-"""Solution for the pipe maze problem."""
+"""Solution for pipe maze maximum loop distance problem."""
+
 from collections import deque
-from typing import List, Set, Tuple, Dict
+from typing import Dict, List, Set, Tuple
 
 
-def get_possible_directions(pipe: str) -> List[Tuple[int, int]]:
-    """Return possible movement directions for a given pipe type."""
-    directions = {
-        '|': [(-1, 0), (1, 0)],  # North and South
-        '-': [(0, -1), (0, 1)],  # West and East
-        'L': [(-1, 0), (0, 1)],  # North and East
-        'J': [(-1, 0), (0, -1)],  # North and West
-        '7': [(1, 0), (0, -1)],  # South and West
-        'F': [(1, 0), (0, 1)],   # South and East
-    }
-    return directions.get(pipe, [])
-
-
-def get_connected_neighbors(maze: List[str], row: int, col: int) -> List[Tuple[int, int]]:
-    """Return valid connected neighbors for a given position."""
-    rows, cols = len(maze), len(maze[0])
-    neighbors = []
-
-    # If current position is 'S', check all adjacent pipes that connect back to S
-    if maze[row][col] == 'S':
-        # Check all adjacent positions
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            new_row, new_col = row + dx, col + dy
-            if 0 <= new_row < rows and 0 <= new_col < cols:
-                pipe = maze[new_row][new_col]
-                if pipe != '.':
-                    # For each adjacent pipe, check if it connects back to S
-                    directions = get_possible_directions(pipe)
-                    for dir_x, dir_y in directions:
-                        if new_row + dir_x == row and new_col + dir_y == col:
-                            neighbors.append((new_row, new_col))
-        return neighbors
-
-    # For regular pipes, use their defined directions
-    current_pipe = maze[row][col]
-    for dx, dy in get_possible_directions(current_pipe):
-        new_row, new_col = row + dx, col + dy
-        if 0 <= new_row < rows and 0 <= new_col < cols:
-            neighbors.append((new_row, new_col))
-    return neighbors
-
-
-def find_start(maze: List[str]) -> Tuple[int, int]:
-    """Find the starting position 'S' in the maze."""
-    for i, row in enumerate(maze):
-        if 'S' in row:
-            return i, row.index('S')
-    return -1, -1
-
-
-def calculate_max_loop_distance(maze_str: str) -> int:
-    """Calculate the maximum distance in the loop from the starting position.
-
+def max_loop_distance(grid_str: str) -> int:
+    """Calculate maximum distance within pipe loop from start position.
+    
     Args:
-        maze_str: The maze representation as a string with newlines.
-
+        grid_str: A string representing the grid layout with newlines
+        
     Returns:
-        The maximum distance from the starting position in the loop.
+        Maximum distance within the loop from starting position
     """
-    # Convert input string to list of strings
-    maze = maze_str.strip().split('\n')
+    # Parse grid into 2D list
+    grid = grid_str.strip().split('\n')
+    rows, cols = len(grid), len(grid[0])
 
-    # Find starting position
-    start_row, start_col = find_start(maze)
+    # Find start position
+    start_pos = None
+    for i in range(rows):
+        for j in range(cols):
+            if grid[i][j] == 'S':
+                start_pos = (i, j)
+                break
+        if start_pos:
+            break
+
+    # Define valid connections for each pipe type
+    connections = {
+        '|': [(-1, 0), (1, 0)],   # North and South
+        '-': [(0, -1), (0, 1)],   # West and East
+        'L': [(-1, 0), (0, 1)],   # North and East
+        'J': [(-1, 0), (0, -1)],  # North and West
+        '7': [(1, 0), (0, -1)],   # South and West
+        'F': [(1, 0), (0, 1)],    # South and East
+        'S': [(-1, 0), (1, 0), (0, -1), (0, 1)]  # All directions initially
+    }
+
+    def is_valid(x: int, y: int) -> bool:
+        """Check if position is within grid bounds."""
+        return 0 <= x < rows and 0 <= y < cols
+
+    def can_connect(from_pos: Tuple[int, int], to_pos: Tuple[int, int]) -> bool:
+        """Check if two adjacent positions can form a valid pipe connection."""
+        from_x, from_y = from_pos
+        to_x, to_y = to_pos
+        
+        # Get the pipe types at both positions
+        from_pipe = grid[from_x][from_y]
+        to_pipe = grid[to_x][to_y]
+        
+        if from_pipe not in connections or to_pipe not in connections:
+            return False
+            
+        # Get the direction vectors from both positions
+        dx, dy = to_x - from_x, to_y - from_y
+        reverse_dx, reverse_dy = -dx, -dy
+        
+        # Check if both pipes have compatible connections
+        return (dx, dy) in connections[from_pipe] and (reverse_dx, reverse_dy) in connections[to_pipe]
 
     # BFS to find distances
-    distances: Dict[Tuple[int, int], int] = {(start_row, start_col): 0}
-    queue = deque([(start_row, start_col)])
-    visited: Set[Tuple[int, int]] = {(start_row, start_col)}
-
+    distances: Dict[Tuple[int, int], int] = {start_pos: 0}
+    queue = deque([start_pos])
+    visited: Set[Tuple[int, int]] = {start_pos}
+    
     while queue:
-        current_row, current_col = queue.popleft()
-        current_dist = distances[(current_row, current_col)]
+        current = queue.popleft()
+        curr_x, curr_y = current
+        
+        # Check all possible directions
+        for dx, dy in connections[grid[curr_x][curr_y]]:
+            next_x, next_y = curr_x + dx, curr_y + dy
+            
+            if (is_valid(next_x, next_y) and 
+                (next_x, next_y) not in visited and 
+                can_connect(current, (next_x, next_y))):
+                
+                distances[(next_x, next_y)] = distances[current] + 1
+                visited.add((next_x, next_y))
+                queue.append((next_x, next_y))
 
-        for next_row, next_col in get_connected_neighbors(maze, current_row, current_col):
-            if (next_row, next_col) not in visited:
-                visited.add((next_row, next_col))
-                distances[(next_row, next_col)] = current_dist + 1
-                queue.append((next_row, next_col))
-
-    # Return maximum distance if any points were found
-    return max(distances.values()) if distances else 0
+    # Return maximum distance in the loop
+    return max(distances.values())
 
 
 def solution() -> int:
-    """Read from stdin and solve the problem."""
+    """Read input from stdin and return the solution."""
     import sys
-    input_data = sys.stdin.read()
-    return calculate_max_loop_distance(input_data)
+    return max_loop_distance(sys.stdin.read())

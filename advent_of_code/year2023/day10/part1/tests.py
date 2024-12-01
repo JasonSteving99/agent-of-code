@@ -1,30 +1,67 @@
-# This test suite covers calculating the maximum distance within a pipe maze loop from a starting point 'S'.
+"""Unit tests for max_loop_distance function that calculates the maximum distance
+from a starting point 'S' to the farthest point in a pipe maze loop.
 
-from solution import calculate_max_loop_distance
+The tests cover:
+- Basic pipe loop configurations with standard connections
+- Loops with 'S' as a straight pipe or corner piece
+- Various maze sizes and loop shapes
+- Different pipe segment arrangements (straight, corners, junctions)
+"""
+
+from solution import max_loop_distance
 import pytest
 
-@pytest.mark.parametrize("maze, expected_distance", [
-    (""".....
-.F-7.
-.|.|.
-.L-J.
-.....""", 4),
-    ("""-L|F7
-7S-7|
-L|7||
--L-J|
-L|-JF""", 4),
-    ("""..F7.
-.FJ|.
-SJ.L7
-|F--J
-LJ...""", 8),
-    ("""7-F7-
-.FJ|7
-SJLL7
-|F--J
-LJ.LJ""", 8),
-])
-def test_calculate_max_loop_distance(maze, expected_distance):
-    actual_distance = calculate_max_loop_distance(maze)
-    assert actual_distance == expected_distance, f"For maze:\n{maze}\nExpected max loop distance: {expected_distance}, but got: {actual_distance}"
+
+def test_basic_loop_with_f_start():
+    maze = (".....\n"
+            ".F-7.\n"
+            ".|.|.\n"
+            ".L-J.\n"
+            ".....")
+    result = max_loop_distance(maze)
+    assert result == 4, (f"For basic square loop with F start:\n{maze}\n"
+                        f"Expected distance: 4, but got {result}")
+
+
+def test_basic_loop_with_s_start():
+    maze = (".....\n"
+            ".S-7.\n"
+            ".|.|.\n"
+            ".L-J.\n"
+            ".....")
+    result = max_loop_distance(maze)
+    assert result == 4, (f"For basic square loop with S start:\n{maze}\n"
+                        f"Expected distance: 4, but got {result}")
+
+
+def test_complex_loop_with_s_corner():
+    maze = ("-L|F7\n"
+            "7S-7|\n"
+            "L|7||\n"
+            "-L-J|\n"
+            "L|-JF")
+    result = max_loop_distance(maze)
+    assert result == 4, (f"For complex loop with S as corner:\n{maze}\n"
+                        f"Expected distance: 4, but got {result}")
+
+
+def test_larger_loop_with_gaps():
+    maze = ("..F7.\n"
+            ".FJ|.\n"
+            "SJ.L7\n"
+            "|F--J\n"
+            "LJ...")
+    result = max_loop_distance(maze)
+    assert result == 8, (f"For larger loop with gaps:\n{maze}\n"
+                        f"Expected distance: 8, but got {result}")
+
+
+def test_full_complex_loop():
+    maze = ("7-F7-\n"
+            ".FJ|7\n"
+            "SJLL7\n"
+            "|F--J\n"
+            "LJ.LJ")
+    result = max_loop_distance(maze)
+    assert result == 8, (f"For full complex loop:\n{maze}\n"
+                        f"Expected distance: 8, but got {result}")
