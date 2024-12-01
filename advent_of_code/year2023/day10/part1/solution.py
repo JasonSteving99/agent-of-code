@@ -16,6 +16,10 @@ def max_steps_in_pipe_maze(grid_str: str) -> int:
                 break
         if start_pos:
             break
+
+    # Handle case where 'S' is not found
+    if start_pos is None:
+        return 0
     
     # Define possible pipe connections
     pipe_connections = {
