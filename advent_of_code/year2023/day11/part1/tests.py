@@ -6,9 +6,9 @@ from solution import calculate_sum_of_shortest_paths
 import pytest
 
 @pytest.mark.parametrize("input_str, expected_output", [
-    ("...#......\n.......#..\n#.........\n..........
+    ("""...#......\n.......#..\n#.........\n..........
 ......#...\n.#........\n.........#\n..........
-.......#..\n#...#.....", 374)
+.......#..\n#...#.....""", 374)
 ])
 def test_calculate_sum_of_shortest_paths(input_str, expected_output):
     actual_output = calculate_sum_of_shortest_paths(input_str)
