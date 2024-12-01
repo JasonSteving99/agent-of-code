@@ -27,8 +27,8 @@ def count_winning_options(time: int, distance: int) -> int:
     x1 = (time - sqrt_discriminant) / 2
     x2 = (time + sqrt_discriminant) / 2
 
-    lower = int(math.ceil(x1))
-    upper = int(math.floor(x2))
+    lower = int(math.floor(x1)) + 1
+    upper = int(math.ceil(x2)) -1
 
     return max(0, upper - lower + 1)
 
