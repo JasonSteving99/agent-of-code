@@ -7,6 +7,13 @@ match environ.get("AOC_COOKIE"):
     case _:
         raise RuntimeError("You must set the AOC_COOKIE env variable!")
 
+ANTHROPIC_API_KEY: str
+match environ.get("ANTHROPIC_API_KEY"):
+    case str(api_key):
+        ANTHROPIC_API_KEY = api_key
+    case _:
+        raise RuntimeError("Must set ANTHROPIC_API_KEY env variable!")
+
 GEMINI_API_KEY: str
 match environ.get("GEMINI_API_KEY"):
     case str(api_key):

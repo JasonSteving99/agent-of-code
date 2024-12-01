@@ -16,9 +16,16 @@ from agent.adventofcode.generate_code.GeneratedImplementation import (
 )
 from agent.adventofcode.problem_part import ProblemPart
 from agent.adventofcode.scrape_problems import scrape_aoc
+from agent.llm.anthropic.prompt import prompt as anthropic_prompt
+from agent.llm.anthropic.models import AnthropicModel
 from agent.llm.gemini.configure_genai import configure_genai
 from agent.llm.gemini.models import GeminiModel
-from agent.llm.gemini.prompt import ModelMessage, PromptHistory, UserMessage, prompt
+from agent.llm.gemini.prompt import (
+    ModelMessage,
+    PromptHistory,
+    UserMessage,
+    prompt as gemini_prompt,
+)
 
 
 class GenerateImplementationOutput(PromptHistory, BaseModel):
@@ -59,15 +66,32 @@ async def generate_implementation(
         examples_context=examples_context,
         debugging_prompt=debugging_prompt,
     )
-    generated_implementation = await prompt(
-        GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-        prompt=generate_implementation_prompt,
-        response_type=GeneratedImplementation,
-    )
+    # The initial prompt will use the more capable Clause Sonnet 3.5 model, but subsequent debugging
+    # requests will use Gemini 1.5 Pro.
+    if debugging_prompt:
+        generated_implementation = await gemini_prompt(
+            GeminiModel.GEMINI_1_5_PRO,
+            system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+            prompt=generate_implementation_prompt,
+            response_type=GeneratedImplementation,
+        )
+    else:
+        assert isinstance(
+            generate_implementation_prompt, str
+        ), "Lazy coding, expecting the prompt to be a string."
+        generated_implementation = await anthropic_prompt(
+            model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
+            system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+            prompt=cast(str, generate_implementation_prompt),
+            response_type=GeneratedImplementation,
+        )
+        generate_implementation_prompt = [
+            UserMessage(msg=cast(str, generate_implementation_prompt))
+        ]
+
     return GenerateImplementationOutput(
         prompt_history=[
-            *generate_implementation_prompt,
+            *cast(list[UserMessage | ModelMessage], generate_implementation_prompt),
             ModelMessage(msg=generated_implementation.model_dump()),
         ],
         generated_implementation=generated_implementation,
@@ -78,8 +102,8 @@ def _get_generate_implementation_prompt(
     problem_html: str,
     examples_context: ExamplesContext,
     debugging_prompt: DebuggingPrompt | None = None,
-) -> list[UserMessage | ModelMessage]:
-    prompt: list[UserMessage | ModelMessage]
+) -> str | list[UserMessage | ModelMessage]:
+    prompt: str | list[UserMessage | ModelMessage]
 
     if debugging_prompt:
         assert (
@@ -106,17 +130,13 @@ IMPORTANT: Follow the given refactoring plan EXACTLY to fix the problem.
             ),
         ]
     else:
-        prompt = [
-            UserMessage(
-                msg=f"""
+        prompt = f"""
 ### Problem Statement HTML:
 {problem_html}
 
 ### Existing Unit Tests:
 {examples_context.model_dump_json(indent=2)}
-""",
-            )
-        ]
+"""
 
     return prompt
 

@@ -165,6 +165,8 @@ async def run_generated_solution(
             return GeneratedSolutionRes(
                 result=GeneratedSolutionRes.Failure(exit_code=err.returncode, std_err=err.stderr)
             )
+        case _:
+            raise ValueError("Unexpected execute generated solution result")
 
 
 class DebugUnitTestFailuresArgs(BaseModel):
@@ -185,15 +187,19 @@ async def debug_unit_test_failures(args: DebugUnitTestFailuresArgs) -> Theorized
         error_msg=args.error_msg,
     )
 
+
 class PlanImplRefactoringArgs(BaseModel):
     examples: AoCProblemExtractedExamples
     examples_context: ExamplesContext
     generated_impl_src: GeneratedImplementation
     theorized_solution: TheorizedSolution
 
+
 @activity.defn
 async def plan_impl_refactoring(args: PlanImplRefactoringArgs) -> RefactoringPlan:
-    assert args.theorized_solution.optional_theorized_implementation_fix, "Expected a theorized impl fix to be set."
+    assert (
+        args.theorized_solution.optional_theorized_implementation_fix
+    ), "Expected a theorized impl fix to be set."
 
     return await get_refactoring_plan(
         examples=args.examples,
