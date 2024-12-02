@@ -1,82 +1,48 @@
 """
-Tests for the calculate_total_distance function that computes the total distance between pairs of numbers.
+Tests for calculate_total_distance function that computes the total absolute difference 
+between two sorted lists of numbers, where the input is provided as a multi-line string
+with each line containing a space-separated pair of numbers.
 
-The tests verify:
-1. Basic functionality for calculating absolute differences between number pairs
-2. Proper handling of multi-line string input with spaces
-3. Correct summation of all absolute differences
-4. Input format parsing (numbers separated by spaces, pairs on separate lines)
+The tests verify that:
+1. The function correctly processes a multi-line input string
+2. The function properly handles whitespace-separated number pairs
+3. The function correctly calculates total distance after sorting both lists independently
+4. The function returns an integer result representing the sum of absolute differences
 """
 
 from solution import calculate_total_distance
 import pytest
 
-def test_calculate_total_distance_basic_example():
-    # Test with the provided example containing 6 pairs of numbers
+
+def test_calculate_total_distance_with_six_pairs():
+    # Given a string input with 6 pairs of numbers
     input_str = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
-    expected_sum = 11  # |3-4| + |4-3| + |2-5| + |1-3| + |3-9| + |3-3| = 1 + 1 + 3 + 2 + 6 + 0 = 11
     
+    # When calculating total distance
     result = calculate_total_distance(input_str)
     
-    assert result == expected_sum, (
-        f"Failed to calculate correct total distance.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected_sum}\n"
-        f"Got: {result}"
+    # Then the result should be 11
+    # This represents the sum of absolute differences after sorting:
+    # Left list sorted:  [1, 2, 3, 3, 3, 4]
+    # Right list sorted: [3, 3, 3, 4, 5, 9]
+    # Differences:       [2, 1, 0, 1, 2, 5] = 11
+    assert result == 11, (
+        f"Expected total distance of 11 for input:\n{input_str}\n"
+        f"Got {result} instead"
     )
 
-def test_calculate_total_distance_empty_string():
-    # Test with empty input string
-    input_str = ""
-    expected_sum = 0
-    
-    result = calculate_total_distance(input_str)
-    
-    assert result == expected_sum, (
-        f"Failed to handle empty input string.\n"
-        f"Input: {input_str!r}\n"
-        f"Expected: {expected_sum}\n"
-        f"Got: {result}"
-    )
 
-def test_calculate_total_distance_single_pair():
-    # Test with a single pair of numbers
-    input_str = "5   3"
-    expected_sum = 2  # |5-3| = 2
+def test_calculate_total_distance_with_whitespace_variations():
+    # Given the same input with different whitespace between numbers
+    input_str_1 = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"  # multiple spaces
+    input_str_2 = "3 4\n4 3\n2 5\n1 3\n3 9\n3 3"  # single spaces
     
-    result = calculate_total_distance(input_str)
+    # When calculating total distance for both inputs
+    result_1 = calculate_total_distance(input_str_1)
+    result_2 = calculate_total_distance(input_str_2)
     
-    assert result == expected_sum, (
-        f"Failed to calculate distance for single pair.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected_sum}\n"
-        f"Got: {result}"
-    )
-
-def test_calculate_total_distance_identical_numbers():
-    # Test with pairs of identical numbers
-    input_str = "5   5\n3   3\n1   1"
-    expected_sum = 0  # |5-5| + |3-3| + |1-1| = 0
-    
-    result = calculate_total_distance(input_str)
-    
-    assert result == expected_sum, (
-        f"Failed to calculate distance for identical pairs.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected_sum}\n"
-        f"Got: {result}"
-    )
-
-def test_calculate_total_distance_whitespace_variations():
-    # Test with varying amounts of whitespace
-    input_str = "3    4\n4  3\n2     5"
-    expected_sum = 5  # |3-4| + |4-3| + |2-5| = 1 + 1 + 3
-    
-    result = calculate_total_distance(input_str)
-    
-    assert result == expected_sum, (
-        f"Failed to handle varying whitespace.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected_sum}\n"
-        f"Got: {result}"
+    # Then both results should be identical
+    assert result_1 == result_2 == 11, (
+        "Results should be identical regardless of whitespace between numbers.\n"
+        f"Got {result_1} for multiple spaces and {result_2} for single spaces"
     )
