@@ -22,14 +22,27 @@ async def fetch_problem(session: aiohttp.ClientSession, year: int, day: int) -> 
         return await response.text()
 
 
-def parse_problem(html: str, part: ProblemPart):
+def parse_problem(html: str, part: ProblemPart) -> str:
     soup = BeautifulSoup(html, "html.parser")
     article = soup.find_all("article", class_="day-desc")
     if article:
         # Let's just return the html as a string for now.
-        return str(article[part - 1])
+        part_1_html = str(article[0])
+        match part:
+            case 1:
+                return part_1_html
+            case 2:
+                # Cheat a bit and embed a note directly within the page html telling the LLM that
+                # we've already solved part 1 and only want it to focus on a solution to part 2.
+                return f"""<main>
+<!-- Part 1 -->
+{part_1_html}
+<p>Part 1 solved - great job! Now try to solve part 2!</p>
+<!-- Part 2 -->
+{str(article[1])}
+</main>"""
         # return article[part - 1].get_text(separator="\n", strip=False)
-    return "Problem description not found."
+    raise ValueError("Problem description not found.")
 
 
 async def scrape_aoc(session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart) -> str:

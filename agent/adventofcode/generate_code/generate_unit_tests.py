@@ -143,10 +143,12 @@ async def _cmd(
         problem_html = await scrape_aoc(
             session=session, year=year, day=day, part=cast(ProblemPart, int(part))
         )
-    examples = await extract_examples_from_problem_html(problem_html=problem_html)
+    solve_part_2 = part == "2"
+    examples = await extract_examples_from_problem_html(
+        problem_html=problem_html, solve_part_2=solve_part_2
+    )
     examples_context = await contextualize_examples(
-        problem_html=problem_html,
-        examples=examples,
+        problem_html=problem_html, examples=examples, solve_part_2=solve_part_2
     )
     unit_tests = await generate_unit_tests(examples=examples, examples_context=examples_context)
     print(unit_tests)

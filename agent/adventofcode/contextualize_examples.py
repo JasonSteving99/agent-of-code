@@ -33,9 +33,9 @@ class ExamplesContext(BaseModel):
 
 
 async def contextualize_examples(
-    problem_html: str, examples: AoCProblemExtractedExamples
+    problem_html: str, examples: AoCProblemExtractedExamples, solve_part_2: bool
 ) -> ExamplesContext:
-    system_prompt_text = """
+    system_prompt_text = f"""
 You are a skilled technical reader tasked with analyzing coding problems presented within HTML, and sample input/output examples for the coding problem.
 
 Your goal is to provide succinct and helpful information on the examples that provides context on what exactly the examples demonstrate from the perspective of enabling someone to write unit tests of an implementation solving the coding problem.
@@ -44,6 +44,15 @@ In the spirit of "TDD" (test-driven-development) we're doing this so that we can
 
 Ignore all HTML tags and focus solely on the input/output data. Do not attempt to solve the problem; only contextualize the examples.
 
+{"""
+ !!!!MOST IMPORTANT!!!!: 
+    - You are tasked with solving PART 2 of a multi-part problem that BUILDS ON TOP OF PART 1.
+    - The problem parts 1 and 2 are denoted by the following HTML comments: "<!-- Part 1 -->", and "<!-- Part 2 -->".
+    - You MUST FOCUS on part 2.
+    - Keep in mind that part 2 is a modification/variation on part 1 so pay attention to how part 2 specifies modifications on part 1.
+    - Part 2 specifies completely new example inputs and outputs - FOCUS ON EXAMPLES FOR PART 2 ONLY! 
+
+ """ if solve_part_2 else ""}
 You MUST respond with the specified JSON format.
 """  # noqa: E501
     return await prompt(
@@ -77,7 +86,10 @@ async def _cmd(
     print(
         await contextualize_examples(
             problem_html=problem_html,
-            examples=await extract_examples_from_problem_html(problem_html=problem_html),
+            examples=await extract_examples_from_problem_html(
+                problem_html=problem_html, solve_part_2=part == "2"
+            ),
+            solve_part_2=part == "2",
         )
     )
 

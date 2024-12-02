@@ -6,6 +6,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 from temporalio.exceptions import ApplicationError
 
+
 # Imports passed through Temporal's sandbox without overriding stdlib.
 with workflow.unsafe.imports_passed_through():
     from agent.adventofcode.contextualize_examples import ExamplesContext
@@ -21,8 +22,10 @@ with workflow.unsafe.imports_passed_through():
         AoCProblem,
         CommitChangesArgs,
         DebugUnitTestFailuresArgs,
+        ExtractExamplesArgs,
         ExtractedProblemPart,
         GeneratedSolutionRes,
+        GetExamplesContextArgs,
         GetGeneratedImplementationArgs,
         GetGeneratedUnitTestsArgs,
         PlanImplRefactoringArgs,
@@ -54,14 +57,49 @@ class SolveAoCProblemWorkflowArgs(BaseModel):
     solutions_dir: str
 
 
+class SolveAoCProblemWorkflowResult(BaseModel):
+    part_1_solution: GeneratedSolutionRes
+    # Only populated if part 1 was solved successfully.
+    part_2_solution: GeneratedSolutionRes | None
+
+
 @workflow.defn
 class SolveAoCProblemWorkflow:
     @workflow.run
-    async def run(self, args: SolveAoCProblemWorkflowArgs) -> GeneratedSolutionRes:
+    async def run(self, args: SolveAoCProblemWorkflowArgs) -> SolveAoCProblemWorkflowResult:
         solve_aoc_part_1_problem_req = AoCProblem(year=args.year, day=args.day, part=1)
-        problem_part = await workflow.execute_activity(
-            extract_problem_part,
+        problem_part = await self._scrape_problem_part(solve_aoc_part_1_problem_req)
+
+        # Start by solving part 1.
+        part_1_solution = await self._solve_part(
             solve_aoc_part_1_problem_req,
+            problem_part,
+            solutions_dir=path_join(args.solutions_dir, "part1"),
+        )
+        if isinstance(part_1_solution.result, GeneratedSolutionRes.Failure):
+            # If we weren't even able to solve part 1, we can't move on to part 2.
+            return SolveAoCProblemWorkflowResult(
+                part_1_solution=part_1_solution, part_2_solution=None
+            )
+
+        # Now move on to solving part 2.
+        solve_aoc_part_2_problem_req = AoCProblem(year=args.year, day=args.day, part=2)
+        problem_part = await self._scrape_problem_part(solve_aoc_part_2_problem_req)
+        part_2_solution = await self._solve_part(
+            solve_aoc_part_2_problem_req,
+            problem_part,
+            solutions_dir=path_join(args.solutions_dir, "part2"),
+        )
+
+        # Return the solutions we were able to get.
+        return SolveAoCProblemWorkflowResult(
+            part_1_solution=part_1_solution, part_2_solution=part_2_solution
+        )
+
+    async def _scrape_problem_part(self, problem_req: AoCProblem) -> ExtractedProblemPart:
+        return await workflow.execute_activity(
+            extract_problem_part,
+            problem_req,
             start_to_close_timeout=timedelta(seconds=15),
             retry_policy=RetryPolicy(
                 maximum_attempts=5,
@@ -71,34 +109,37 @@ class SolveAoCProblemWorkflow:
             ),
         )
 
-        # Start by solving part 1.
-        return await self._solve_part_1(
-            solve_aoc_part_1_problem_req, problem_part, path_join(args.solutions_dir, "part1")
-        )
-
-    async def _solve_part_1(
+    async def _solve_part(
         self,
         solve_aoc_problem_req: AoCProblem,
         problem_part: ExtractedProblemPart,
         solutions_dir: str,
     ) -> GeneratedSolutionRes:
+        # Some of the prompts get modified to extract solutions to part 2.
+        solve_part_2 = solve_aoc_problem_req.part == 2
+
         extracted_examples = await workflow.execute_activity(
             extract_examples,
-            problem_part,
+            ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
             start_to_close_timeout=timedelta(seconds=60),
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
         examples_context = await workflow.execute_activity(
             get_examples_context,
-            args=[problem_part, extracted_examples],
+            GetExamplesContextArgs(
+                extracted_problem_part=problem_part,
+                extracted_examples=extracted_examples,
+                solve_part_2=solve_part_2,
+            ),
             start_to_close_timeout=timedelta(seconds=60),
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
 
-        for _ in range(_MAX_PROBLEM_PART_ATTEMPTS):
-            # Since I don't think I should show the unit tests to the LLM when asking it to generate the
-            # implementation, I can just go ahead and generate the initial implementation concurrently.
+        for i in range(_MAX_PROBLEM_PART_ATTEMPTS):
+            # Since I don't think I should show the unit tests to the LLM when asking it to generate
+            # the implementation, I can just go ahead and generate the initial implementation
+            # concurrently.
             unit_tests, implementation = await asyncio.gather(
                 workflow.execute_activity(
                     get_generated_unit_tests,
@@ -111,16 +152,19 @@ class SolveAoCProblemWorkflow:
                 workflow.execute_activity(
                     get_generated_implementation,
                     GetGeneratedImplementationArgs(
-                        extracted_problem_part=problem_part, examples_context=examples_context
+                        extracted_problem_part=problem_part,
+                        examples_context=examples_context,
+                        solve_part_2=solve_part_2,
                     ),
                     start_to_close_timeout=timedelta(seconds=60),
                     retry_policy=RetryPolicy(maximum_attempts=5),
                 ),
             )
 
-            # Commit these initial tests and implementation files right away before executing any tests.
-            # At this point, we're just ensuring that we can actually track the progress that this agent
-            # makes since it'll be really interesting to go back through and evaluate this later on.
+            # Commit these initial tests and implementation files right away before executing any
+            # tests. At this point, we're just ensuring that we can actually track the progress that
+            # this agent makes since it'll be really interesting to go back through and evaluate
+            # this later on.
             await workflow.execute_activity(
                 commit_changes,
                 CommitChangesArgs(
@@ -135,19 +179,25 @@ class SolveAoCProblemWorkflow:
                 retry_policy=RetryPolicy(maximum_attempts=5),
             )
 
-            # Now, actually run the generated unit tests to see if we're gonna be able to move forward.
-            # We'll iterate on making changes to the tests and the implementation itself until we can
-            # get these tests to pass, before we'll move on to executing the full solution on the
-            # overall problem input.
-            unit_tests, implementation = await iteratively_make_unit_tests_pass(
-                solve_aoc_problem_req=solve_aoc_problem_req,
-                solutions_dir=solutions_dir,
-                problem_part=problem_part,
-                extracted_examples=extracted_examples,
-                examples_context=examples_context,
-                unit_tests=unit_tests,
-                implementation=implementation,
-            )
+            # Now, actually run the generated unit tests to see if we're gonna be able to move
+            # forward. We'll iterate on making changes to the tests and the implementation itself
+            # until we can get these tests to pass, before we'll move on to executing the full
+            # solution on the overall problem input.
+            try:
+                unit_tests, implementation = await iteratively_make_unit_tests_pass(
+                    solve_aoc_problem_req=solve_aoc_problem_req,
+                    solutions_dir=solutions_dir,
+                    problem_part=problem_part,
+                    extracted_examples=extracted_examples,
+                    examples_context=examples_context,
+                    unit_tests=unit_tests,
+                    implementation=implementation,
+                )
+            except ApplicationError as e:
+                if i + 1 < _MAX_PROBLEM_PART_ATTEMPTS:
+                    workflow.logger.warning(f"{e.message}...Retrying...")
+                    continue
+                raise e
 
             problem_solution_result = await workflow.execute_activity(
                 run_generated_solution,
@@ -257,6 +307,7 @@ async def iteratively_make_unit_tests_pass(
                         GetGeneratedImplementationArgs(
                             extracted_problem_part=problem_part,
                             examples_context=examples_context,
+                            solve_part_2=solve_aoc_problem_req.part == 2,
                             debugging_prompt=DebuggingPrompt(
                                 prior_msg_history=implementation.prompt_history,
                                 error_msg=test_failure.err_msg,

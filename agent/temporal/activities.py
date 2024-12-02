@@ -53,22 +53,30 @@ async def extract_problem_part(aoc_problem: AoCProblem) -> ExtractedProblemPart:
         )
 
 
+class ExtractExamplesArgs(BaseModel):
+    extracted_problem_part: ExtractedProblemPart
+    solve_part_2: bool
+
+
 @activity.defn
-async def extract_examples(
-    extracted_problem_part: ExtractedProblemPart,
-) -> AoCProblemExtractedExamples:
+async def extract_examples(args: ExtractExamplesArgs) -> AoCProblemExtractedExamples:
     return await extract_examples_from_problem_html(
-        problem_html=extracted_problem_part.problem_html
+        problem_html=args.extracted_problem_part.problem_html, solve_part_2=args.solve_part_2
     )
 
 
+class GetExamplesContextArgs(BaseModel):
+    extracted_problem_part: ExtractedProblemPart
+    extracted_examples: AoCProblemExtractedExamples
+    solve_part_2: bool
+
+
 @activity.defn
-async def get_examples_context(
-    extracted_problem_part: ExtractedProblemPart,
-    extracted_examples: AoCProblemExtractedExamples,
-) -> ExamplesContext:
+async def get_examples_context(args: GetExamplesContextArgs) -> ExamplesContext:
     return await contextualize_examples(
-        problem_html=extracted_problem_part.problem_html, examples=extracted_examples
+        problem_html=args.extracted_problem_part.problem_html,
+        examples=args.extracted_examples,
+        solve_part_2=args.solve_part_2,
     )
 
 
@@ -90,6 +98,7 @@ async def get_generated_unit_tests(args: GetGeneratedUnitTestsArgs) -> GenerateU
 class GetGeneratedImplementationArgs(BaseModel):
     extracted_problem_part: ExtractedProblemPart
     examples_context: ExamplesContext
+    solve_part_2: bool
     debugging_prompt: DebuggingPrompt | None = None
 
 
@@ -100,6 +109,7 @@ async def get_generated_implementation(
     return await generate_implementation(
         problem_html=args.extracted_problem_part.problem_html,
         examples_context=args.examples_context,
+        solve_part_2=args.solve_part_2,
         debugging_prompt=args.debugging_prompt,
     )
 

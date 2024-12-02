@@ -32,7 +32,8 @@ class GenerateImplementationOutput(PromptHistory, BaseModel):
     generated_implementation: GeneratedImplementation
 
 
-GENERATED_CODE_RULES = """
+def _get_initial_attempt_system_prompt_text(solve_part_2: bool) -> str:
+    GENERATED_CODE_RULES = """
 You MUST respond with a single complete Python 3.12 program with full type annotations. 
 IMPORTANT: ONLY use imports from Python's stdlib. DO NOT use any third party libraries whatsoever in your implementation.
 IMPORTANT: Your implementation MUST ONLY do I/O to read the problem input from stdin. You MUST NOT open any files.
@@ -41,7 +42,7 @@ IMPORTANT: The solution() function MUST take no args and read the input from std
 IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not print anything to stdout.
 """
 
-INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT = f"""
+    INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT = f"""
 You are a skilled software engineer, proficient at evaluating coding problems and writing simple and correct solutions using Python 3.12.
 
 Ignore all HTML tags in the problem statement and focus on how you will implement a valid solution to the problem.
@@ -52,13 +53,24 @@ Your goal is to provide a succinct and correct solution to the given coding prob
 
 Remember to ignore all HTML tags and carefully attempt to solve the problem.
 
+{"""
+ !!!!MOST IMPORTANT!!!!: 
+    - You are tasked with solving PART 2 of a multi-part problem that BUILDS ON TOP OF PART 1.
+    - The problem parts 1 and 2 are denoted by the following HTML comments: "<!-- Part 1 -->", and "<!-- Part 2 -->".
+    - You MUST FOCUS on part 2.
+    - Keep in mind that part 2 is a modification/variation on part 1 so pay attention to how part 2 specifies modifications on part 1.
+    - Part 2 specifies completely new example inputs and outputs - GENERATE A SOLUTION FOR PART 2 ONLY! 
+
+ """ if solve_part_2 else ""}
 {GENERATED_CODE_RULES}
 """  # noqa: E501
+    return INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT
 
 
 async def generate_implementation(
     problem_html: str,
     examples_context: ExamplesContext,
+    solve_part_2: bool,
     debugging_prompt: DebuggingPrompt | None = None,
 ) -> GenerateImplementationOutput:
     generate_implementation_prompt = _get_generate_implementation_prompt(
@@ -68,6 +80,9 @@ async def generate_implementation(
     )
     # The initial prompt will use the more capable Clause Sonnet 3.5 model, but subsequent debugging
     # requests will use Gemini 1.5 Pro.
+    INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT = _get_initial_attempt_system_prompt_text(
+        solve_part_2=solve_part_2
+    )
     if debugging_prompt:
         generated_implementation = await gemini_prompt(
             GeminiModel.GEMINI_1_5_PRO,
@@ -154,12 +169,16 @@ async def _cmd(
         problem_html = await scrape_aoc(
             session=session, year=year, day=day, part=cast(ProblemPart, int(part))
         )
+    solve_part_2 = part == "2"
     examples_context = await contextualize_examples(
         problem_html=problem_html,
-        examples=await extract_examples_from_problem_html(problem_html=problem_html),
+        examples=await extract_examples_from_problem_html(
+            problem_html=problem_html, solve_part_2=solve_part_2
+        ),
+        solve_part_2=solve_part_2,
     )
     implementation = await generate_implementation(
-        problem_html=problem_html, examples_context=examples_context
+        problem_html=problem_html, examples_context=examples_context, solve_part_2=solve_part_2
     )
     print(implementation)
 

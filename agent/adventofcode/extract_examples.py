@@ -20,14 +20,25 @@ class AoCProblemExtractedExamples(BaseModel):
     examples: list[Example]
 
 
-async def extract_examples_from_problem_html(problem_html: str) -> AoCProblemExtractedExamples:
-    system_prompt_text = """
+async def extract_examples_from_problem_html(
+    problem_html: str, solve_part_2: bool
+) -> AoCProblemExtractedExamples:
+    system_prompt_text = f"""
 You are a skilled technical reader tasked with extracting input/output examples from coding problems presented within HTML. Your goal is to provide these examples in a format suitable for unit testing.
 
 Ignore all HTML tags and focus solely on the input/output data. Do not attempt to solve the problem; only extract the examples.
 
 Remember to ignore all HTML tags and do not attempt to solve the problem. Extract ONLY the example inputs and outputs in the JSON format specified.
 
+{"""
+ !!!!MOST IMPORTANT!!!!: 
+    - You are tasked with solving PART 2 of a multi-part problem that BUILDS ON TOP OF PART 1.
+    - The problem parts 1 and 2 are denoted by the following HTML comments: "<!-- Part 1 -->", and "<!-- Part 2 -->".
+    - You MUST FOCUS on part 2.
+    - Keep in mind that part 2 is a modification/variation on part 1 so pay attention to how part 2 specifies modifications on part 1.
+    - Part 2 specifies completely new example inputs and outputs - EXTRACT EXAMPLES FOR PART 2 ONLY! 
+
+ """ if solve_part_2 else ""}
 IMPORTANT! You MUST return examples with a SINGLE input mapping to its SINGLE corresponding output.
 """  # noqa: E501
     return await prompt(
@@ -53,7 +64,8 @@ async def _cmd(
             await extract_examples_from_problem_html(
                 await scrape_aoc(
                     session=session, year=year, day=day, part=cast(ProblemPart, int(part))
-                )
+                ),
+                solve_part_2=part == "2",
             )
         )
 
