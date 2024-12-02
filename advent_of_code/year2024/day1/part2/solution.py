@@ -1,61 +1,72 @@
-"""Solution for calculating total distance between two lists."""
-from typing import List
+"""Solution for day 1 - list distance and similarity."""
+from collections import Counter
+from typing import List, Tuple
 
 
-def parse_input(input_str: str) -> tuple[List[int], List[int]]:
-    """Parse the input string into two lists of integers."""
-    left_list = []
-    right_list = []
-
-    # Split input into lines and process each line
-    for line in input_str.strip().split('\n'):
-        if not line:
-            continue
-        # Split line into two numbers
-        left, right = map(int, line.split())
-        left_list.append(left)
-        right_list.append(right)
-
-    return left_list, right_list
+def parse_input(text: str) -> List[Tuple[int, int]]:
+    """Parse input string into list of integer pairs."""
+    pairs = []
+    for line in text.strip().splitlines():
+        left, right = line.strip().split()
+        pairs.append((int(left), int(right)))
+    return pairs
 
 
-def calculate_total_distance(input_str: str) -> int:
+def calculate_total_distance(text: str) -> int:
+    """Calculate total distance between sorted pairs from input text.
+    
+    For part 1:
+    - Takes two lists of numbers side by side
+    - Sorts each list independently
+    - Pairs up numbers by position after sorting
+    - Calculates total distance (sum of absolute differences between pairs)
     """
-    Calculate the total distance between two lists of numbers.
+    # Parse input into pairs
+    pairs = parse_input(text)
+    
+    # Split into separate lists and sort
+    left = sorted(p[0] for p in pairs)
+    right = sorted(p[1] for p in pairs)
+    
+    # Calculate total distance between corresponding elements
+    total = 0
+    for l, r in zip(left, right):
+        total += abs(l - r)
+        
+    return total
 
-    The distance is calculated by:
-    1. Sorting both lists
-    2. Pairing numbers from the same positions
-    3. Calculating absolute difference between pairs
-    4. Summing up all differences
 
-    Args:
-        input_str: String containing pairs of numbers, one pair per line
-                  separated by whitespace
-
-    Returns:
-        Total distance between the two lists
+def calculate_similarity_score(text: str) -> int:
+    """Calculate similarity score for part 2.
+    
+    For each number x in left list:
+      - Count how many times it appears in right list (n)
+      - Add (x * n) to total score
     """
-    # Parse input into two lists
-    left_list, right_list = parse_input(input_str)
-
-    # Sort both lists
-    left_list.sort()
-    right_list.sort()
-
-    # Calculate total distance by summing absolute differences
-    total_distance = sum(abs(left - right) for left, right in zip(left_list, right_list))
-
-    return total_distance
+    pairs = parse_input(text)
+    
+    # Get lists and count frequencies
+    left = [p[0] for p in pairs]
+    right_counts = Counter(p[1] for p in pairs)
+    
+    # Calculate similarity score
+    total = 0
+    for num in left:
+        total += num * right_counts[num]
+        
+    return total
 
 
 def solution() -> int:
-    """Read from stdin and return the solution."""
-    import sys
-
-    input_data = sys.stdin.read()
-    return calculate_total_distance(input_data)
-
-
-if __name__ == "__main__":
-    print(solution())
+    """Solve both parts and return final result."""
+    # Read full input from stdin
+    text = input()
+    
+    # Run part 1 (total distance)
+    distance = calculate_total_distance(text)
+    
+    # Run part 2 (similarity score)  
+    similarity = calculate_similarity_score(text)
+    
+    # Return either part 1 or part 2 result depending on need
+    return distance  # Replace with similarity for part 2
