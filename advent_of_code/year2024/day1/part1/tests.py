@@ -38,9 +38,9 @@ def test_input_string_format():
     input_str = "3   4\n4       3"  # Extra spaces between numbers
     
     result = calculate_total_distance(input_str)
-    assert result == 1, (
+    assert result == 0, (
         f"Failed to handle varying spaces in input correctly.\n"
         f"Input:\n{input_str}\n"
-        f"Expected: 1\n"  # |3-3| + |4-4| = 0 + 1 = 1
+        f"Expected: 0\n"  # |3-3| + |4-4| = 0 + 0 = 0
         f"Got: {result}"
     )
