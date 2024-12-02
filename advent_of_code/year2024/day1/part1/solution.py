@@ -3,6 +3,8 @@ from typing import List
 
 def parse_input(input_data: str) -> List[tuple[int, int]]:
     """Parse input string into list of integer pairs."""
+    if not input_data.strip():
+        return []
     lines = input_data.strip().split('\n')
     pairs = []
     for line in lines:
@@ -20,21 +22,19 @@ def calculate_total_distance(input_data: str) -> int:
     Returns:
         int: Total distance between sorted lists
     """
-    # Parse input into pairs
     pairs = parse_input(input_data)
+    if not pairs:
+        return 0
     
-    # Separate into left and right lists
     left_list = []
     right_list = []
     for left, right in pairs:
         left_list.append(left)
         right_list.append(right)
     
-    # Sort both lists
     left_list.sort()
     right_list.sort()
     
-    # Calculate total distance
     total_distance = 0
     for i in range(len(left_list)):
         distance = abs(left_list[i] - right_list[i])
