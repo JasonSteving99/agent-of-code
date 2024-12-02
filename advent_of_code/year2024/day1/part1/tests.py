@@ -1,42 +1,31 @@
 """
-This test suite covers the calculation of total distance between two lists of numbers extracted from
-a string input. The tests verify that:
-1. The function correctly parses space-separated number pairs from input string
-2. Correctly calculates absolute differences between sorted pairs
-3. Returns the sum of all differences as an integer
+Test module for the calculate_total_distance function.
 
-The implementation should:
-- Parse input string containing number pairs (separated by spaces and newlines)
-- Sort both lists of numbers independently
-- Calculate absolute differences between corresponding positions
-- Sum up all differences and return the total
+The function takes a string input representing two lists of integers where:
+- Numbers are space-separated on each line
+- Each line contains 2 numbers, one for each list
+- The goal is to calculate total "distance" between sorted lists
+- Distance is sum of absolute differences between corresponding elements
 """
 
 from solution import calculate_total_distance
-import pytest
 
-def test_calculate_distance_with_multiple_pairs():
-    # Test with the provided example input containing 6 pairs of numbers
-    input_str = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
-    expected_output = 11
-    
-    actual_output = calculate_total_distance(input_str)
-    
-    # Detailed assertion message showing input and expected vs actual output
-    assert actual_output == expected_output, (
-        f"Failed to calculate correct total distance.\n"
-        f"Input:\n{input_str}\n"
-        f"Expected output: {expected_output}\n"
-        f"Actual output: {actual_output}"
-    )
 
-def test_input_string_format():
-    """Test that the function handles multi-line string input with variable spacing"""
+def test_calculate_total_distance_with_sorted_lists():
+    """
+    Test case for calculating total distance between two lists.
+    Input represents the pairs:
+    List 1: [3,4,2,1,3,3] -> sorted becomes [1,2,3,3,3,4]
+    List 2: [4,3,5,3,9,3] -> sorted becomes [3,3,3,4,5,9]
+    Expected distance is sum of absolute differences: |1-3| + |2-3| + |3-3| + |3-4| + |3-5| + |4-9| = 11
+    """
     input_str = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
+    expected_distance = 11
     
-    # Shouldn't raise any exceptions
     result = calculate_total_distance(input_str)
     
-    assert isinstance(result, int), (
-        f"Expected integer output, but got {type(result)} instead"
+    assert result == expected_distance, (
+        f"calculate_total_distance({input_str!r}) returned {result}, "
+        f"but expected {expected_distance}. The lists when sorted should be "
+        f"[1,2,3,3,3,4] and [3,3,3,4,5,9], with total distance = 11"
     )
