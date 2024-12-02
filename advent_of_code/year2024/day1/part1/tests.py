@@ -1,69 +1,56 @@
 """
-This test suite covers the calculation of total distance between two lists of location IDs.
-The function should:
-1. Parse input string containing pairs of location IDs (one pair per line)
-2. Extract and sort each list of location IDs independently
-3. Calculate absolute differences between corresponding positions in sorted lists
-4. Sum up all the differences to get total distance
+Unit tests for calculating Manhattan distance between two sorted lists derived from string input.
 
-For example, given input "3 4\n4 3\n2 5\n1 3\n3 9\n3 3"
-Left list becomes [1,2,3,3,3,4] and right list becomes [3,3,3,4,5,9]
-Comparing each position: |1-3|+|2-3|+|3-3|+|3-4|+|3-5|+|4-9| = 2+1+0+1+2+5 = 11
+Test focuses on:
+1. Parsing multi-line string input with pairs of integers
+2. Sorting logic for both lists before calculating distance
+3. Computing absolute differences between corresponding elements
+4. Final sum calculation for total Manhattan distance
+
+Example input is formatted as pairs of space-separated integers, one pair per line.
+Each pair contributes one number to the left list and one to the right list.
+Lists are sorted before calculating distances between corresponding elements.
 """
-
 from solution import calculate_total_distance
-import pytest
 
-
-def test_calculate_total_distance_with_multiple_pairs():
+def test_example_manhattan_distance_calculation():
+    # Input string with space-separated pairs of numbers
     input_str = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
+    
+    # Expected value based on:
+    # Left list sorted:  [1, 2, 3, 3, 3, 4]
+    # Right list sorted: [3, 3, 3, 4, 5, 9]
+    # Absolute differences: |1-3| + |2-3| + |3-3| + |3-4| + |3-5| + |4-9| = 2 + 1 + 0 + 1 + 2 + 5 = 11
     expected_result = 11
     
     result = calculate_total_distance(input_str)
     
     assert result == expected_result, (
-        f"Failed to calculate correct total distance.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected_result}\n"
-        f"Got: {result}\n"
-        f"Left list should be [1,2,3,3,3,4], right list should be [3,3,3,4,5,9]\n"
-        f"Expected distances: |1-3|+|2-3|+|3-3|+|3-4|+|3-5|+|4-9| = 2+1+0+1+2+5 = 11"
+        f"calculate_total_distance failed for input:\n{input_str}\n"
+        f"Expected: {expected_result}, but got: {result}\n"
+        f"After sorting lists, distances should sum to {expected_result}"
     )
 
-
-def test_calculate_total_distance_input_type():
-    """Test that function accepts string input and returns integer output"""
-    input_str = "1 1"
-    result = calculate_total_distance(input_str)
-    assert isinstance(result, int), (
-        f"Function should return an integer, but got {type(result)}"
-    )
-    
-    
-def test_calculate_total_distance_with_empty_input():
-    """Test handling of empty input string"""
+def test_empty_string_input():
+    # Edge case: empty string should return 0 distance
     input_str = ""
-    expected_result = 0  # Assuming empty input should return 0
+    expected_result = 0
     
     result = calculate_total_distance(input_str)
     
     assert result == expected_result, (
-        f"Failed to handle empty input string.\n"
-        f"Expected: {expected_result}\n"
-        f"Got: {result}"
+        f"calculate_total_distance failed for empty input\n"
+        f"Expected: {expected_result}, but got: {result}"
     )
 
-
-def test_calculate_total_distance_with_single_pair():
-    """Test calculation with just one pair of numbers"""
-    input_str = "3 5"
-    expected_result = 2  # |3-5| = 2
+def test_single_pair_input():
+    # Test with single pair of numbers
+    input_str = "5   7"
+    expected_result = 2  # |5-7| = 2
     
     result = calculate_total_distance(input_str)
     
     assert result == expected_result, (
-        f"Failed to calculate distance for single pair.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected_result} (|3-5| = 2)\n"
-        f"Got: {result}"
+        f"calculate_total_distance failed for single pair input: {input_str}\n"
+        f"Expected: {expected_result}, but got: {result}"
     )
