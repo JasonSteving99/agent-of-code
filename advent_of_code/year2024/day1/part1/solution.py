@@ -8,15 +8,15 @@ def parse_input(input_data: str) -> tuple[List[int], List[int]]:
     right_nums = []
 
     for line in input_data.strip().split('\n'):
-        parts = line.split()
-        if len(parts) == 2:
+        parts = line.split(' ')
+        if len(parts) >= 2:
             try:
                 left = int(parts[0])
-                right = int(parts[1])
+                right = int(parts[-1])
                 left_nums.append(left)
                 right_nums.append(right)
             except ValueError:
-                pass # Handle potential errors if non-numeric values are present
+                pass
 
     return left_nums, right_nums
 
