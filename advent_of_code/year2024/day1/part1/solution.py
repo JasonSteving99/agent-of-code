@@ -8,7 +8,7 @@ def parse_input(input_str: str) -> tuple[List[int], List[int]]:
     right_list = []
 
     for line in input_str.strip().splitlines():
-        left, right = map(int, line.split())
+        left, right = map(int, line.split(maxsplit=1))
         left_list.append(left)
         right_list.append(right)
 
