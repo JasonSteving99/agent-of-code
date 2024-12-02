@@ -8,7 +8,7 @@ def parse_input(input_data: str) -> tuple[List[int], List[int]]:
     right_nums = []
 
     for line in input_data.strip().split('\n'):
-        parts = line.split(' ')
+        parts = line.split()
         if len(parts) >= 2:
             try:
                 left = int(parts[0])
@@ -16,7 +16,7 @@ def parse_input(input_data: str) -> tuple[List[int], List[int]]:
                 left_nums.append(left)
                 right_nums.append(right)
             except ValueError:
-                pass
+                pass  # Handle potential errors if non-numeric values are present
 
     return left_nums, right_nums
 
