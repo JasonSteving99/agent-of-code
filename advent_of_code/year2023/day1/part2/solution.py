@@ -1,35 +1,40 @@
-"""Implementation for Advent of Code 2023 Day 1: Trebuchet."""
-from sys import stdin
+import sys
 from typing import List
 
 
 def get_calibration_value(line: str) -> str:
-    """Extract calibration value from input line by finding first and last digits."""
-    # Store only digits from the line
-    digits = [char for char in line if char.isdigit()]
+    """Extract the first and last digit from a string and combine them into a two-digit string.
     
-    # If there are any digits, take first and last
-    if digits:
-        return digits[0] + digits[-1]
+    Args:
+        line: A string that contains at least one digit.
     
-    # Return '00' if no digits found (though this shouldn't happen per problem spec)
-    return '00'
+    Returns:
+        A string of exactly two digits, representing the calibration value.
+        The first digit is the first digit found in the input string,
+        and the last digit is the last digit found in the input string.
+    """
+    # Find all digits in the string
+    digits = [c for c in line if c.isdigit()]
+    
+    # Return the first and last digit concatenated
+    # If there's only one digit, use it twice
+    return digits[0] + digits[-1]
 
 
 def solution() -> int:
-    """
-    Read calibration document from stdin and return sum of calibration values.
+    """Read calibration document from stdin and calculate sum of calibration values.
     
     Returns:
-        int: Sum of all calibration values in the document
+        The sum of all calibration values from the input document.
     """
     # Read all lines from stdin
-    lines: List[str] = [line.strip() for line in stdin.readlines()]
+    lines: List[str] = [line.strip() for line in sys.stdin]
     
-    # Get calibration value for each line and convert to integer
-    calibration_values: List[int] = [
-        int(get_calibration_value(line)) for line in lines
-    ]
+    # Calculate calibration values for each line and sum them
+    total = sum(int(get_calibration_value(line)) for line in lines)
     
-    # Return sum of all calibration values
-    return sum(calibration_values)
+    return total
+
+
+if __name__ == "__main__":
+    print(solution())
