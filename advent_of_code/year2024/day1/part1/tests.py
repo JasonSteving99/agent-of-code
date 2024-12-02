@@ -37,7 +37,7 @@ def test_empty_input():
 def test_single_pair():
     # Test with a single pair of numbers
     input_str = "1   2"
-    expected_output = 0  # Single pair has positions (0,0) so difference is 0
+    expected_output = 1  # Single pair has positions (0,0) after sorting; difference is abs(1-2) = 1
     
     result = calculate_total_distance(input_str)
     
