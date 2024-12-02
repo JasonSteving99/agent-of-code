@@ -8,7 +8,7 @@ def parse_input(input_str: str) -> tuple[List[int], List[int]]:
     right_list = []
 
     for line in input_str.strip().splitlines():
-        left, right = map(int, line.split())
+        left, right = map(int, line.split(' '))  # Fixed split to handle multiple spaces
         left_list.append(left)
         right_list.append(right)
 
@@ -28,14 +28,13 @@ def calculate_total_distance(input_str: str) -> int:
     """
     # Parse the input into two separate lists
     left_list, right_list = parse_input(input_str)
-    
+
     # Sort both lists independently
     left_list.sort()
     right_list.sort()
     
     # Calculate total distance by summing absolute differences of paired numbers
-    total_distance = sum(abs(left - right) 
-                        for left, right in zip(left_list, right_list))
+    total_distance = sum(abs(left - right) for left, right in zip(left_list, right_list))
     
     return total_distance
 
