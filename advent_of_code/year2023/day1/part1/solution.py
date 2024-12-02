@@ -1,54 +1,62 @@
-"""
-Advent of Code 2023 - Day 1 Solution
-Parse calibration values from strings by extracting first and last digits.
-"""
+#!/usr/bin/env python3.12
+"""Solution to Advent of Code calibration value extraction problem."""
+
 import sys
-from typing import List
+from typing import TextIO
 
 
-def solution() -> int:
-    """Read input from stdin and return sum of calibration values."""
-    lines = [line.strip() for line in sys.stdin]
-    return sum(int(get_calibration_value(line)) for line in lines)
-
-
-def get_calibration_value(text: str) -> str:
-    """Extract first and last digit from a string to form a two-digit number.
+def extract_calibration_value(line: str) -> str:
+    """Extract the calibration value from a line of text.
+    
+    The calibration value is formed by combining the first and last digits 
+    (in that order) to form a single two-digit number.
     
     Args:
-        text: Input string containing at least one digit
-    
-    Returns:
-        Two digit string number formed by first and last digits in input
+        line: A line of text containing at least one digit
         
-    Raises:
-        ValueError: If the input string contains no digits.
+    Returns:
+        A string containing the two-digit calibration value
         
     Examples:
-        >>> get_calibration_value("1abc2")
+        >>> extract_calibration_value("1abc2")
         '12'
-        >>> get_calibration_value("pqr3stu8vwx")
+        >>> extract_calibration_value("pqr3stu8vwx")
         '38'
-        >>> get_calibration_value("a1b2c3d4e5f")
+        >>> extract_calibration_value("a1b2c3d4e5f")
         '15'
-        >>> get_calibration_value("treb7uchet")
+        >>> extract_calibration_value("treb7uchet")
         '77'
     """
-    # Extract all digits from the string
-    digits = [c for c in text if c.isdigit()]
+    # Extract all digits from the line
+    digits = [char for char in line if char.isdigit()]
     
-    # Raise ValueError if no digits are found
-    if not digits:
-        raise ValueError("Input string must contain at least one digit.")
-
-    # Return first and last digit concatenated
-    # Since we know input is valid and contains at least one digit,
-    # if there's only one digit, use it twice
-    if len(digits) == 1:
-        return digits[0] * 2
-
+    # Return the first and last digits concatenated
+    # Note: When there's only one digit, use it for both first and last
     return digits[0] + digits[-1]
 
 
-if __name__ == '__main__':
-    print(solution())
+def solve(input_stream: TextIO = sys.stdin) -> int:
+    """Calculate sum of calibration values from input stream.
+    
+    Args:
+        input_stream: Text stream containing lines of calibration data
+        
+    Returns:
+        Sum of all calibration values
+    """
+    total = 0
+    for line in input_stream:
+        # Strip whitespace and get calibration value
+        cal_value = extract_calibration_value(line.strip())
+        # Convert to integer and add to total
+        total += int(cal_value)
+    return total
+
+
+def solution() -> int:
+    """Solve the puzzle by reading from stdin."""
+    return solve()
+
+
+if __name__ == "__main__":
+    print(solution())  # Only print if run directly
