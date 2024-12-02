@@ -7,7 +7,7 @@ def parse_input(text: str) -> List[Tuple[int, int]]:
     """Parse input string into list of integer pairs."""
     pairs = []
     for line in text.strip().splitlines():
-        left, right = line.strip().split()
+        left, right = line.split()
         pairs.append((int(left), int(right)))
     return pairs
 
@@ -59,7 +59,7 @@ def solution() -> int:
     
     # Run part 1 (total distance)
     distance = calculate_total_distance(text)
-    
+
     # Run part 2 (similarity score)  
     similarity = calculate_similarity_score(text)
     
