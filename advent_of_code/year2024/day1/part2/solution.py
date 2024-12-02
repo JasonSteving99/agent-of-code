@@ -1,56 +1,54 @@
-"""
-Module containing solution for part 2 of the problem.
-Calculate similarity score between two lists based on occurrence counts.
-"""
 from typing import List
+import sys
 
-
-def parse_input(input_str: str) -> tuple[List[int], List[int]]:
-    """Parse input string into two lists of integers."""
-    left_list = []
-    right_list = []
+def parse_input(raw_input: str) -> tuple[List[int], List[int]]:
+    """Parse the input into two lists of integers."""
+    left_nums = []
+    right_nums = []
     
-    for line in input_str.strip().splitlines():
+    # Split input into lines and process each line
+    for line in raw_input.strip().split('\n'):
+        # Split line by whitespace and convert to integers
         left, right = map(int, line.split())
-        left_list.append(left)
-        right_list.append(right)
+        left_nums.append(left)
+        right_nums.append(right)
         
-    return left_list, right_list
+    return left_nums, right_nums
 
-
-def count_occurrences(numbers: List[int]) -> dict[int, int]:
-    """Count occurrences of each number in the list."""
-    counts = {}
-    for num in numbers:
-        counts[num] = counts.get(num, 0) + 1
-    return counts
-
-
-def calculate_similarity_score(input_str: str) -> int:
+def calculate_similarity_score(raw_input: str) -> int:
     """
-    Calculate similarity score between two lists.
+    Calculate the similarity score between two lists of numbers.
     
-    The similarity score is calculated by taking each number in the left list
-    and multiplying it by the number of times it appears in the right list,
-    then summing all these products.
+    For each number in the left list, multiply it by the number of times it appears
+    in the right list and add to the total score.
     
     Args:
-        input_str: String containing pairs of numbers representing the left and right lists.
-                  Each pair is space-separated, and pairs are newline-separated.
+        raw_input: String containing pairs of numbers separated by whitespace,
+                  one pair per line
     
     Returns:
-        The total similarity score.
+        The total similarity score
     """
     # Parse input into two lists
-    left_list, right_list = parse_input(input_str)
+    left_nums, right_nums = parse_input(raw_input)
     
-    # Count occurrences of numbers in the right list
-    right_counts = count_occurrences(right_list)
+    # Count occurrences of each number in right list
+    right_counts = {}
+    for num in right_nums:
+        right_counts[num] = right_counts.get(num, 0) + 1
     
     # Calculate similarity score
-    similarity_score = 0
-    for num in left_list:
-        # Multiply each number by its occurrence count in the right list (0 if not present)
-        similarity_score += num * right_counts.get(num, 0)
-    
-    return similarity_score
+    total_score = 0
+    for left_num in left_nums:
+        # Multiply each left number by how many times it appears in right list
+        appearances = right_counts.get(left_num, 0)
+        total_score += left_num * appearances
+            
+    return total_score
+
+def solution() -> int:
+    """Read from stdin and return solution."""
+    return calculate_similarity_score(sys.stdin.read())
+
+if __name__ == "__main__":
+    print(solution())

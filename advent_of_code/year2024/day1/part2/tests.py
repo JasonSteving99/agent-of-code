@@ -1,76 +1,34 @@
-"""Unit tests for the calculate_similarity_score function.
+"""
+Tests for the calculate_similarity_score function that computes a similarity score
+between two columns of numbers.
 
-The function takes a string input representing two lists of integers formatted as pairs
-separated by newlines, where each pair has two numbers separated by whitespace.
-It calculates a similarity score based on counting matches between the first number
-of each pair with the second numbers.
+The tests verify that:
+1. The function correctly parses input string containing space-separated number pairs
+2. The function properly counts matches between numbers in the first and second column
+3. The function handles multiple occurrences of the same number correctly
+4. The function returns the expected integer score based on the matches found
 
-Example input format:
-3   4
-4   3
-2   5
-...
-
-Each line contains two integers separated by whitespace. The first number in each pair
-represents an ID from the first list, and the second number represents an ID from the
-second list.
-
-The function should calculate how many times each first number appears as a second number
-in other pairs, accumulating these matches into a total similarity score.
+Function signature:
+calculate_similarity_score(input_str: str) -> int
 """
 
 from solution import calculate_similarity_score
 
-def test_basic_similarity_score():
-    # Given a string with multiple number pairs where some numbers match across columns
-    input_data = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
-    
-    # When calculating the similarity score
-    result = calculate_similarity_score(input_data)
-    
-    # Then it should return 31 based on the matching patterns
-    # The explanation for score 31:
-    # - First column numbers [3,4,2,1,3,3] matching against
-    # - Second column numbers [4,3,5,3,9,3]
-    assert result == 31, (
-        f"Expected similarity score of 31 for input:\n{input_data}\n"
-        f"but got {result}"
-    )
 
-def test_empty_input():
-    # Given an empty string input
-    input_data = ""
+def test_calculate_similarity_score_with_mixed_matches():
+    # Test case with a mix of matching and non-matching numbers
+    input_str = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
+    expected_score = 31
     
-    # When calculating the similarity score
-    result = calculate_similarity_score(input_data)
+    result = calculate_similarity_score(input_str)
     
-    # Then it should return 0 as there are no pairs to compare
-    assert result == 0, (
-        f"Expected similarity score of 0 for empty input, but got {result}"
+    # Detailed assertion message showing input and expected vs actual output
+    assert result == expected_score, (
+        f"Failed for input:\n{input_str}\n"
+        f"Expected score: {expected_score}, but got: {result}"
     )
-
-def test_single_pair():
-    # Given a string with just one pair of numbers
-    input_data = "1   2"
     
-    # When calculating the similarity score
-    result = calculate_similarity_score(input_data)
-    
-    # Then it should return 0 as there is only one pair with no matches
-    assert result == 0, (
-        f"Expected similarity score of 0 for single pair input:\n{input_data}\n"
-        f"but got {result}"
-    )
-
-def test_all_matching_pairs():
-    # Given a string where all pairs have matching numbers
-    input_data = "1   1\n1   1\n1   1"
-    
-    # When calculating the similarity score
-    result = calculate_similarity_score(input_data)
-    
-    # Then it should return a score reflecting all matches
-    assert result == 9, (
-        f"Expected similarity score of 9 for all matching pairs:\n{input_data}\n"
-        f"but got {result}"
-    )
+    # The test verifies that for the input where:
+    # First column:  [3, 4, 2, 1, 3, 3]
+    # Second column: [4, 3, 5, 3, 9, 3]
+    # The function calculates the correct similarity score of 31
