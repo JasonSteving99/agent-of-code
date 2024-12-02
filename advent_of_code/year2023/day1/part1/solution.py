@@ -21,6 +21,9 @@ def get_calibration_value(text: str) -> str:
     Returns:
         Two digit string number formed by first and last digits in input
         
+    Raises:
+        ValueError: If the input string contains no digits.
+        
     Examples:
         >>> get_calibration_value("1abc2")
         '12'
@@ -34,11 +37,16 @@ def get_calibration_value(text: str) -> str:
     # Extract all digits from the string
     digits = [c for c in text if c.isdigit()]
     
+    # Raise ValueError if no digits are found
+    if not digits:
+        raise ValueError("Input string must contain at least one digit.")
+
     # Return first and last digit concatenated
     # Since we know input is valid and contains at least one digit,
     # if there's only one digit, use it twice
     if len(digits) == 1:
         return digits[0] * 2
+
     return digits[0] + digits[-1]
 
 
