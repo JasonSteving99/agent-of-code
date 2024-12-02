@@ -1,17 +1,18 @@
-"""Solution for calculating total distance between two lists."""
-from typing import List, Tuple
+"""Solution for calculating total distance between two sorted lists."""
+from typing import List
 
 
-def get_lists_from_input(input_str: str) -> Tuple[List[int], List[int]]:
+def parse_input(input_str: str) -> tuple[List[int], List[int]]:
     """Parse input string into two lists of integers."""
     left_list = []
     right_list = []
     
-    for line in input_str.strip().split('\n'):
-        left, right = line.split()
-        left_list.append(int(left))
-        right_list.append(int(right))
-    
+    for line in input_str.strip().splitlines():
+        # Split each line by whitespace and convert to integers
+        left, right = map(int, line.split())
+        left_list.append(left)
+        right_list.append(right)
+        
     return left_list, right_list
 
 
@@ -19,34 +20,35 @@ def calculate_total_distance(input_str: str) -> int:
     """
     Calculate the total distance between two lists of numbers.
     
-    Distance is defined as the sum of absolute differences between corresponding elements
-    when both lists are sorted.
+    The function:
+    1. Parses input into two lists
+    2. Sorts both lists
+    3. Calculates absolute difference between corresponding elements
+    4. Returns sum of all differences
     
     Args:
-        input_str: String containing two lists of integers separated by spaces and newlines
-        
+        input_str: String containing pairs of numbers, one pair per line,
+                  separated by whitespace
+    
     Returns:
-        Total distance between the lists
+        Total distance (sum of absolute differences between paired elements)
     """
-    # Parse input into two lists
-    left_list, right_list = get_lists_from_input(input_str)
+    # Parse input into two separate lists
+    left_list, right_list = parse_input(input_str)
     
     # Sort both lists
-    left_sorted = sorted(left_list)
-    right_sorted = sorted(right_list)
+    left_list.sort()
+    right_list.sort()
     
-    # Calculate total distance by summing absolute differences between corresponding elements
-    total_distance = sum(abs(l - r) for l, r in zip(left_sorted, right_sorted))
-    
+    # Calculate total distance by summing absolute differences
+    total_distance = 0
+    for left, right in zip(left_list, right_list):
+        total_distance += abs(left - right)
+        
     return total_distance
 
 
 def solution() -> int:
-    """Read input from stdin and return the solution."""
+    """Read from stdin and return result."""
     import sys
-    input_data = sys.stdin.read()
-    return calculate_total_distance(input_data)
-
-
-if __name__ == "__main__":
-    print(solution())
+    return calculate_total_distance(sys.stdin.read())
