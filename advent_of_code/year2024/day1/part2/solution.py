@@ -7,7 +7,7 @@ def parse_input(text: str) -> List[Tuple[int, int]]:
     """Parse input string into list of integer pairs."""
     pairs = []
     for line in text.strip().splitlines():
-        left, right = line.split()
+        left, right = line.split(maxsplit=1)
         pairs.append((int(left), int(right)))
     return pairs
 
@@ -27,7 +27,7 @@ def calculate_total_distance(text: str) -> int:
     total = 0
     for l, r in pairs:
         total += abs(l - r)
-
+        
     return total
 
 
@@ -60,8 +60,8 @@ def solution() -> int:
     # Run part 1 (total distance)
     distance = calculate_total_distance(text)
 
-    # Run part 2 (similarity score)  
+    # Run part 2 (similarity score)
     similarity = calculate_similarity_score(text)
-    
-    # Return either part 1 or part 2 result depending on need
+
+    # Return either part 1 or part 2 result depending on need    
     return distance  # Replace with similarity for part 2
