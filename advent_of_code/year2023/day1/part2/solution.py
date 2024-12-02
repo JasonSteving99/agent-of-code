@@ -10,15 +10,16 @@ def get_calibration_value(line: str) -> str:
     
     Returns:
         String representation of the two-digit number formed by the first and last digits
+
+    Raises:
+        ValueError: If the input string contains no digits
     """
-    # Filter the string to only include digits
-    digits = [c for c in line if c.isdigit()]
-    
+    digits = [char for char in line if char.isdigit()]
     if not digits:
-        return "00"  # Handle case with no digits, though problem suggests this won't occur
-        
-    # Take first and last digit and combine them
+        raise ValueError("No digits found in the input string.")
+
     return digits[0] + digits[-1]
+
 
 def solution() -> int:
     """
@@ -28,13 +29,9 @@ def solution() -> int:
     Returns:
         Sum of all calibration values in the document
     """
-    # Read all lines from stdin
     lines = [line.strip() for line in stdin.readlines()]
-    
-    # Get calibration value for each line and convert to integer
     calibration_values = [int(get_calibration_value(line)) for line in lines]
-    
-    # Return the sum
+
     return sum(calibration_values)
 
 if __name__ == "__main__":
