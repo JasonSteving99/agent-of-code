@@ -10,10 +10,11 @@ def parse_input(input_str: str) -> tuple[List[int], List[int]]:
     
     for i, line in enumerate(lines):
         nums = [int(x) for x in line.strip().split()]
-        if i % 2 == 0:
-            left_list.append(nums[0])
-        else:
-            right_list.append(nums[0])
+        if nums:
+            if i % 2 == 0:
+                left_list.append(nums[0])
+            else:
+                right_list.append(nums[0])
     
     return left_list, right_list
 
