@@ -13,24 +13,19 @@ def parse_input(text: str) -> List[Tuple[int, int]]:
 
 
 def calculate_total_distance(text: str) -> int:
-    """Calculate total distance between sorted pairs from input text.
+    """Calculate total distance between pairs from input text.
     
     For part 1:
     - Takes two lists of numbers side by side
-    - Sorts each list independently
-    - Pairs up numbers by position after sorting
+    - Pairs up numbers by position
     - Calculates total distance (sum of absolute differences between pairs)
     """
     # Parse input into pairs
     pairs = parse_input(text)
     
-    # Split into separate lists and sort
-    left = sorted(p[0] for p in pairs)
-    right = sorted(p[1] for p in pairs)
-    
     # Calculate total distance between corresponding elements
     total = 0
-    for l, r in zip(left, right):
+    for l, r in pairs:
         total += abs(l - r)
         
     return total
