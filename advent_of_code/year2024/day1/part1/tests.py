@@ -1,56 +1,43 @@
 """
-Unit tests for calculating Manhattan distance between two sorted lists derived from string input.
+Tests for calculate_total_distance function that computes the total distance between two lists of integers.
 
-Test focuses on:
-1. Parsing multi-line string input with pairs of integers
-2. Sorting logic for both lists before calculating distance
-3. Computing absolute differences between corresponding elements
-4. Final sum calculation for total Manhattan distance
-
-Example input is formatted as pairs of space-separated integers, one pair per line.
-Each pair contributes one number to the left list and one to the right list.
-Lists are sorted before calculating distances between corresponding elements.
+The function should:
+1. Parse a multiline string input where each line contains two space-separated integers
+2. Split the input into two lists based on the first and second numbers from each line
+3. Sort both lists independently
+4. Calculate the sum of absolute differences between corresponding elements in the sorted lists
 """
+
 from solution import calculate_total_distance
 
-def test_example_manhattan_distance_calculation():
-    # Input string with space-separated pairs of numbers
-    input_str = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
-    
-    # Expected value based on:
-    # Left list sorted:  [1, 2, 3, 3, 3, 4]
-    # Right list sorted: [3, 3, 3, 4, 5, 9]
-    # Absolute differences: |1-3| + |2-3| + |3-3| + |3-4| + |3-5| + |4-9| = 2 + 1 + 0 + 1 + 2 + 5 = 11
-    expected_result = 11
-    
-    result = calculate_total_distance(input_str)
-    
-    assert result == expected_result, (
-        f"calculate_total_distance failed for input:\n{input_str}\n"
-        f"Expected: {expected_result}, but got: {result}\n"
-        f"After sorting lists, distances should sum to {expected_result}"
+def test_calculate_total_distance_with_six_pairs():
+    """
+    Test case with 6 pairs of numbers where sorting changes the initial order.
+    First list: [3,4,2,1,3,3] -> sorted to [1,2,3,3,3,4]
+    Second list: [4,3,5,3,9,3] -> sorted to [3,3,3,4,5,9]
+    Expected differences: |1-3| + |2-3| + |3-3| + |3-4| + |3-5| + |4-9| = 11
+    """
+    input_data = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3"
+    result = calculate_total_distance(input_data)
+    assert result == 11, (
+        f"For input:\n{input_data}\n"
+        f"Expected total distance: 11, but got {result}\n"
+        "After sorting, differences should be: |1-3| + |2-3| + |3-3| + |3-4| + |3-5| + |4-9| = 11"
     )
 
-def test_empty_string_input():
-    # Edge case: empty string should return 0 distance
-    input_str = ""
-    expected_result = 0
-    
-    result = calculate_total_distance(input_str)
-    
-    assert result == expected_result, (
-        f"calculate_total_distance failed for empty input\n"
-        f"Expected: {expected_result}, but got: {result}"
+def test_calculate_total_distance_with_empty_string():
+    """Test the edge case of an empty string input."""
+    input_data = ""
+    result = calculate_total_distance(input_data)
+    assert result == 0, (
+        f"For empty string input, expected total distance: 0, but got {result}"
     )
 
-def test_single_pair_input():
-    # Test with single pair of numbers
-    input_str = "5   7"
-    expected_result = 2  # |5-7| = 2
-    
-    result = calculate_total_distance(input_str)
-    
-    assert result == expected_result, (
-        f"calculate_total_distance failed for single pair input: {input_str}\n"
-        f"Expected: {expected_result}, but got: {result}"
+def test_calculate_total_distance_with_single_pair():
+    """Test with a single pair of numbers."""
+    input_data = "3   4"
+    result = calculate_total_distance(input_data)
+    assert result == 1, (
+        f"For input: '{input_data}'\n"
+        f"Expected total distance: |3-4| = 1, but got {result}"
     )
