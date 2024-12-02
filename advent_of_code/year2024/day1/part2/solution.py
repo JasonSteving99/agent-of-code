@@ -1,6 +1,9 @@
 from typing import List
 
 def calculate_similarity_score(input_data: str) -> int:
+    if not input_data.strip():
+        return 0
+
     # Parse the input data into left and right lists
     left_nums, right_nums = [], []
     for line in input_data.strip().split('\n'):
