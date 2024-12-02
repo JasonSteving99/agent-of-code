@@ -6,7 +6,10 @@ def parse_input(input_str: str) -> tuple[List[int], List[int]]:
     """Parse input string into two lists of integers."""
     left_list = []
     right_list = []
-    
+
+    if not input_str.strip():
+        return left_list, right_list
+
     # Split input into lines and parse each line
     for line in input_str.strip().split('\n'):
         left, right = map(int, line.strip().split())
@@ -47,6 +50,7 @@ def solution() -> int:
     import sys
     input_data = sys.stdin.read()
     return calculate_total_distance(input_data)
+
 
 if __name__ == "__main__":
     print(solution())
