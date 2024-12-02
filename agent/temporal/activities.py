@@ -32,6 +32,7 @@ from agent.adventofcode.generate_code.GeneratedImplementation import (
 )
 from agent.adventofcode.generate_code.GeneratedUnitTests import GeneratedUnitTests
 from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
+from agent.adventofcode.submit_solution import submit
 
 
 class ExtractedProblemPart(BaseModel):
@@ -206,4 +207,21 @@ async def plan_impl_refactoring(args: PlanImplRefactoringArgs) -> RefactoringPla
         examples_context=args.examples_context,
         generated_impl_src=args.generated_impl_src,
         theorized_implementation_fix=args.theorized_solution.optional_theorized_implementation_fix,
+    )
+
+
+class SubmitSolutionArgs(BaseModel):
+    aoc_problem: AoCProblem
+    solution: str
+    base_dir: str
+
+
+@activity.defn
+async def submit_solution(args: SubmitSolutionArgs) -> bool:
+    return await submit(
+        year=args.aoc_problem.year,
+        day=args.aoc_problem.day,
+        part=args.aoc_problem.part,
+        answer=args.solution,
+        base_dir=args.base_dir,
     )

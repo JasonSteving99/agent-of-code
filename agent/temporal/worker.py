@@ -35,6 +35,7 @@ async def main() -> None:
             activities.run_generated_solution,
             activities.debug_unit_test_failures,
             activities.plan_impl_refactoring,
+            activities.submit_solution,
         ],
     )
 

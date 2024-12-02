@@ -6,10 +6,8 @@ import asyncclick as click
 from asyncclick import Choice
 from bs4 import BeautifulSoup
 
-from agent import settings
+from agent.adventofcode._HEADERS import _HEADERS
 from agent.adventofcode.problem_part import ProblemPart
-
-_HEADERS = {"Cookie": settings.AOC_COOKIE}
 
 
 async def fetch_input(session: aiohttp.ClientSession, year: int, day: int) -> str:
@@ -18,9 +16,7 @@ async def fetch_input(session: aiohttp.ClientSession, year: int, day: int) -> st
         return await response.text()
 
 
-async def fetch_problem(
-    session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart
-) -> str:
+async def fetch_problem(session: aiohttp.ClientSession, year: int, day: int) -> str:
     url = f"https://adventofcode.com/{year}/day/{day}"
     async with session.get(url, headers=_HEADERS) as response:
         return await response.text()
@@ -37,10 +33,7 @@ def parse_problem(html: str, part: ProblemPart):
 
 
 async def scrape_aoc(session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart) -> str:
-    return parse_problem(
-        await fetch_problem(session, year=year, day=day, part=part),
-        part=part,
-    )
+    return parse_problem(await fetch_problem(session, year=year, day=day), part=part)
 
 
 @click.command()

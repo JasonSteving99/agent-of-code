@@ -161,5 +161,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Don't track any Advent of Code inputs in Git since it's against the rules.
+# Don't track any Advent of Code inputs or solutions in Git since it's against the rules.
 advent_of_code/**/input.txt
+advent_of_code/**/solution.txt
