@@ -22,18 +22,18 @@ def is_report_safe_with_dampener(report: str) -> str:
     
     # First check if safe without removing any level
     if is_report_safe_without_dampener(levels):
-        return "Safe"
+        return "safe"
     
     # Try removing each level one at a time and check if resulting sequence is safe
     for i in range(len(levels)):
         # Create new list without level at index i
         test_levels = levels[:i] + levels[i+1:]
         if is_report_safe_without_dampener(test_levels):
-            return "Safe"
+            return "safe"
     
-    return "Unsafe"
+    return "unsafe"
 
 def solution() -> int:
     reports = sys.stdin.read().strip().split('\n')
-    safe_count = sum(1 for report in reports if is_report_safe_with_dampener(report) == "Safe")
+    safe_count = sum(1 for report in reports if is_report_safe_with_dampener(report) == "safe")
     return safe_count
