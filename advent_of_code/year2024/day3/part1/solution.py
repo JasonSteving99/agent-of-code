@@ -1,40 +1,52 @@
-"""Solution for Mull It Over puzzle - calc sum of valid mul() operations."""
+"""Solution for the Mull It Over problem."""
 import re
 import sys
-from typing import List, Match, Optional
+from typing import NamedTuple
 
-def sum_valid_mul_operations(text: str) -> int:
+
+class Multiplication(NamedTuple):
+    """Represents a multiplication operation with two operands."""
+    x: int
+    y: int
+
+    def evaluate(self) -> int:
+        """Compute the product of x and y."""
+        return self.x * self.y
+
+
+def parse_mul_and_sum(input_text: str) -> int:
     """
-    Process a text string and sum the results of all valid mul() operations.
+    Parse the input text for valid mul(X,Y) patterns and return sum of products.
     
     Args:
-        text: Input string with mul operations mixed with corrupted data
+        input_text: A string containing possibly corrupted mul instructions
         
     Returns:
-        Sum of all valid multiplication results
+        The sum of all products from valid mul instructions
     """
-    # RegEx to match mul(X,Y) where X and Y are 1-3 digit numbers
+    # Pattern matches exactly mul(X,Y) where X and Y are 1-3 digits
     pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
-    total = 0
     
-    # Find all matches in the text
-    for match in re.finditer(pattern, text):
-        num1 = int(match.group(1))
-        num2 = int(match.group(2))
-        total += num1 * num2
-        
-    return total
+    # Find all valid matches
+    matches = re.finditer(pattern, input_text)
+    
+    # Convert matches to Multiplication objects
+    multiplications = [
+        Multiplication(int(match.group(1)), int(match.group(2)))
+        for match in matches
+    ]
+    
+    # Sum up all products
+    return sum(mult.evaluate() for mult in multiplications)
+
 
 def solution() -> int:
-    """
-    Read input from stdin and return solution.
-    
-    Returns:
-        Integer result representing sum of all valid multiplication results
-    """
-    # Read all input lines and join them into a single string
-    content = ''.join(sys.stdin.readlines())
-    return sum_valid_mul_operations(content)
+    """Read input from stdin and return the solution."""
+    # Read all input as a single string
+    input_text = sys.stdin.read()
+    return parse_mul_and_sum(input_text)
+
 
 if __name__ == "__main__":
-    print(solution())
+    result = solution()
+    print(result)  # only print if run as script, not when imported
