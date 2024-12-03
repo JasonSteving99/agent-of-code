@@ -7,6 +7,7 @@ This test suite verifies that the function correctly handles:
 - Ignoring invalid syntax and non-multiplication operations
 - Only considering the most recent do/don't instruction
 - Proper summing of enabled multiplications
+- Correctly handling the undo() instruction to re-enable multiplications
 """
 
 from solution import calculate_enabled_multiplications
@@ -17,14 +18,14 @@ def test_complex_string_with_dont_instruction():
     """Test processing a complex string with don't instruction disabling multiplications."""
     
     input_str = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-    expected = 29  # Only the multiplications before don't() are counted: 2*4 + 3*7 = 8 + 21 = 29
+    expected = 69  # 2*4 + 3*7 + 8*5 = 8 + 21 + 40 = 69
     
     result = calculate_enabled_multiplications(input_str)
     
     assert result == expected, (
         f"Failed to correctly process multiplications with don't instruction.\n"
         f"Input: {input_str}\n"
-        f"Expected: {expected} (8 + 21 = 29 from enabled multiplications before don't())\n"
+        f"Expected: {expected} (2*4 + 3*7 + 8*5 = 69)\n"
         f"Got: {result}"
     )
 
