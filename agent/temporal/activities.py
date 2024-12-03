@@ -1,4 +1,5 @@
 import aiohttp
+import os
 from pydantic import BaseModel
 from result import Err, Ok
 from temporalio import activity
@@ -47,6 +48,9 @@ class ExtractedProblemPart(BaseModel):
 
 @activity.defn
 async def extract_problem_part(args: ExtractProblemPartArgs) -> ExtractedProblemPart:
+    # Make the solutions directory if it doesn't already exist.
+    os.makedirs(args.solutions_dir, exist_ok=True)
+
     async with aiohttp.ClientSession() as session:
         return ExtractedProblemPart(
             problem_html=await scrape_aoc(
