@@ -1,39 +1,51 @@
 from typing import List
 import sys
 
-def is_report_safe_without_dampener(levels: List[int]) -> bool:
-    if len(levels) < 2:
+def is_list_safe(nums: List[int]) -> bool:
+    if len(nums) <= 1:
         return True
-    
-    # Check that each adjacent pair differs by 1-3
-    # and all values follow same direction (increasing or decreasing)
-    diffs = [levels[i] - levels[i-1] for i in range(1, len(levels))]
-    
-    # Check all differences are between 1 and 3 or between -3 and -1
-    valid_diffs = all(1 <= diff <= 3 or -3 <= diff <= -1 for diff in diffs)
-    if not valid_diffs:
-        return False
         
-    # Check all differences have same sign (all increasing or all decreasing)
-    return all(diff > 0 for diff in diffs) or all(diff < 0 for diff in diffs)
+    # Check if increasing or decreasing
+    diff = nums[1] - nums[0]
+    increasing = diff > 0
+    
+    for i in range(1, len(nums)):
+        curr_diff = nums[i] - nums[i-1]
+        
+        # Must all increase or all decrease
+        if (increasing and curr_diff <= 0) or (not increasing and curr_diff >= 0):
+            return False
+            
+        # Check difference is 1-3
+        if abs(curr_diff) > 3 or abs(curr_diff) < 1:
+            return False
+    
+    return True
 
 def is_report_safe_with_dampener(report: str) -> str:
-    levels = list(map(int, report.strip().split()))
+    # Convert input to list of integers
+    nums = [int(x) for x in report.split()]
     
-    # First check if safe without removing any level
-    if is_report_safe_without_dampener(levels):
-        return "safe"
-    
-    # Try removing each level one at a time and check if resulting sequence is safe
-    for i in range(len(levels)):
-        # Create new list without level at index i
-        test_levels = levels[:i] + levels[i+1:]
-        if is_report_safe_without_dampener(test_levels):
-            return "safe"
-    
-    return "unsafe"
+    # First check if safe without removing any number
+    if is_list_safe(nums):
+        return "Safe"
+        
+    # Try removing each number and check if resulting list is safe
+    for i in range(len(nums)):
+        dampened = nums[:i] + nums[i+1:]
+        if is_list_safe(dampened):
+            return "Safe"
+            
+    return "Unsafe"
 
 def solution() -> int:
-    reports = sys.stdin.read().strip().split('\n')
-    safe_count = sum(1 for report in reports if is_report_safe_with_dampener(report) == "safe")
+    safe_count = 0
+    
+    # Read input from stdin
+    for line in sys.stdin:
+        if line.strip():
+            result = is_report_safe_with_dampener(line.strip())
+            if result == "Safe":
+                safe_count += 1
+                
     return safe_count
