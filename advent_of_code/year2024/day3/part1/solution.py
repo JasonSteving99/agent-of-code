@@ -18,16 +18,18 @@ def sum_valid_mul_operations(corrupted_memory: str) -> int:
     # Pattern for valid mul operations: mul followed by 1-3 digits, comma, 1-3 digits in parentheses
     # No spaces allowed within the pattern to match problem requirements
     pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
-    
     total = 0
-    # Find all matches in the corrupted memory
-    for match in re.finditer(pattern, corrupted_memory):
-        # Extract numbers from the matched groups
+    while True:
+        match = re.search(pattern, corrupted_memory)
+        if not match:
+            break
+
         num1 = int(match.group(1))
         num2 = int(match.group(2))
-        # Add their product to the total
         total += num1 * num2
-        
+
+        corrupted_memory = corrupted_memory[match.end():]  # Remove the matched part
+
     return total
 
 
@@ -38,7 +40,6 @@ def solution() -> int:
     Returns:
         int: The sum of all valid multiplication results
     """
-    # Read the entire input as a single string
     corrupted_memory = stdin.read().strip()
     return sum_valid_mul_operations(corrupted_memory)
 
