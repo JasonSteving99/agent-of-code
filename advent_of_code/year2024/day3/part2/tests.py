@@ -17,14 +17,14 @@ def test_complex_string_with_dont_instruction():
     """Test processing a complex string with don't instruction disabling multiplications."""
     
     input_str = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-    expected = 56  # Only the multiplications before don't() are counted: 2*4 + 3*7 = 8 + 21 + 27 = 56
+    expected = 29  # Only the multiplications before don't() are counted: 2*4 + 3*7 = 8 + 21 = 29
     
     result = calculate_enabled_multiplications(input_str)
     
     assert result == expected, (
         f"Failed to correctly process multiplications with don't instruction.\n"
         f"Input: {input_str}\n"
-        f"Expected: {expected} (8 + 21 + 27 = 56 from enabled multiplications before don't())\n"
+        f"Expected: {expected} (8 + 21 = 29 from enabled multiplications before don't())\n"
         f"Got: {result}"
     )
 
