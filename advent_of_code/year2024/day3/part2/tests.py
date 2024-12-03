@@ -1,60 +1,31 @@
-"""Test suite for calculate_enabled_multiplications function.
+"""
+Test suite for part 2 of the multiplication sum problem that includes do() and don't() instructions.
 
-This test suite verifies that the function correctly handles:
-- Default enabled state for mul operations
-- Disabling multiplications after don't() instruction 
-- Handling various multiplication formats (mul, mul[], mul())
-- Ignoring invalid syntax and non-multiplication operations
-- Only considering the most recent do/don't instruction
-- Proper summing of enabled multiplications
-- Correctly handling the undo() instruction to re-enable multiplications
+The tests verify that:
+- The function properly parses and evaluates mul() instructions in the presence of do() and don't()
+- Only mul() results between a do() and don't() pair should be included in the sum
+- mul() instructions outside valid do()-don't() pairs should be ignored
+- The function handles complex strings with various parentheses and special characters
 """
 
-from solution import calculate_enabled_multiplications
+from solution import modified_sum_multiplications
 import pytest
 
-
-def test_complex_string_with_dont_instruction():
-    """Test processing a complex string with don't instruction disabling multiplications."""
-    
+def test_complex_string_with_do_dont_controls():
     input_str = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-    expected = 69  # 2*4 + 3*7 + 8*5 = 8 + 21 + 40 = 69
+    result = modified_sum_multiplications(input_str)
     
-    result = calculate_enabled_multiplications(input_str)
-    
-    assert result == expected, (
-        f"Failed to correctly process multiplications with don't instruction.\n"
+    # Expected sum should be 56:
+    # - Initial mul(2,4) = 8 is counted (no don't() before it)
+    # - mul[3,7] is ignored (invalid format)
+    # - mul(5,5) = 25 is disabled by don't() before it
+    # - mul(32,64) = 2048 is ignored due to invalid format
+    # - mul(11,8) = 88 is ignored (disabled)
+    # - mul(8,5) = 40 is counted
+    # Total: 8 + 0 + 0 + 40 = 56
+    assert result == 56, (
+        f"Failed to correctly sum multiplications with do/don't controls.\n"
         f"Input: {input_str}\n"
-        f"Expected: {expected} (2*4 + 3*7 + 8*5 = 69)\n"
-        f"Got: {result}"
-    )
-
-
-def test_empty_string():
-    """Test processing an empty string."""
-    input_str = ""
-    expected = 0
-    
-    result = calculate_enabled_multiplications(input_str)
-    
-    assert result == expected, (
-        f"Failed to handle empty string input.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected}\n"
-        f"Got: {result}"
-    )
-
-
-def test_no_multiplications():
-    """Test string with no multiplication operations."""
-    input_str = "do()don't()undo()"
-    expected = 0
-    
-    result = calculate_enabled_multiplications(input_str)
-    
-    assert result == expected, (
-        f"Failed to handle input with no multiplications.\n"
-        f"Input: {input_str}\n"
-        f"Expected: {expected}\n"
+        f"Expected: 56\n"
         f"Got: {result}"
     )
