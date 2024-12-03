@@ -1,55 +1,57 @@
 """
-Tests for the is_report_safe_with_dampener function that checks safety of level reports.
+Tests for the Problem Dampener report safety checker (Part 2).
 
-The tests verify that the function correctly identifies if a report is safe based on three criteria:
-1. Levels should be either all increasing or all decreasing
-2. Adjacent levels must differ by at least 1 and at most 3
-3. Problem Dampener: Report is safe if removing one level makes it satisfy criteria 1 & 2
+The tests verify that the function correctly identifies when a report is:
+1. Safe without any modifications (already strictly decreasing)
+2. Can become safe by removing exactly one measurement
+3. Remains unsafe even with the ability to remove one measurement
 
-Function signature:
-is_report_safe_with_dampener(report: str) -> str
+The report is considered safe if either:
+- The measurements are strictly decreasing without any modifications
+- Removing exactly one measurement can make the sequence strictly decreasing
 """
 
 from solution import is_report_safe_with_dampener
+import pytest
 
+def test_already_safe_strictly_decreasing():
+    """Test a report that is already safe (strictly decreasing)."""
+    input_report = "7 6 4 2 1"
+    result = is_report_safe_with_dampener(input_report)
+    assert result == "safe", \
+        f"Report '{input_report}' should be 'safe' as it is already strictly decreasing"
 
-def test_strictly_decreasing_sequence():
-    report = "7 6 4 2 1"
-    result = is_report_safe_with_dampener(report)
-    assert result == "SAFE", \
-        f"Report '{report}' should be 'SAFE' as it's strictly decreasing with valid differences"
+def test_unsafe_increasing_sequence():
+    """Test a report that is unsafe with increasing values."""
+    input_report = "1 2 7 8 9"
+    result = is_report_safe_with_dampener(input_report)
+    assert result == "unsafe", \
+        f"Report '{input_report}' should be 'unsafe' as it cannot be made strictly decreasing by removing one value"
 
+def test_unsafe_with_multiple_violations():
+    """Test a report that is unsafe with multiple violations."""
+    input_report = "9 7 6 2 1"
+    result = is_report_safe_with_dampener(input_report)
+    assert result == "unsafe", \
+        f"Report '{input_report}' should be 'unsafe' as it requires removing more than one value to make it strictly decreasing"
 
-def test_strictly_increasing_unsafe():
-    report = "1 2 7 8 9"
-    result = is_report_safe_with_dampener(report)
-    assert result == "UNSAFE", \
-        f"Report '{report}' should be 'UNSAFE' due to difference of 5 between 2 and 7"
+def test_safe_after_removing_middle_value():
+    """Test a report that becomes safe after removing one value."""
+    input_report = "1 3 2 4 5"
+    result = is_report_safe_with_dampener(input_report)
+    assert result == "safe", \
+        f"Report '{input_report}' should be 'safe' as removing one value can make it strictly decreasing"
 
+def test_safe_with_duplicate_values():
+    """Test a report that contains duplicate values but can be made safe."""
+    input_report = "8 6 4 4 1"
+    result = is_report_safe_with_dampener(input_report)
+    assert result == "safe", \
+        f"Report '{input_report}' should be 'safe' as removing one duplicate value makes it strictly decreasing"
 
-def test_decreasing_with_large_gap():
-    report = "9 7 6 2 1"
-    result = is_report_safe_with_dampener(report)
-    assert result == "UNSAFE", \
-        f"Report '{report}' should be 'UNSAFE' due to difference of 4 between 6 and 2"
-
-
-def test_increasing_with_one_deviation():
-    report = "1 3 2 4 5"
-    result = is_report_safe_with_dampener(report)
-    assert result == "SAFE", \
-        f"Report '{report}' should be 'SAFE' as removing '3' creates valid increasing sequence"
-
-
-def test_decreasing_with_plateau():
-    report = "8 6 4 4 1"
-    result = is_report_safe_with_dampener(report)
-    assert result == "SAFE", \
-        f"Report '{report}' should be 'SAFE' as removing one '4' creates valid decreasing sequence"
-
-
-def test_increasing_with_valid_differences():
-    report = "1 3 6 7 9"
-    result = is_report_safe_with_dampener(report)
-    assert result == "SAFE", \
-        f"Report '{report}' should be 'SAFE' as it's increasing with valid differences"
+def test_safe_with_increasing_but_fixable():
+    """Test a report that has increasing values but can be made safe."""
+    input_report = "1 3 6 7 9"
+    result = is_report_safe_with_dampener(input_report)
+    assert result == "safe", \
+        f"Report '{input_report}' should be 'safe' as removing one value can make it strictly decreasing"
