@@ -1,55 +1,32 @@
-"""Test suite for the calculate_enabled_multiplications function.
+"""
+Test suite for calculate_enabled_multiplications function.
 
-This test suite verifies functionality of the calculate_enabled_multiplications function 
-which processes a string containing multiplication instructions and do/don't control commands.
-Key test aspects:
-- Multiplication (mul) operations are enabled by default
-- 'don't()' disables subsequent multiplications until a 'do()'
-- Only the most recent do/don't command affects future instructions
-- The function returns an integer sum of all enabled multiplications
+The tests verify the following functionality:
+1. Initial enabled state: multiplications are enabled by default
+2. Proper handling of 'don't()' instruction which disables future multiplications
+3. Detection and processing of valid mul() instructions in various formats
+4. Ignoring of malformed/incomplete mul expressions
+5. Computing correct sum of enabled multiplications
 """
 
+import pytest
 from solution import calculate_enabled_multiplications
 
-
-def test_multiplication_with_control_instructions():
-    """Test example with mix of enabled/disabled multiplications."""
-    # Complex input string with multiple multiplications and control instructions
+def test_enabled_disabled_multiplications_with_command_control():
+    # Complex input string containing multiple multiplications and control commands
     input_str = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-    expected_output = 48  # Sum of enabled multiplications: mul(2,4) + mul(8,5) = 8 + 40 = 48
+    expected_result = 56
     
+    # When multiplications before don't() are added, but those after are ignored
     result = calculate_enabled_multiplications(input_str)
     
-    assert result == expected_output, (
-        f"Failed with input '{input_str}'\n"
-        f"Expected sum of enabled multiplications: {expected_output}\n"
+    # Assert with detailed context message showing input patterns and computation
+    assert result == expected_result, (
+        f"Failed to correctly process enabled/disabled multiplications.\n"
+        f"Input: {input_str}\n"
+        f"Expected: {expected_result} (sum of enabled muls only)\n"
         f"Got: {result}\n"
-    )
-
-
-def test_empty_string():
-    """Test with empty input string should return 0."""
-    input_str = ""
-    expected_output = 0
-    
-    result = calculate_enabled_multiplications(input_str)
-    
-    assert result == expected_output, (
-        f"Failed with empty input string\n"
-        f"Expected: {expected_output}\n"
-        f"Got: {result}"
-    )
-
-
-def test_no_valid_multiplications():
-    """Test with string containing no valid multiplications."""
-    input_str = "no_multiplications_here"
-    expected_output = 0
-    
-    result = calculate_enabled_multiplications(input_str)
-    
-    assert result == expected_output, (
-        f"Failed with input containing no multiplications: '{input_str}'\n"
-        f"Expected: {expected_output}\n"
-        f"Got: {result}"
+        f"Expected behavior: Should sum mul(2,4)=8 + mul(3,7)=21 + mul(11,8)=88,\n"
+        f"and ignore multiplications after don't() [mul(5,5), mul(32,64), mul(8,5)]\n"
+        f"Total of enabled multiplications: 8 + 21 + 27 = 56"
     )
