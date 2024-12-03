@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 def extract_valid_mul_operations(line: str) -> List[Tuple[int, int]]:
     """Extract all valid mul(x,y) operations from a corrupted line."""
-    # Match mul(X,Y) where X and Y are 1-3 digit numbers with no spaces
+    # Match mul(X,Y) where X and Y are 1-3 digit numbers
     pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
     matches = re.finditer(pattern, line)
     
@@ -41,6 +41,5 @@ def solution() -> int:
     Returns:
         Total sum of all valid multiplication results
     """
-    # Read all input lines and join them (in case input spans multiple lines)
     content = ''.join(line for line in stdin)
     return sum_valid_mul_operations(content)
