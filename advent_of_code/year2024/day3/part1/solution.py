@@ -7,30 +7,26 @@ from sys import stdin
 
 def sum_valid_mul_operations(corrupted_memory: str) -> int:
     """
-    Parse corrupted memory and sum results of all valid mul operations.
-    
+    Parses corrupted memory and sums the result of valid "mul" operations.
+
     Args:
-        corrupted_memory (str): The corrupted memory string containing mul operations
-        
+        corrupted_memory: The input string containing potentially corrupted memory.
+
     Returns:
-        int: Sum of all valid multiplication results
+        The sum of the results of valid "mul" operations.
     """
-    pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
+    pattern = r"mul\((\d{1,3}),(\d{1,3})\)"
     total = 0
-    matches = re.findall(pattern, corrupted_memory)
-    for match in matches:
-        num1, num2 = map(int, match)  # Convert matched strings to integers
+
+    for match in re.finditer(pattern, corrupted_memory):
+        num1, num2 = map(int, match.groups())
         total += num1 * num2
+
     return total
 
 
 def solution() -> int:
-    """
-    Read input from stdin and solve the puzzle.
-    
-    Returns:
-        int: The sum of all valid multiplication results
-    """
+    """Reads input from stdin and solves the puzzle."""
     corrupted_memory = stdin.read().strip()
     return sum_valid_mul_operations(corrupted_memory)
 
