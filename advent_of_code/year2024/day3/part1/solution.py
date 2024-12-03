@@ -15,11 +15,11 @@ def sum_valid_mul_operations(corrupted_memory: str) -> int:
     Returns:
         The sum of the results of valid "mul" operations.
     """
-    pattern = r"(?:mul\((\d{1,3}),(\d{1,3})\))"
+    pattern = r"mul\((\d{1,3}),(\d{1,3})\)"
     total = 0
 
-    for match in re.findall(pattern, corrupted_memory):
-        num1, num2 = map(int, match)
+    for match in re.finditer(pattern, corrupted_memory):
+        num1, num2 = map(int, match.groups())
         total += num1 * num2
 
     return total
