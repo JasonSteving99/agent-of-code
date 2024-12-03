@@ -1,51 +1,66 @@
-from typing import List, Optional
-import sys
+"""
+Solution to process nuclear reactor reports checking for safety based on level patterns.
+"""
+from typing import List
 
 
 def is_report_safe(report: str) -> str:
-    """Check if a report is safe based on provided rules.
+    """Determine if a reactor report is safe based on level patterns.
+    
+    A report is safe if:
+    1. The levels are either all increasing or all decreasing
+    2. Adjacent levels differ by at least 1 and at most 3
     
     Args:
-        report: String containing space-separated numbers representing levels.
+        report: A string of space-separated numbers representing levels
         
     Returns:
-        "safe" if the report meets safety criteria, "unsafe" otherwise.
+        'Safe' if the report meets safety criteria, 'Unsafe' otherwise
     """
-    # Convert the report string to a list of integers
-    levels = [int(x) for x in report.split()]
+    # Convert space-separated numbers to list of integers 
+    levels = [int(x) for x in report.strip().split()]
     
     if len(levels) < 2:
-        return "unsafe"
+        return "Unsafe"  # Reports should have at least 2 levels
+        
+    # Determine direction (increasing or decreasing) from first pair
+    is_increasing = levels[1] > levels[0]
+    prev_level = levels[0]
     
-    # Check if levels are strictly increasing or decreasing
-    differences = [levels[i+1] - levels[i] for i in range(len(levels)-1)]
-    
-    # Check if all differences are in the same direction (all positive or all negative)
-    if not (all(d > 0 for d in differences) or all(d < 0 for d in differences)):
-        return "unsafe"
-    
-    # Check if differences are between 1 and 3 inclusive
-    if not all(1 <= abs(d) <= 3 for d in differences):
-        return "unsafe"
-    
-    return "safe"
+    for curr_level in levels[1:]:
+        diff = curr_level - prev_level
+        
+        # Check if difference between adjacent levels is within bounds
+        if abs(diff) < 1 or abs(diff) > 3:
+            return "Unsafe"
+            
+        # Check if direction is consistent
+        if is_increasing and diff < 0:
+            return "Unsafe"
+        if not is_increasing and diff > 0:
+            return "Unsafe"
+            
+        prev_level = curr_level
+        
+    return "Safe"
 
 
 def solution() -> int:
-    """Read input from stdin and process all reports.
+    """Read multiple reports from stdin and count the safe ones.
     
     Returns:
-        Number of safe reports in the input.
+        The total number of safe reports.
     """
     safe_count = 0
     
-    # Read all lines from stdin
-    for line in sys.stdin:
-        report = line.strip()
-        if not report:  # Skip empty lines
-            continue
+    try:
+        while True:
+            line = input().strip()
+            if not line:  # Handle empty lines or EOF
+                break
+            if is_report_safe(line) == "Safe":
+                safe_count += 1
+    except EOFError:
+        pass
         
-        if is_report_safe(report) == "safe":
-            safe_count += 1
-    
     return safe_count
