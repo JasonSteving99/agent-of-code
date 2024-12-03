@@ -37,9 +37,14 @@ def calculate_enabled_multiplications(memory: str) -> int:
             num2 = int(mul_match.group(2))
             total += num1 * num2
             pos += mul_match.end()
-        else:
-            # Skip any invalid/corrupted characters
-            pos += 1
+        else: # Look for do after don't
+            do_match = re.match(r'^do\(\)', memory[pos:])
+            if do_match:
+                enabled = True
+                pos += do_match.end()
+            else:
+                # Skip any invalid/corrupted characters
+                pos += 1
             
     return total
 
