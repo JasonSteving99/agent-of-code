@@ -16,7 +16,7 @@ def test_multiplication_with_control_instructions():
     """Test example with mix of enabled/disabled multiplications."""
     # Complex input string with multiple multiplications and control instructions
     input_str = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-    expected_output = 8  # Sum of enabled multiplications: mul(2,4)=8
+    expected_output = 48  # Sum of enabled multiplications: mul(2,4) + mul(8,5) = 8 + 40 = 48
     
     result = calculate_enabled_multiplications(input_str)
     
