@@ -7,7 +7,7 @@ def is_report_safe(line: str) -> str:
     
     # If less than 2 numbers, can't check sequence
     if len(levels) < 2:
-        return "UNSAFE"
+        return "unsafe"
         
     # Check if sequence is strictly increasing or decreasing
     increasing = decreasing = True
@@ -18,7 +18,7 @@ def is_report_safe(line: str) -> str:
         
         # Check if difference is within valid range (1-3)
         if abs(diff) < 1 or abs(diff) > 3:
-            return "UNSAFE"
+            return "unsafe"
         
         # Track if sequence is increasing or decreasing
         if diff > 0:
@@ -28,9 +28,9 @@ def is_report_safe(line: str) -> str:
             
         # If neither increasing nor decreasing consistently, it's unsafe
         if not increasing and not decreasing:
-            return "UNSAFE"
+            return "unsafe"
     
-    return "SAFE"
+    return "safe"
 
 def solution() -> int:
     safe_count = 0
@@ -41,7 +41,7 @@ def solution() -> int:
         if not line:  # Skip empty lines
             continue
         
-        if is_report_safe(line) == "SAFE":
+        if is_report_safe(line) == "safe":
             safe_count += 1
             
     return safe_count
