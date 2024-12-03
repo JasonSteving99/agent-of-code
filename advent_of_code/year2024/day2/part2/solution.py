@@ -1,57 +1,52 @@
-"""Solution for Part 2 of Red-Nosed Reports - checking if a report is safe with dampener."""
-from typing import List
+from typing import List, Optional
+import sys
 
-
-def is_gradually_changing(nums: List[int]) -> bool:
-    """Check if numbers are all increasing or decreasing, with diff 1-3."""
-    if len(nums) <= 1:
+def check_valid_sequence(levels: List[int]) -> bool:
+    """Check if a sequence of levels is valid (all increasing or decreasing with correct differences)."""
+    if len(levels) < 2:
         return True
-
-    # Determine if sequence should be increasing or decreasing based on first pair
-    should_increase = nums[1] > nums[0]
-
-    for i in range(1, len(nums)):
-        diff = nums[i] - nums[i - 1]
-        if should_increase:
-            if diff <= 0 or diff > 3:
-                return False
-        else:
-            if diff >= 0 or diff < -3:
-                return False
+        
+    diff = levels[1] - levels[0]
+    is_increasing = diff > 0
+    
+    for i in range(1, len(levels)):
+        curr_diff = levels[i] - levels[i-1]
+        if curr_diff == 0:  # No difference between adjacent numbers
+            return False
+        if abs(curr_diff) > 3:  # Difference greater than 3
+            return False
+        if (is_increasing and curr_diff < 0) or (not is_increasing and curr_diff > 0):
+            return False
+            
     return True
 
+def is_safe_with_removal(levels: List[int]) -> bool:
+    """Check if a report becomes safe after removing any single number."""
+    if check_valid_sequence(levels):
+        return True
+        
+    # Try removing each number and check if sequence becomes valid
+    for i in range(len(levels)):
+        test_levels = levels[:i] + levels[i+1:]
+        if check_valid_sequence(test_levels):
+            return True
+            
+    return False
 
 def is_report_safe_with_dampener(report: str) -> str:
-    """
-    Check if a report is safe with the possibility of removing one number.
-    Return "SAFE" if report is safe, "UNSAFE" otherwise.
-    """
-    # Parse input
-    nums = [int(x) for x in report.strip().split()]
+    """Determine if a report is safe with the Problem Dampener feature."""
+    # Convert report string into list of integers
+    levels = [int(x) for x in report.strip().split()]
     
-    # First check if the report is safe without using dampener
-    if is_gradually_changing(nums):
-        return "SAFE"
-
-    # Try removing each number one at a time to see if it makes the report safe
-    for i in range(len(nums)):
-        dampened_nums = nums[:i] + nums[i+1:]
-        if is_gradually_changing(dampened_nums):
-            return "SAFE"
-
-    return "UNSAFE"
-
+    return "safe" if is_safe_with_removal(levels) else "unsafe"
 
 def solution() -> int:
-    """Read reports from stdin and count how many are safe with dampener."""
+    """Read input from stdin and count the number of safe reports."""
     safe_count = 0
-    while True:
-        try:
-            line = input().strip()
-            if not line:
-                break
-            if is_report_safe_with_dampener(line) == "SAFE":
+    
+    for line in sys.stdin:
+        if line.strip():  # Skip empty lines
+            if is_report_safe_with_dampener(line) == "safe":
                 safe_count += 1
-        except EOFError:
-            break
+                
     return safe_count
