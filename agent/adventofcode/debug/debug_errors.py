@@ -68,7 +68,7 @@ IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just pri
         or theorized_solution.optional_theorized_implementation_fix
     ):
         raise ValueError(
-            "Invalid TheorizedSolution should come up with at least one actionable code change."
+            f"Invalid TheorizedSolution should come up with at least one actionable code change.\n{theorized_solution}"  # noqa: E501
         )
 
     return theorized_solution

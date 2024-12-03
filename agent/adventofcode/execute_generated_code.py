@@ -55,7 +55,7 @@ def execute_problem_solution(
 ) -> None:
     part: ProblemPart = cast(ProblemPart, part)
 
-    with open(f"advent_of_code/year{year}/day{day}/part{part}/input.txt") as f:
+    with open(f"advent_of_code/year{year}/day{day}/input.txt") as f:
         # Patch stdin to return the contents of the input file without needing to actually have the
         # file contents piped into the program from the cli.
         sys.stdin = io.StringIO(f.read())

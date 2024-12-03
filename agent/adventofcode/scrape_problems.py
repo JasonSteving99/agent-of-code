@@ -8,18 +8,47 @@ from bs4 import BeautifulSoup
 
 from agent.adventofcode._HEADERS import _HEADERS
 from agent.adventofcode.problem_part import ProblemPart
+import os
 
 
-async def fetch_input(session: aiohttp.ClientSession, year: int, day: int) -> str:
+async def fetch_input(
+    session: aiohttp.ClientSession, year: int, day: int, solutions_dir: str
+) -> str:
+    # Check if the input file already exists in the solutions directory.
+    input_file_path = os.path.join(solutions_dir, "input.txt")
+    if os.path.isfile(input_file_path):
+        with open(input_file_path, "r") as f:
+            return f.read()
+
+    # Otherwise, fetch the input from the Advent of Code servers.
     url = f"https://adventofcode.com/{year}/day/{day}/input"
     async with session.get(url, headers=_HEADERS) as response:
-        return await response.text()
+        input = await response.text()
+        # Cache the input so we don't need to read it again later on.
+        with open(input_file_path, "w") as f:
+            f.write(input)
+        return input
 
 
-async def fetch_problem(session: aiohttp.ClientSession, year: int, day: int) -> str:
+async def fetch_problem(
+    session: aiohttp.ClientSession, year: int, day: int, solutions_dir: str | None
+) -> str:
+    if solutions_dir:
+        # Check if the problem html file already exists in the solutions directory.
+        problem_html_file_path = os.path.join(solutions_dir, "problem.html")
+        if os.path.isfile(problem_html_file_path):
+            with open(problem_html_file_path, "r") as f:
+                return f.read()
+
+    # Otherwise, fetch the input from the Advent of Code servers.
     url = f"https://adventofcode.com/{year}/day/{day}"
     async with session.get(url, headers=_HEADERS) as response:
-        return await response.text()
+        problem_html = await response.text()
+        if solutions_dir:
+            # Cache the input so we don't need to read it again later on.
+            with open(problem_html_file_path, "w") as f:
+                f.write(problem_html)
+        return problem_html
 
 
 def parse_problem(html: str, part: ProblemPart) -> str:
@@ -45,8 +74,16 @@ def parse_problem(html: str, part: ProblemPart) -> str:
     raise ValueError("Problem description not found.")
 
 
-async def scrape_aoc(session: aiohttp.ClientSession, year: int, day: int, part: ProblemPart) -> str:
-    return parse_problem(await fetch_problem(session, year=year, day=day), part=part)
+async def scrape_aoc(
+    session: aiohttp.ClientSession,
+    year: int,
+    day: int,
+    part: ProblemPart,
+    solutions_dir: str | None = None,
+) -> str:
+    return parse_problem(
+        await fetch_problem(session, year=year, day=day, solutions_dir=solutions_dir), part=part
+    )
 
 
 @click.command()

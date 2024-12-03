@@ -163,4 +163,5 @@ cython_debug/
 
 # Don't track any Advent of Code inputs or solutions in Git since it's against the rules.
 advent_of_code/**/input.txt
+advent_of_code/**/problem.html
 advent_of_code/**/solution.txt

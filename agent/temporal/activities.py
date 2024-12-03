@@ -35,20 +35,36 @@ from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 from agent.adventofcode.submit_solution import submit
 
 
+class ExtractProblemPartArgs(BaseModel):
+    aoc_problem: AoCProblem
+    solutions_dir: str
+
+
 class ExtractedProblemPart(BaseModel):
     problem_html: str
     problem_input: str
 
 
 @activity.defn
-async def extract_problem_part(aoc_problem: AoCProblem) -> ExtractedProblemPart:
+async def extract_problem_part(args: ExtractProblemPartArgs) -> ExtractedProblemPart:
     async with aiohttp.ClientSession() as session:
         return ExtractedProblemPart(
             problem_html=await scrape_aoc(
-                session=session, year=aoc_problem.year, day=aoc_problem.day, part=aoc_problem.part
+                session=session,
+                year=args.aoc_problem.year,
+                day=args.aoc_problem.day,
+                part=args.aoc_problem.part,
+                # Intentionally cache to top level `advent_of_code/year*/day*/` dir, since this will
+                # be shared between part1 and part2.
+                solutions_dir=args.solutions_dir,
             ),
             problem_input=await fetch_input(
-                session=session, year=aoc_problem.year, day=aoc_problem.day
+                session=session,
+                year=args.aoc_problem.year,
+                day=args.aoc_problem.day,
+                # Intentionally cache to top level `advent_of_code/year*/day*/` dir, since this will
+                # be shared between part1 and part2.
+                solutions_dir=args.solutions_dir,
             ),
         )
 
@@ -119,7 +135,6 @@ class CommitChangesArgs(BaseModel):
     solutions_dir: str
     unit_tests: GeneratedUnitTests
     implementation: GeneratedImplementation
-    problem_input: str
     commit_message: str
 
 
@@ -136,10 +151,6 @@ async def commit_changes(
             FileToCommit(
                 filename="solution.py",
                 content=args.implementation.generated_implementation_file_content,
-            ),
-            FileToCommit(
-                filename="input.txt",
-                content=args.problem_input,
             ),
         ],
         aoc_problem=args.aoc_problem,
