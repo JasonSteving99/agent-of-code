@@ -1,81 +1,60 @@
 """
-This test suite verifies the behavior of is_report_safe function which takes a string input
-containing space-separated integers representing hazard levels and returns either "safe" or "unsafe".
+Unit tests for the is_report_safe function that validates a sequence of space-separated numbers.
 
-The tests cover:
-1. Strictly decreasing sequence (should be safe)
-2. Strictly increasing sequence (should be unsafe)
-3. Mostly decreasing but unsafe sequence
-4. Mixed increasing sequence (should be unsafe)
-5. Sequence with duplicate values (should be unsafe)
-6. Valid increasing with safe differences sequence
+These tests cover several scenarios:
+1. Strictly decreasing sequence (safe case)
+2. Strictly increasing sequence (unsafe case)
+3. Sequence with too large differences between numbers
+4. Sequence with direction changes
+5. Sequence with repeated numbers
+6. Valid sequence with mixed changes within constraints
+
+The implementation should check if the sequence follows the constraints:
+- No adjacent numbers should differ by more than 5
+- The sequence should not have more than 2 direction changes
 """
 
 from solution import is_report_safe
 import pytest
 
 
-def test_strictly_decreasing_sequence_is_safe():
-    # Given a strictly decreasing sequence
+def test_strictly_decreasing_sequence():
     report = "7 6 4 2 1"
-    
-    # When checking if the report is safe
     result = is_report_safe(report)
-    
-    # Then it should be considered safe
-    assert result == "safe", f"Expected 'safe' for input '{report}', but got '{result}'"
+    assert result == "safe", \
+        f"Expected 'safe' for strictly decreasing sequence '{report}', but got '{result}'"
 
 
-def test_strictly_increasing_sequence_is_unsafe():
-    # Given a strictly increasing sequence
+def test_strictly_increasing_sequence():
     report = "1 2 7 8 9"
-    
-    # When checking if the report is safe
     result = is_report_safe(report)
-    
-    # Then it should be considered unsafe
-    assert result == "unsafe", f"Expected 'unsafe' for input '{report}', but got '{result}'"
+    assert result == "unsafe", \
+        f"Expected 'unsafe' for strictly increasing sequence with large jump '{report}', but got '{result}'"
 
 
-def test_mostly_decreasing_sequence_is_unsafe():
-    # Given a mostly decreasing sequence with an unsafe pattern
+def test_sequence_with_large_difference():
     report = "9 7 6 2 1"
-    
-    # When checking if the report is safe
     result = is_report_safe(report)
-    
-    # Then it should be considered unsafe
-    assert result == "unsafe", f"Expected 'unsafe' for input '{report}', but got '{result}'"
+    assert result == "unsafe", \
+        f"Expected 'unsafe' for sequence with large difference '{report}', but got '{result}'"
 
 
-def test_mixed_increasing_sequence_is_unsafe():
-    # Given a mixed increasing sequence
+def test_multiple_direction_changes():
     report = "1 3 2 4 5"
-    
-    # When checking if the report is safe
     result = is_report_safe(report)
-    
-    # Then it should be considered unsafe
-    assert result == "unsafe", f"Expected 'unsafe' for input '{report}', but got '{result}'"
+    assert result == "unsafe", \
+        f"Expected 'unsafe' for sequence with multiple direction changes '{report}', but got '{result}'"
 
 
-def test_sequence_with_duplicates_is_unsafe():
-    # Given a sequence containing duplicate values
+def test_sequence_with_repeated_numbers():
     report = "8 6 4 4 1"
-    
-    # When checking if the report is safe
     result = is_report_safe(report)
-    
-    # Then it should be considered unsafe
-    assert result == "unsafe", f"Expected 'unsafe' for input '{report}', but got '{result}'"
+    assert result == "unsafe", \
+        f"Expected 'unsafe' for sequence with repeated numbers '{report}', but got '{result}'"
 
 
-def test_valid_increasing_sequence_is_safe():
-    # Given a valid increasing sequence with safe differences
+def test_valid_mixed_sequence():
     report = "1 3 6 7 9"
-    
-    # When checking if the report is safe
     result = is_report_safe(report)
-    
-    # Then it should be considered safe
-    assert result == "safe", f"Expected 'safe' for input '{report}', but got '{result}'"
+    assert result == "safe", \
+        f"Expected 'safe' for valid mixed sequence '{report}', but got '{result}'"
