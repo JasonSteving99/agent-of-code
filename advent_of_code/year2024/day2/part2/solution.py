@@ -28,15 +28,15 @@ def is_report_safe_with_dampener(report: str) -> str:
     
     # First check if safe without removing any number
     if is_list_safe(nums):
-        return "Safe"
+        return "safe"
         
     # Try removing each number and check if resulting list is safe
     for i in range(len(nums)):
         dampened = nums[:i] + nums[i+1:]
         if is_list_safe(dampened):
-            return "Safe"
+            return "safe"
             
-    return "Unsafe"
+    return "unsafe"
 
 def solution() -> int:
     safe_count = 0
@@ -45,7 +45,7 @@ def solution() -> int:
     for line in sys.stdin:
         if line.strip():
             result = is_report_safe_with_dampener(line.strip())
-            if result == "Safe":
+            if result == "safe":
                 safe_count += 1
                 
     return safe_count
