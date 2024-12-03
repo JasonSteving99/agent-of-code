@@ -1,4 +1,3 @@
-```python
 from typing import List
 
 def is_report_safe(report: str) -> str:
@@ -60,4 +59,3 @@ def solution() -> int:
 
 if __name__ == "__main__":
     print(solution())
-```
