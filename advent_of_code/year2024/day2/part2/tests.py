@@ -1,57 +1,59 @@
 """
-Tests for the Red-Nosed reactor safety evaluation function with Problem Dampener.
+Tests for the Red-Nosed reactor safety evaluation function.
 
 These tests verify that the function correctly determines if a reactor report is 'safe' or 'unsafe'
-after considering the ability to remove one problematic level using the Problem Dampener.
+based on the following criteria:
+- Input is a string of space-separated numbers representing reactor levels
+- A Problem Dampener can remove one problematic level if needed
+- The function must determine if the report can be made 'safe' by using the dampener at most once
+- The output should be either "safe" or "unsafe" as a string
 
-Key test coverage:
-- Reports that are already safe (strictly decreasing or equal adjacent values)
-- Reports that become safe after removing one value
-- Reports that remain unsafe even after removing one value
-- Various input patterns (increasing, decreasing, mixed patterns)
-- Edge cases with equal values
+Note: The exact criteria for what makes a sequence "safe" vs "unsafe" after dampening
+is left to the implementation, as these tests focus on verifying the expected behavior
+for specific known cases.
 """
 
 from solution import is_report_safe_with_dampener
+import pytest
 
 
-def test_strictly_decreasing_report():
+def test_strictly_decreasing_sequence_is_safe():
     report = "7 6 4 2 1"
     result = is_report_safe_with_dampener(report)
     assert result == "safe", \
-        f"Report '{report}' should be 'safe' as it is strictly decreasing"
+        f"Expected report '{report}' to be 'safe' (decreasing sequence), but got '{result}'"
 
 
-def test_strictly_increasing_report():
+def test_strictly_increasing_sequence_is_unsafe():
     report = "1 2 7 8 9"
     result = is_report_safe_with_dampener(report)
     assert result == "unsafe", \
-        f"Report '{report}' should be 'unsafe' as removing any single value still leaves an increasing pattern"
+        f"Expected report '{report}' to be 'unsafe' (increasing sequence), but got '{result}'"
 
 
-def test_unsafe_with_large_jump():
+def test_mostly_decreasing_with_large_start_is_unsafe():
     report = "9 7 6 2 1"
     result = is_report_safe_with_dampener(report)
     assert result == "unsafe", \
-        f"Report '{report}' should be 'unsafe' as it cannot be made safe by removing one value"
+        f"Expected report '{report}' to be 'unsafe' (large initial value), but got '{result}'"
 
 
-def test_mostly_increasing_but_safe():
+def test_mostly_increasing_with_small_fluctuation_is_safe():
     report = "1 3 2 4 5"
     result = is_report_safe_with_dampener(report)
     assert result == "safe", \
-        f"Report '{report}' should be 'safe' as removing one value can make it non-increasing"
+        f"Expected report '{report}' to be 'safe' (small fluctuation), but got '{result}'"
 
 
-def test_safe_with_equal_values():
+def test_decreasing_sequence_with_duplicate_is_safe():
     report = "8 6 4 4 1"
     result = is_report_safe_with_dampener(report)
     assert result == "safe", \
-        f"Report '{report}' should be 'safe' as it has non-increasing pattern with equal values"
+        f"Expected report '{report}' to be 'safe' (decreasing with one duplicate), but got '{result}'"
 
 
-def test_increasing_but_safe_with_dampener():
+def test_increasing_with_gaps_is_safe():
     report = "1 3 6 7 9"
     result = is_report_safe_with_dampener(report)
     assert result == "safe", \
-        f"Report '{report}' should be 'safe' as removing one value can make it non-increasing"
+        f"Expected report '{report}' to be 'safe' (increasing with gaps), but got '{result}'"
