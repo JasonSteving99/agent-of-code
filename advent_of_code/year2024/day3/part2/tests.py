@@ -15,17 +15,17 @@ def test_complex_string_with_do_dont_controls():
     input_str = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
     result = modified_sum_multiplications(input_str)
     
-    # Expected sum should be 56:
+    # Expected sum should be 48:
     # - Initial mul(2,4) = 8 is counted (no don't() before it)
     # - mul[3,7] is ignored (invalid format)
     # - mul(5,5) = 25 is disabled by don't() before it
     # - mul(32,64) = 2048 is ignored due to invalid format
     # - mul(11,8) = 88 is ignored (disabled)
     # - mul(8,5) = 40 is counted
-    # Total: 8 + 0 + 0 + 40 = 56
-    assert result == 56, (
+    # Total: 8 + 0 + 0 + 40 = 48
+    assert result == 48, (
         f"Failed to correctly sum multiplications with do/don't controls.\n"
         f"Input: {input_str}\n"
-        f"Expected: 56\n"
+        f"Expected: 48\n"
         f"Got: {result}"
     )
