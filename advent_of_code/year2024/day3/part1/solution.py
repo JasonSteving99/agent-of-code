@@ -9,7 +9,7 @@ from typing import List, Tuple
 def extract_valid_mul_operations(line: str) -> List[Tuple[int, int]]:
     """Extract all valid mul(x,y) operations from a corrupted line."""
     # Match mul(X,Y) where X and Y are 1-3 digit numbers, ensuring isolation
-    pattern = r'(?<![a-zA-Z0-9\(])mul\((\d{1,3}),(\d{1,3})\)(?![a-zA-Z0-9\)])'
+    pattern = r'(?<![a-zA-Z\(])mul\((\d{1,3}),(\d{1,3})\)(?![a-zA-Z0-9\)])'
     matches = re.finditer(pattern, line)
 
     operations = []
