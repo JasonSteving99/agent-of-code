@@ -21,8 +21,8 @@ def calculate_enabled_multiplications(memory: str) -> int:
         # Look for mul instructions
         mul_match = re.match(r'mul\((\d{1,3}),(\d{1,3})\)', memory[pos:])
         # Look for do/don't instructions
-        do_match = re.match(r'do\(\)', memory[pos:])
-        dont_match = re.match(r"don't\(\)", memory[pos:])
+        do_match = re.match(r'^do\(\)', memory[pos:])
+        dont_match = re.match(r"^don't\(\)", memory[pos:])
         
         # Handle each type of instruction
         if do_match:
