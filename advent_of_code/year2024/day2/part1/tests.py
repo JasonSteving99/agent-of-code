@@ -1,15 +1,10 @@
 """
-This test suite verifies a function that determines if a report is "safe" or "unsafe".
-The function takes a string input containing space-separated numbers representing a report,
-and returns either "safe" or "unsafe" as a string result.
+This test suite validates a function 'is_report_safe' that takes a space-separated string of numbers
+representing a security report and determines if it is 'safe' or 'unsafe'.
 
-From the examples, it appears that:
-- The function should handle sequences of 5 numbers
-- The function evaluates some pattern in the sequence to determine safety
-- Numbers in reports appear to be single digits (1-9)
-
-Note: The exact criteria for determining safety is not provided in the examples context,
-but the test cases will verify the expected behavior for the given examples.
+The function should:
+1. Take a single string parameter containing space-separated numbers
+2. Return either "safe" or "unsafe" as a string
 """
 
 from solution import is_report_safe
@@ -20,39 +15,39 @@ def test_strictly_decreasing_sequence_is_safe():
     report = "7 6 4 2 1"
     result = is_report_safe(report)
     assert result == "safe", \
-        f'Expected report "{report}" to be "safe", but got "{result}"'
+        f'Report "{report}" should be safe (strictly decreasing sequence) but got "{result}"'
 
 
 def test_strictly_increasing_sequence_is_unsafe():
     report = "1 2 7 8 9"
     result = is_report_safe(report)
     assert result == "unsafe", \
-        f'Expected report "{report}" to be "unsafe", but got "{result}"'
+        f'Report "{report}" should be unsafe (strictly increasing sequence) but got "{result}"'
 
 
-def test_mostly_decreasing_with_large_gap_is_unsafe():
+def test_decreasing_with_large_gap_is_unsafe():
     report = "9 7 6 2 1"
     result = is_report_safe(report)
     assert result == "unsafe", \
-        f'Expected report "{report}" to be "unsafe", but got "{result}"'
+        f'Report "{report}" should be unsafe (large gap between 9 and 7) but got "{result}"'
 
 
 def test_mostly_increasing_with_one_decrease_is_unsafe():
     report = "1 3 2 4 5"
     result = is_report_safe(report)
     assert result == "unsafe", \
-        f'Expected report "{report}" to be "unsafe", but got "{result}"'
+        f'Report "{report}" should be unsafe (mostly increasing with one decrease) but got "{result}"'
 
 
-def test_sequence_with_repeated_number_is_unsafe():
+def test_sequence_with_duplicate_numbers_is_unsafe():
     report = "8 6 4 4 1"
     result = is_report_safe(report)
     assert result == "unsafe", \
-        f'Expected report "{report}" to be "unsafe", but got "{result}"'
+        f'Report "{report}" should be unsafe (contains duplicate number 4) but got "{result}"'
 
 
-def test_increasing_with_gaps_is_safe():
+def test_increasing_with_appropriate_gaps_is_safe():
     report = "1 3 6 7 9"
     result = is_report_safe(report)
     assert result == "safe", \
-        f'Expected report "{report}" to be "safe", but got "{result}"'
+        f'Report "{report}" should be safe (increasing with appropriate gaps) but got "{result}"'
