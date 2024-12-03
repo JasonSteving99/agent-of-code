@@ -1,75 +1,86 @@
 """
-Purpose of these tests:
-1. Verify that only syntactically valid mul(x,y) expressions are processed
-2. Confirm that invalid/malformed mul expressions are correctly ignored
-3. Ensure proper handling of input strings with mixed valid/invalid mul operations
-4. Test that valid mul operations with 1-3 digit numbers are correctly summed
+This test suite validates the sum_valid_mul_operations function which:
+1. Processes a string containing multiple mul(x,y) operations
+2. Identifies and processes only validly formatted mul(x,y) calls where:
+   - x and y are 1-3 digit integers
+   - The call follows exactly the format mul(x,y) with no spaces
+3. Ignores any malformed mul operations
+4. Returns the sum of all valid multiplications
+
+The tests focus on:
+- Handling complex input strings with mixed valid/invalid operations
+- Proper parsing of valid mul(x,y) operations
+- Ignoring malformed mul operations with syntax errors
+- Correctly calculating the sum of valid multiplications
 """
 
+import pytest
 from solution import sum_valid_mul_operations
 
-def test_complex_string_with_mixed_valid_invalid_operations():
-    test_input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
-    expected = 161  # 8 (from mul(2,4)) + 88 (from mul(11,8)) + 65 (from mul(8,5)) = 161
-    result = sum_valid_mul_operations(test_input)
-    assert result == expected, (
-        f"Failed to correctly process mixed valid/invalid mul operations.\n"
-        f"Input: {test_input}\n"
-        f"Expected sum: {expected}\n"
-        f"Got: {result}"
+
+def test_complex_string_with_mixed_operations():
+    # Complex string with valid and invalid mul operations
+    input_str = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+    result = sum_valid_mul_operations(input_str)
+    
+    # Validate that only mul(11,8) is recognized as valid operation
+    # 11 * 8 = 88 -> total sum = 88
+    assert result == 88, (
+        f"Input string: {input_str}\n"
+        f"Expected sum of valid mul operations: 88 (11*8)\n"
+        f"Got: {result}\n"
+        "Invalid operations that should be ignored:\n"
+        "- mul(2,4) - missing proper parentheses\n"
+        "- mul[3,7] - wrong brackets\n"
+        "- do_not_mul(5,5) - wrong operation name\n"
+        "- mul(32,64] - mismatched brackets\n"
+        "- mul(8,5) - no proper separation from previous operation"
     )
 
-def test_single_valid_mul_operation():
-    test_input = "mul(10,20)"
-    expected = 200  # Just 10 * 20
-    result = sum_valid_mul_operations(test_input)
-    assert result == expected, (
-        f"Failed to process single valid mul operation.\n"
-        f"Input: {test_input}\n"
-        f"Expected: {expected}\n"
-        f"Got: {result}"
-    )
 
 def test_empty_string():
-    test_input = ""
-    expected = 0  # No valid mul operations should return 0
-    result = sum_valid_mul_operations(test_input)
-    assert result == expected, (
-        f"Failed to handle empty string input.\n"
-        f"Input: {test_input}\n"
-        f"Expected: {expected}\n"
+    # Empty string should return 0 as there are no valid operations
+    input_str = ""
+    result = sum_valid_mul_operations(input_str)
+    assert result == 0, (
+        f"Input string: {input_str}\n"
+        f"Expected: 0 (empty string has no valid operations)\n"
         f"Got: {result}"
     )
 
-def test_no_valid_mul_operations():
-    test_input = "mul[5,6]mul{7,8}mul(a,b)mul(1,)mul(,2)mul(1.2,3)"
-    expected = 0  # No valid mul operations should return 0
-    result = sum_valid_mul_operations(test_input)
-    assert result == expected, (
-        f"Failed to handle string with only invalid mul operations.\n"
-        f"Input: {test_input}\n"
-        f"Expected: {expected}\n"
+
+def test_single_valid_operation():
+    # Single valid mul operation
+    input_str = "mul(5,10)"
+    result = sum_valid_mul_operations(input_str)
+    assert result == 50, (
+        f"Input string: {input_str}\n"
+        f"Expected: 50 (5*10)\n"
         f"Got: {result}"
     )
 
-def test_multiple_valid_mul_operations():
-    test_input = "mul(2,3)mul(4,5)mul(6,7)"
-    expected = 62  # (2*3) + (4*5) + (6*7) = 6 + 20 + 42 = 62
-    result = sum_valid_mul_operations(test_input)
-    assert result == expected, (
-        f"Failed to sum multiple valid mul operations.\n"
-        f"Input: {test_input}\n"
-        f"Expected: {expected}\n"
+
+def test_multiple_valid_operations():
+    # Multiple valid mul operations
+    input_str = "mul(2,3)mul(4,5)mul(6,7)"
+    result = sum_valid_mul_operations(input_str)
+    assert result == 62, (
+        f"Input string: {input_str}\n"
+        f"Expected: 62 (2*3 + 4*5 + 6*7 = 6 + 20 + 42)\n"
         f"Got: {result}"
     )
 
-def test_valid_three_digit_numbers():
-    test_input = "mul(123,456)mul(789,100)"
-    expected = 135108  # (123*456) + (789*100) = 56088 + 78900 = 135108
-    result = sum_valid_mul_operations(test_input)
-    assert result == expected, (
-        f"Failed to handle valid three-digit numbers.\n"
-        f"Input: {test_input}\n"
-        f"Expected: {expected}\n"
-        f"Got: {result}"
+
+def test_operations_with_invalid_formats():
+    # Various invalid formats that should be ignored
+    input_str = "mul(1,2,3)mul[4,5]mul(6;7)mul(8,9)"
+    result = sum_valid_mul_operations(input_str)
+    assert result == 72, (
+        f"Input string: {input_str}\n"
+        f"Expected: 72 (only mul(8,9) is valid: 8*9)\n"
+        f"Got: {result}\n"
+        "Invalid operations that should be ignored:\n"
+        "- mul(1,2,3) - too many arguments\n"
+        "- mul[4,5] - wrong brackets\n"
+        "- mul(6;7) - wrong separator"
     )

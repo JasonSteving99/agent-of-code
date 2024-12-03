@@ -1,35 +1,46 @@
-"""Solution for parsing corrupted memory and summing valid mul operations."""
-
+"""
+Solution for finding valid multiplication instructions and summing results.
+"""
 import re
-from typing import Match
 from sys import stdin
+from typing import List, Tuple
 
 
-def sum_valid_mul_operations(corrupted_memory: str) -> int:
+def extract_valid_mul_operations(line: str) -> List[Tuple[int, int]]:
+    """Extract all valid mul(x,y) operations from a corrupted line."""
+    # Match mul(X,Y) where X and Y are 1-3 digit numbers with no spaces
+    pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
+    matches = re.finditer(pattern, line)
+    
+    operations = []
+    for match in matches:
+        x, y = int(match.group(1)), int(match.group(2))
+        operations.append((x, y))
+    
+    return operations
+
+
+def sum_valid_mul_operations(line: str) -> int:
     """
-    Parses corrupted memory and sums the result of valid "mul" operations.
-
+    Calculate the sum of all valid multiplication operations in the line.
+    
     Args:
-        corrupted_memory: The input string containing potentially corrupted memory.
-
+        line: String containing corrupted memory with mul instructions
+        
     Returns:
-        The sum of the results of valid "mul" operations.
+        Sum of the results of all valid multiplication operations
     """
-    pattern = r"mul\((\d{1,3}),(\d{1,3})\)"
-    total = 0
-
-    for match in re.finditer(pattern, corrupted_memory):
-        num1, num2 = map(int, match.groups())
-        total += num1 * num2
-
-    return total
+    operations = extract_valid_mul_operations(line)
+    return sum(x * y for x, y in operations)
 
 
 def solution() -> int:
-    """Reads input from stdin and solves the puzzle."""
-    corrupted_memory = stdin.read().strip()
-    return sum_valid_mul_operations(corrupted_memory)
-
-
-if __name__ == "__main__":
-    print(solution())
+    """
+    Read input from stdin and return the sum of all valid multiplication operations.
+    
+    Returns:
+        Total sum of all valid multiplication results
+    """
+    # Read all input lines and join them (in case input spans multiple lines)
+    content = ''.join(line for line in stdin)
+    return sum_valid_mul_operations(content)
