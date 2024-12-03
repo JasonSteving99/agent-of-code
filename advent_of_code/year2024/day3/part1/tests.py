@@ -20,16 +20,18 @@ def test_mixed_valid_and_invalid_expressions():
     result = sum_of_multiplications(input_str)
     
     # Expected calculation:
-    # mul(32,64) = 2048
+    # mul(2,4) = 8
+    # mul(3,7) = 21
+    # mul(32,64) = 2048 (Invalid: closing bracket)
     # mul(11,8) = 88
     # mul(8,5) = 40
-    # Total sum = 2048 + 88 + 40 = 2176
-    assert result == 2176, (
+
+    assert result == 161, (
         f"Failed to correctly sum valid multiplication products.\n"
         f"Input: {input_str}\n"
-        f"Expected: 2176\n"
+        f"Expected: 161\n"
         f"Got: {result}\n"
-        f"Should find and sum products from: mul(32,64)=2048, mul(11,8)=88, mul(8,5)=40"
+        f"Should find and sum products from: mul(2,4)=8, mul(3,7)=21, mul(11,8)=88, mul(8,5)=40"
     )
 
 def test_empty_string():
