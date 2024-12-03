@@ -1,57 +1,63 @@
-"""Solution for Red-Nosed Reports problem."""
+```python
 from typing import List
 
-
 def is_report_safe(report: str) -> str:
-    """Determine if a given report is safe based on specified criteria.
+    """
+    Determine if a reactor report is safe based on level patterns.
     
     Args:
-        report: A string containing space-separated integers representing levels
+        report: A string of space-separated numbers representing the levels
         
     Returns:
-        'safe' if the report meets safety criteria, 'unsafe' otherwise
+        "safe" if the report meets safety criteria, "unsafe" otherwise
     """
     # Convert report string to list of integers
     levels = [int(x) for x in report.split()]
     
-    if len(levels) < 2:
-        return "unsafe"
-
-    # Check if all adjacent differences are between 1 and 3 (inclusive)
-    diffs = [levels[i+1] - levels[i] for i in range(len(levels)-1)]
-    
-    # Check if any adjacent differences are 0 or outside [-3, -1] or [1, 3]
-    for diff in diffs:
-        if diff == 0 or abs(diff) > 3:
+    # Check if there are adjacent identical numbers
+    for i in range(len(levels) - 1):
+        if levels[i] == levels[i + 1]:
             return "unsafe"
     
-    # Check if direction changes (mix of increasing and decreasing)
-    all_increasing = all(diff > 0 for diff in diffs)
-    all_decreasing = all(diff < 0 for diff in diffs)
-    
-    if not (all_increasing or all_decreasing):
-        return "unsafe"
+    # Check if sequence is monotonic and differences are within bounds
+    is_increasing = None
+    for i in range(len(levels) - 1):
+        diff = levels[i + 1] - levels[i]
+        
+        # First difference determines if sequence should be increasing or decreasing
+        if is_increasing is None:
+            is_increasing = diff > 0
+        
+        # Check if direction changes
+        if (diff > 0) != is_increasing:
+            return "unsafe"
+        
+        # Check if difference is within bounds (1-3)
+        if abs(diff) < 1 or abs(diff) > 3:
+            return "unsafe"
     
     return "safe"
 
-
 def solution() -> int:
-    """Read reports from stdin and count how many are safe.
+    """
+    Read reports from stdin and count the number of safe reports.
     
     Returns:
-        The number of safe reports
+        The count of safe reports
     """
-    reports = []
-    while True:
-        try:
+    safe_count = 0
+    try:
+        while True:
             line = input().strip()
-            if line:
-                reports.append(line)
-        except EOFError:
-            break
+            if not line:
+                break
+            if is_report_safe(line) == "safe":
+                safe_count += 1
+    except EOFError:
+        pass
     
-    return sum(1 for report in reports if is_report_safe(report) == "safe")
-
+    return safe_count
 
 if __name__ == "__main__":
     print(solution())
+```
