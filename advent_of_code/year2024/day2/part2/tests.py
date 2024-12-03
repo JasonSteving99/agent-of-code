@@ -1,57 +1,55 @@
 """
-Tests for the Problem Dampener report safety checker (Part 2).
+This test suite covers the Red-Nosed reactor safety evaluation functionality where:
+- Input is a string of space-separated numbers representing reactor levels
+- A Problem Dampener can remove one problematic level if needed
+- Output should be "safe" if after potential dampener use the sequence can be made non-increasing
+- Output should be "unsafe" if even with dampener use the sequence cannot be made non-increasing
 
-The tests verify that the function correctly identifies when a report is:
-1. Safe without any modifications (already strictly decreasing)
-2. Can become safe by removing exactly one measurement
-3. Remains unsafe even with the ability to remove one measurement
-
-The report is considered safe if either:
-- The measurements are strictly decreasing without any modifications
-- Removing exactly one measurement can make the sequence strictly decreasing
+The tests verify both cases where:
+1. Reports are naturally safe (already non-increasing or requiring one dampener removal)
+2. Reports are unsafe (cannot be made non-increasing even with one dampener removal)
 """
 
 from solution import is_report_safe_with_dampener
-import pytest
 
-def test_already_safe_strictly_decreasing():
-    """Test a report that is already safe (strictly decreasing)."""
+
+def test_already_decreasing_sequence():
     input_report = "7 6 4 2 1"
     result = is_report_safe_with_dampener(input_report)
     assert result == "safe", \
-        f"Report '{input_report}' should be 'safe' as it is already strictly decreasing"
+        f"Expected 'safe' for strictly decreasing sequence '{input_report}', but got '{result}'"
 
-def test_unsafe_increasing_sequence():
-    """Test a report that is unsafe with increasing values."""
+
+def test_increasing_sequence_cannot_be_fixed():
     input_report = "1 2 7 8 9"
     result = is_report_safe_with_dampener(input_report)
     assert result == "unsafe", \
-        f"Report '{input_report}' should be 'unsafe' as it cannot be made strictly decreasing by removing one value"
+        f"Expected 'unsafe' for increasing sequence '{input_report}', but got '{result}'"
 
-def test_unsafe_with_multiple_violations():
-    """Test a report that is unsafe with multiple violations."""
+
+def test_two_increases_cannot_be_fixed():
     input_report = "9 7 6 2 1"
     result = is_report_safe_with_dampener(input_report)
     assert result == "unsafe", \
-        f"Report '{input_report}' should be 'unsafe' as it requires removing more than one value to make it strictly decreasing"
+        f"Expected 'unsafe' for sequence '{input_report}' with multiple increases, but got '{result}'"
 
-def test_safe_after_removing_middle_value():
-    """Test a report that becomes safe after removing one value."""
+
+def test_one_removal_makes_increasing_safe():
     input_report = "1 3 2 4 5"
     result = is_report_safe_with_dampener(input_report)
     assert result == "safe", \
-        f"Report '{input_report}' should be 'safe' as removing one value can make it strictly decreasing"
+        f"Expected 'safe' for sequence '{input_report}' (can remove one number), but got '{result}'"
 
-def test_safe_with_duplicate_values():
-    """Test a report that contains duplicate values but can be made safe."""
+
+def test_sequence_with_equal_values():
     input_report = "8 6 4 4 1"
     result = is_report_safe_with_dampener(input_report)
     assert result == "safe", \
-        f"Report '{input_report}' should be 'safe' as removing one duplicate value makes it strictly decreasing"
+        f"Expected 'safe' for sequence '{input_report}' with equal values, but got '{result}'"
 
-def test_safe_with_increasing_but_fixable():
-    """Test a report that has increasing values but can be made safe."""
+
+def test_sequence_with_larger_numbers():
     input_report = "1 3 6 7 9"
     result = is_report_safe_with_dampener(input_report)
     assert result == "safe", \
-        f"Report '{input_report}' should be 'safe' as removing one value can make it strictly decreasing"
+        f"Expected 'safe' for sequence '{input_report}', but got '{result}'"
