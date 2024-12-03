@@ -1,63 +1,58 @@
-from typing import List, Optional
-import sys
+"""Solve the Red-Nosed Reports problem."""
+from typing import List
+
 
 def is_report_safe(report: str) -> str:
     """
-    Check if a report is safe based on reactor safety criteria.
+    Determine if a reactor report is safe.
+    
     A report is safe if:
-    1. Levels are either all increasing or all decreasing
-    2. Adjacent levels differ by at least 1 and at most 3
+    1. The levels are either all increasing or all decreasing
+    2. Any two adjacent levels differ by at least one and at most three
     
     Args:
-        report: A string containing space-separated integers representing levels
+        report: Space-separated string of numbers representing levels
         
     Returns:
-        'safe' if the report meets safety criteria, 'unsafe' otherwise
+        'Safe' if report meets safety criteria, 'Unsafe' otherwise
     """
-    # Convert string of space-separated numbers to list of integers
+    # Convert report string to list of integers
     levels = [int(x) for x in report.split()]
     
-    # Check if there are at least 2 levels to compare
-    if len(levels) < 2:
-        return "unsafe"
+    # Check if two adjacent numbers are equal
+    for i in range(len(levels) - 1):
+        if levels[i] == levels[i + 1]:
+            return "Unsafe"
     
-    # Determine if sequence should be increasing or decreasing
-    is_increasing: Optional[bool] = None
+    # Calculate differences between adjacent numbers
+    diffs = [levels[i + 1] - levels[i] for i in range(len(levels) - 1)]
     
-    # Check each adjacent pair
-    for i in range(1, len(levels)):
-        diff = levels[i] - levels[i-1]
-        
-        # If difference is 0 or outside allowed range (-3 to -1 or 1 to 3)
-        if diff == 0 or abs(diff) > 3:
-            return "unsafe"
-            
-        # For first pair, determine if sequence is increasing or decreasing
-        if is_increasing is None:
-            is_increasing = diff > 0
-        # For subsequent pairs, ensure direction remains consistent
-        elif (diff > 0) != is_increasing:
-            return "unsafe"
-            
-    return "safe"
+    # Check if differences are within allowed range
+    if not all(1 <= abs(diff) <= 3 for diff in diffs):
+        return "Unsafe"
+    
+    # Check if all differences have the same sign (all increasing or all decreasing)
+    if not (all(diff > 0 for diff in diffs) or all(diff < 0 for diff in diffs)):
+        return "Unsafe"
+    
+    return "Safe"
+
 
 def solution() -> int:
     """
     Read reports from stdin and count how many are safe.
     
     Returns:
-        The number of safe reports.
+        Number of safe reports
     """
-    safe_count = 0
+    reports = []
+    try:
+        while True:
+            line = input().strip()
+            if not line:
+                break
+            reports.append(line)
+    except EOFError:
+        pass
     
-    # Read each line from stdin
-    for line in sys.stdin:
-        line = line.strip()
-        if line:  # Skip empty lines
-            if is_report_safe(line) == "safe":
-                safe_count += 1
-                
-    return safe_count
-
-if __name__ == "__main__":
-    print(solution())
+    return sum(1 for report in reports if is_report_safe(report) == "Safe")
