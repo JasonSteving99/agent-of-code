@@ -1,52 +1,60 @@
-from typing import List, Optional
-import sys
+"""Implementation for safely checking reactor reports with Problem Dampener functionality."""
 
-def check_valid_sequence(levels: List[int]) -> bool:
-    """Check if a sequence of levels is valid (all increasing or decreasing with correct differences)."""
+from typing import List, Tuple
+
+
+def check_levels_strict(levels: List[int]) -> bool:
+    """Check if levels are strictly increasing/decreasing with proper differences."""
     if len(levels) < 2:
         return True
-        
-    diff = levels[1] - levels[0]
-    is_increasing = diff > 0
-    
+
+    # First detect whether it should be increasing or decreasing
+    increasing = levels[1] > levels[0]
+
     for i in range(1, len(levels)):
-        curr_diff = levels[i] - levels[i-1]
-        if curr_diff == 0:  # No difference between adjacent numbers
-            return False
-        if abs(curr_diff) > 3:  # Difference greater than 3
-            return False
-        if (is_increasing and curr_diff < 0) or (not is_increasing and curr_diff > 0):
-            return False
-            
+        diff = levels[i] - levels[i - 1]
+        if increasing:
+            if diff <= 0 or diff > 3:
+                return False
+        else:
+            if diff >= 0 or diff < -3:
+                return False
+
     return True
 
-def is_safe_with_removal(levels: List[int]) -> bool:
-    """Check if a report becomes safe after removing any single number."""
-    if check_valid_sequence(levels):
+
+def check_levels_with_removal(levels: List[int]) -> bool:
+    """Try removing one number to check if sequence becomes valid."""
+    # No need to try removing if already valid
+    if check_levels_strict(levels):
         return True
-        
-    # Try removing each number and check if sequence becomes valid
+
+    # Try removing each level one at a time
     for i in range(len(levels)):
-        test_levels = levels[:i] + levels[i+1:]
-        if check_valid_sequence(test_levels):
+        temp_levels = levels[:i] + levels[i + 1:]
+        if check_levels_strict(temp_levels):
             return True
-            
+
     return False
 
+
 def is_report_safe_with_dampener(report: str) -> str:
-    """Determine if a report is safe with the Problem Dampener feature."""
-    # Convert report string into list of integers
+    """Analyze a reactor report for safety with Problem Dampener."""
+    # Parse levels to integers
     levels = [int(x) for x in report.strip().split()]
-    
-    return "safe" if is_safe_with_removal(levels) else "unsafe"
+
+    # Check if report is safe either directly or with one level removed
+    if check_levels_with_removal(levels):
+        return "safe"
+    return "unsafe"
+
 
 def solution() -> int:
-    """Read input from stdin and count the number of safe reports."""
+    """Read from stdin and return the count of safe reports."""
+    import sys
     safe_count = 0
-    
     for line in sys.stdin:
-        if line.strip():  # Skip empty lines
+        if line.strip():
             if is_report_safe_with_dampener(line) == "safe":
                 safe_count += 1
-                
     return safe_count

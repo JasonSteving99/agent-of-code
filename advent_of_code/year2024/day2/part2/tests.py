@@ -1,51 +1,60 @@
 """
-Tests for Part 2: Problem Dampener Report Safety Checker
+Tests for the reactor safety report analyzer with Problem Dampener functionality.
 
-This test suite verifies the functionality of the problem dampener that tolerates a single bad level
-in a report. A report is considered safe if:
-1. It's naturally safe (gradually increasing/decreasing with differences of 1-3 between levels)
-2. OR it becomes safe after removing any single number from the sequence
+These tests verify that the function correctly analyzes reactor level reports,
+considering a single 'bad' level can be tolerated due to the Problem Dampener.
+The function should classify reports as either 'safe' or 'unsafe' based on the
+sequences of levels and their relationships, taking into account this single
+violation tolerance.
 
-The function should:
-- Accept a string input with space-separated integers
-- Return "safe" or "unsafe" based on the dampener rules
-- Consider sequences as safe if removing one number makes them valid
+Key test cases cover:
+- Strictly decreasing sequences (safe)
+- Monotonic increasing sequences (unsafe)
+- Sequences with a single violation that can be dampened (safe)
+- Sequences with multiple violations that cannot be salvaged (unsafe)
+- Sequences with equal adjacent values (considered safe when part of valid pattern)
 """
 
 from solution import is_report_safe_with_dampener
 
-def test_naturally_decreasing_sequence():
-    input_str = "7 6 4 2 1"
-    result = is_report_safe_with_dampener(input_str)
-    assert result == "safe", \
-        f"Expected 'safe' for naturally decreasing sequence '{input_str}' but got '{result}'"
 
-def test_strictly_increasing_unsafe():
-    input_str = "1 2 7 8 9"
-    result = is_report_safe_with_dampener(input_str)
+def test_strictly_decreasing_sequence():
+    report = "7 6 4 2 1"
+    result = is_report_safe_with_dampener(report)
+    assert result == "safe", \
+        f"Expected 'safe' for strictly decreasing sequence '{report}', but got '{result}'"
+
+
+def test_monotonic_increasing_sequence():
+    report = "1 2 7 8 9"
+    result = is_report_safe_with_dampener(report)
     assert result == "unsafe", \
-        f"Expected 'unsafe' for sequence '{input_str}' with too large jumps but got '{result}'"
+        f"Expected 'unsafe' for monotonic increasing sequence '{report}', but got '{result}'"
 
-def test_decreasing_with_large_gap():
-    input_str = "9 7 6 2 1"
-    result = is_report_safe_with_dampener(input_str)
+
+def test_sequence_with_multiple_violations():
+    report = "9 7 6 2 1"
+    result = is_report_safe_with_dampener(report)
     assert result == "unsafe", \
-        f"Expected 'unsafe' for sequence '{input_str}' with gap too large even after removing one number but got '{result}'"
+        f"Expected 'unsafe' for sequence with multiple violations '{report}', but got '{result}'"
 
-def test_safe_with_small_irregularity():
-    input_str = "1 3 2 4 5"
-    result = is_report_safe_with_dampener(input_str)
-    assert result == "safe", \
-        f"Expected 'safe' for sequence '{input_str}' (becomes safe after removing '2') but got '{result}'"
 
-def test_decreasing_with_plateau():
-    input_str = "8 6 4 4 1"
-    result = is_report_safe_with_dampener(input_str)
+def test_sequence_with_single_violation():
+    report = "1 3 2 4 5"
+    result = is_report_safe_with_dampener(report)
     assert result == "safe", \
-        f"Expected 'safe' for sequence '{input_str}' (becomes valid after removing one '4') but got '{result}'"
+        f"Expected 'safe' for sequence with single violation '{report}', but got '{result}'"
 
-def test_increasing_with_valid_gaps():
-    input_str = "1 3 6 7 9"
-    result = is_report_safe_with_dampener(input_str)
+
+def test_sequence_with_equal_values():
+    report = "8 6 4 4 1"
+    result = is_report_safe_with_dampener(report)
     assert result == "safe", \
-        f"Expected 'safe' for sequence '{input_str}' with valid increasing gaps but got '{result}'"
+        f"Expected 'safe' for sequence with equal adjacent values '{report}', but got '{result}'"
+
+
+def test_sequence_with_gradual_increase():
+    report = "1 3 6 7 9"
+    result = is_report_safe_with_dampener(report)
+    assert result == "safe", \
+        f"Expected 'safe' for gradually increasing sequence '{report}', but got '{result}'"
