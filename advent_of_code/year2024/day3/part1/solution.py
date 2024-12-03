@@ -1,40 +1,40 @@
-"""
-Solution for finding valid multiplication instructions and summing results.
-"""
+"""Solution for Mull It Over puzzle - calc sum of valid mul() operations."""
 import re
-from sys import stdin
-from typing import List, Tuple
+import sys
+from typing import List, Match, Optional
 
-
-def extract_valid_mul_operations(line: str) -> List[Tuple[int, int]]:
-    """Extract all valid mul(x,y) operations from a corrupted line."""
-    # Match mul(X,Y) where X and Y are 1-3 digit numbers
-    pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
-    matches = re.finditer(pattern, line)
-    operations = []
-    for match in matches:
-        x, y = int(match.group(1)), int(match.group(2))
-        operations.append((x, y))
-    return operations
-
-
-def sum_valid_mul_operations(line: str) -> int:
+def sum_valid_mul_operations(text: str) -> int:
     """
-    Calculate the sum of all valid multiplication operations in the line.
+    Process a text string and sum the results of all valid mul() operations.
+    
     Args:
-        line: String containing corrupted memory with mul instructions
+        text: Input string with mul operations mixed with corrupted data
+        
     Returns:
-        Sum of the results of all valid multiplication operations
+        Sum of all valid multiplication results
     """
-    operations = extract_valid_mul_operations(line)
-    return sum(x * y for x, y in operations)
-
+    # RegEx to match mul(X,Y) where X and Y are 1-3 digit numbers
+    pattern = r'mul\((\d{1,3}),(\d{1,3})\)'
+    total = 0
+    
+    # Find all matches in the text
+    for match in re.finditer(pattern, text):
+        num1 = int(match.group(1))
+        num2 = int(match.group(2))
+        total += num1 * num2
+        
+    return total
 
 def solution() -> int:
     """
-    Read input from stdin and return the sum of all valid multiplication operations.
+    Read input from stdin and return solution.
+    
     Returns:
-        Total sum of all valid multiplication results
+        Integer result representing sum of all valid multiplication results
     """
-    content = ''.join(line for line in stdin)
+    # Read all input lines and join them into a single string
+    content = ''.join(sys.stdin.readlines())
     return sum_valid_mul_operations(content)
+
+if __name__ == "__main__":
+    print(solution())
