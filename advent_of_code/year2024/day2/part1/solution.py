@@ -1,63 +1,54 @@
+"""Solution for Day 2: Red-Nosed Reports."""
 from typing import List
-import sys
 
-def is_report_safe(report: str) -> str:
-    """
-    Check if a given report is safe according to the Red-Nosed reactor safety criteria.
+
+def classify_report(report: str) -> str:
+    """Classify a report as 'safe' or 'unsafe' based on the rules.
     
-    Args:
-        report: A string containing space-separated integers representing levels.
-        
-    Returns:
-        "Safe" if the report meets safety criteria, "Unsafe" otherwise.
+    A report is safe if:
+    1. The levels are either all increasing or all decreasing
+    2. Adjacent levels differ by at least 1 and at most 3
     """
     # Convert report string to list of integers
-    levels = [int(x) for x in report.strip().split()]
+    levels: List[int] = [int(x) for x in report.split()]
     
     if len(levels) < 2:
-        return "Unsafe"  # Single number or empty report is unsafe
-    
-    # Check first difference to determine if we should expect increasing or decreasing
-    diff = levels[1] - levels[0]
-    
-    # Invalid if first difference is not between 1 and 3 inclusive
-    if abs(diff) < 1 or abs(diff) > 3:
-        return "Unsafe"
-    
-    # Expected increasing if first difference is positive
-    should_increase = diff > 0
-    
-    # Check all adjacent pairs
-    for i in range(1, len(levels)):
-        curr_diff = levels[i] - levels[i-1]
+        return "unsafe"  # Single number or empty report is unsafe
         
-        # Check if difference is within valid range (1-3)
-        if abs(curr_diff) < 1 or abs(curr_diff) > 3:
-            return "Unsafe"
-        
-        # Check if direction maintains consistency
-        if should_increase and curr_diff <= 0:
-            return "Unsafe"
-        if not should_increase and curr_diff >= 0:
-            return "Unsafe"
+    # Determine if sequence is increasing or decreasing from first pair
+    increasing: bool | None = None
+    prev: int = levels[0]
     
-    return "Safe"
+    for curr in levels[1:]:
+        diff = curr - prev
+        
+        # Check if difference is within valid range (1-3 or -3 to -1)
+        if abs(diff) < 1 or abs(diff) > 3:
+            return "unsafe"
+            
+        # Set direction on first pair
+        if increasing is None:
+            increasing = diff > 0
+        # Check if direction remains consistent
+        elif (diff > 0) != increasing:
+            return "unsafe"
+            
+        prev = curr
+    
+    return "safe"
+
 
 def solution() -> int:
-    """
-    Process all reports from stdin and count how many are safe.
-    
-    Returns:
-        The number of safe reports.
-    """
-    safe_count = 0
-    
-    # Read each line from stdin
-    for line in sys.stdin:
-        if is_report_safe(line) == "Safe":
-            safe_count += 1
-            
-    return safe_count
+    """Read input reports and count how many are safe."""
+    reports: List[str] = []
+    try:
+        while True:
+            line = input().strip()
+            if not line:
+                break
+            reports.append(line)
+    except EOFError:
+        pass
 
-if __name__ == "__main__":
-    print(solution())
+    safe_count = sum(1 for report in reports if classify_report(report) == "safe")
+    return safe_count
