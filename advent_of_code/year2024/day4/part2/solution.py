@@ -12,10 +12,11 @@ def in_bounds(grid: List[List[str]], x: int, y: int) -> bool:
 
 def check_mas(grid: List[List[str]], x: int, y: int, dx: int, dy: int) -> bool:
     """Check if MAS sequence exists starting at x,y in direction dx,dy."""
-    if not all(in_bounds(grid, x + i*dx, y + i*dy) for i in range(3)):
+    if not all(in_bounds(grid, x + i * dx, y + i * dy) for i in range(3)):
         return False
-    chars = [grid[y + i*dy][x + i*dx] for i in range(3)]
-    return chars == ['M', 'A', 'S'] or chars == ['S', 'A', 'M']
+    chars = [grid[y + i * dy][x + i * dx] for i in range(3)]
+    return chars == ['M', 'A', 'S']
+
 
 def get_xmas_patterns(grid: List[List[str]], x: int, y: int) -> List[tuple[tuple[int, int, int, int], tuple[int, int, int, int]]]:
     """Get all possible X-MAS patterns centered at x,y."""
@@ -24,21 +25,15 @@ def get_xmas_patterns(grid: List[List[str]], x: int, y: int) -> List[tuple[tuple
         (-1, -1), (1, -1),  # Upper diagonal directions
         (-1, 1), (1, 1),    # Lower diagonal directions
     ]
-    
+
     patterns = []
-    # Check all possible pairs of diagonal directions forming an X
-    for i in range(2):
-        dx1, dy1 = directions[i]
-        dx2, dy2 = directions[i+2]  # Matching opposite diagonal
-        
-        # Check both directions for both diagonals
-        for flip1 in [1, -1]:
-            for flip2 in [1, -1]:
-                if (check_mas(grid, x + dx1*flip1, y + dy1*flip1, dx1, dy1) and
-                    check_mas(grid, x + dx2*flip2, y + dy2*flip2, dx2, dy2)):
-                    patterns.append(((dx1*flip1, dy1*flip1, dx1, dy1),
-                                  (dx2*flip2, dy2*flip2, dx2, dy2)))
-    
+    # Check only one orientation for X
+    for dx1, dy1 in directions[:2]:
+        dx2, dy2 = directions[2:][0]  # Take only the first opposite direction
+        if (check_mas(grid, x + dx1, y + dy1, dx1, dy1) and
+                check_mas(grid, x + dx2, y + dy2, dx2, dy2)):
+            patterns.append(((dx1, dy1, dx1, dy1), (dx2, dy2, dx2, dy2)))
+
     return patterns
 
 def count_xmas(input_str: str) -> int:
@@ -46,17 +41,17 @@ def count_xmas(input_str: str) -> int:
     grid = make_grid(input_str)
     if not grid:
         return 0
-    
+
     height, width = len(grid), len(grid[0])
     total = 0
-    
+
     # For each possible center point
     for y in range(height):
         for x in range(width):
             # Get all valid X-MAS patterns centered at this point
             patterns = get_xmas_patterns(grid, x, y)
             total += len(patterns)
-    
+
     return total
 
 def solution() -> int:
