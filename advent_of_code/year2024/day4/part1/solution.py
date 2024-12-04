@@ -47,7 +47,7 @@ def count_xmas_occurrences(grid_str: str) -> int:
         # Diagonal down-left
         if x <= rows - 4 and y >= 3:
             yield ''.join(grid[x+i][y-i] for i in range(4))
-        
+
         # Left
         if y >= 3:
             yield ''.join(reversed(grid[x][y-3:y+1]))
@@ -58,11 +58,11 @@ def count_xmas_occurrences(grid_str: str) -> int:
         
         # Diagonal up-right
         if x >= 3 and y <= cols - 4:
-            yield ''.join(reversed([grid[x-i][y+i] for i in range(4)]))
+            yield ''.join([grid[x-i][y+i] for i in range(4)])
         
         # Diagonal up-left
         if x >= 3 and y >= 3:
-            yield ''.join(reversed([grid[x-i][y-i] for i in range(4)]))
+            yield ''.join([grid[x-i][y-i] for i in range(4)])
 
     # Check all positions in the grid
     for i in range(rows):
