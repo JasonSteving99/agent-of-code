@@ -27,11 +27,14 @@ def get_xmas_patterns(grid: List[List[str]], x: int, y: int) -> List[tuple[tuple
     ]
 
     patterns = []
-    for dx1, dy1 in directions[:2]:
-        for dx2, dy2 in directions[2:]:
-            if (check_mas(grid, x + dx1, y + dy1, dx1, dy1) and
-                    check_mas(grid, x + dx2, y + dy2, dx2, dy2)):
-                patterns.append(((dx1, dy1, dx1, dy1), (dx2, dy2, dx2, dy2)))
+    for i in range(len(directions)):
+        for j in range(len(directions)):
+            if i != j:
+                dx1, dy1 = directions[i]
+                dx2, dy2 = directions[j]
+                if (check_mas(grid, x + dx1, y + dy1, dx1, dy1) and
+                        check_mas(grid, x + dx2, y + dy2, dx2, dy2)):
+                    patterns.append(((dx1, dy1, dx1, dy1), (dx2, dy2, dx2, dy2)))
 
     return patterns
 
