@@ -22,8 +22,7 @@ def get_xmas_patterns(grid: List[List[str]], x: int, y: int) -> List[tuple[tuple
     """Get all possible X-MAS patterns centered at x,y."""
     # Directions for possible MAS sequences
     directions = [
-        (-1, -1), (1, -1),  # Upper diagonal directions
-        (-1, 1), (1, 1),    # Lower diagonal directions
+        (-1, -1), (1, -1), (-1, 1), (1, 1), (0, -1), (0, 1), (-1, 0), (1, 0)
     ]
 
     patterns = []
@@ -47,10 +46,8 @@ def count_xmas(input_str: str) -> int:
     height, width = len(grid), len(grid[0])
     total = 0
 
-    # For each possible center point
     for y in range(height):
         for x in range(width):
-            # Get all valid X-MAS patterns centered at this point
             patterns = get_xmas_patterns(grid, x, y)
             total += len(patterns)
 
