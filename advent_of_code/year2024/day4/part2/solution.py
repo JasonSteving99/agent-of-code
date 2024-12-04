@@ -15,12 +15,11 @@ def check_mas(grid: List[List[str]], x: int, y: int, dx: int, dy: int) -> bool:
     if not all(in_bounds(grid, x + i * dx, y + i * dy) for i in range(3)):
         return False
     chars = [grid[y + i * dy][x + i * dx] for i in range(3)]
-    return chars == ['M', 'A', 'S']
+    return chars == ['M', 'A', 'S'] or chars == ['S', 'A', 'M']
 
 
 def get_xmas_patterns(grid: List[List[str]], x: int, y: int) -> List[tuple[tuple[int, int, int, int], tuple[int, int, int, int]]]:
     """Get all possible X-MAS patterns centered at x,y."""
-    # Directions for possible MAS sequences
     directions = [
         (-1, -1), (1, -1), (-1, 1), (1, 1), (0, -1), (0, 1), (-1, 0), (1, 0)
     ]
