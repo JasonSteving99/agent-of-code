@@ -1,27 +1,26 @@
 """
-Unit tests for the count_xmas function that identifies 'X-MAS' patterns in a grid.
-
-An 'X-MAS' pattern consists of two 'MAS' strings arranged in an X shape.
-Each 'MAS' sequence must be read left-to-right or top-to-bottom.
-The tests verify the function's ability to:
-1. Identify a single X-MAS pattern in a minimal 3x3 grid
-2. Find multiple X-MAS patterns in a larger 10x10 grid
-3. Handle grid input formatting with newline characters
+This test suite verifies the functionality of the count_xmas function that finds 'X-MAS' patterns
+in a grid, where an X-MAS pattern consists of two 'MAS' strings arranged in an 'X' shape.
+The tests cover:
+1. Basic case with a single X-MAS pattern in a minimal 3x3 grid
+2. Complex case with multiple X-MAS patterns in a larger 10x10 grid
 """
 
 from solution import count_xmas
 
 
-def test_minimal_grid_with_single_xmas():
+def test_minimal_grid_single_xmas_pattern():
     grid = "M.S\n.A.\nM.S"
     result = count_xmas(grid)
     assert result == 1, (
-        f"Expected 1 X-MAS pattern in minimal 3x3 grid:\n{grid}\n"
-        f"but got {result}"
+        f"Failed to find single X-MAS pattern in minimal 3x3 grid.\n"
+        f"Input grid:\n{grid}\n"
+        f"Expected: 1\n"
+        f"Got: {result}"
     )
 
 
-def test_larger_grid_with_multiple_xmas_patterns():
+def test_larger_grid_multiple_xmas_patterns():
     grid = (
         ".M.S......\n"
         "..A..MSMS.\n"
@@ -36,18 +35,22 @@ def test_larger_grid_with_multiple_xmas_patterns():
     )
     result = count_xmas(grid)
     assert result == 9, (
-        f"Expected 9 X-MAS patterns in 10x10 grid:\n{grid}\n"
-        f"but got {result}"
+        f"Failed to find all X-MAS patterns in 10x10 grid.\n"
+        f"Input grid:\n{grid}\n"
+        f"Expected: 9\n"
+        f"Got: {result}"
     )
 
 
-def test_grid_formatting():
-    """Test that the function properly handles grid input formatting with newlines"""
-    # Same as first test but testing explicit newline handling
-    grid = "M.S\n.A.\nM.S"
-    assert len(grid.split("\n")) == 3, "Test grid should have exactly 3 rows"
-    result = count_xmas(grid)
-    assert result == 1, (
-        f"Expected 1 X-MAS pattern in grid with explicit newlines:\n{grid}\n"
-        f"but got {result}"
+def test_input_contains_newlines():
+    """Verify that the function correctly handles input with newline characters"""
+    grid1 = "M.S\n.A.\nM.S"
+    grid2 = "M.S\r\n.A.\r\nM.S"  # Windows-style line endings
+    result1 = count_xmas(grid1)
+    result2 = count_xmas(grid2)
+    assert result1 == result2 == 1, (
+        f"Different results for same grid with different line endings.\n"
+        f"Unix-style (\\n) result: {result1}\n"
+        f"Windows-style (\\r\\n) result: {result2}\n"
+        f"Expected both to be: 1"
     )

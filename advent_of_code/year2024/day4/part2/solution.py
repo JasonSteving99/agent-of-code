@@ -1,57 +1,58 @@
-"""Module to solve part 2 of the word search problem."""
+"""Advent of Code Solution - X-MAS word search counter."""
 from typing import List, Iterator
 import sys
 
-def make_grid(input_str: str) -> List[List[str]]:
-    """Convert input string into a 2D grid."""
-    return [list(line.strip()) for line in input_str.splitlines() if line.strip()]
-
-def in_bounds(grid: List[List[str]], x: int, y: int) -> bool:
-    """Check if coordinates are within grid bounds."""
-    return 0 <= x < len(grid[0]) and 0 <= y < len(grid)
-
-def check_mas(grid: List[List[str]], x: int, y: int, dx: int, dy: int) -> bool:
-    """Check if MAS sequence exists starting at x,y in direction dx,dy."""
-    if not all(in_bounds(grid, x + i * dx, y + i * dy) for i in range(3)):
+def check_xmas_patterns(grid: List[List[str]], row: int, col: int) -> bool:
+    """Check if there's an X-MAS pattern centered at the given position."""
+    if len(grid) < 3 or len(grid[0]) < 3:
         return False
-    chars = [grid[y + i * dy][x + i * dx] for i in range(3)]
-    return chars == ['M', 'A', 'S'] or chars == ['S', 'A', 'M']
-
-
-def get_xmas_patterns(grid: List[List[str]], x: int, y: int) -> List[tuple[tuple[int, int, int, int], tuple[int, int, int, int]]]:
-    """Get all possible X-MAS patterns centered at x,y."""
-    directions = [
-        (-1, -1), (1, -1), (-1, 1), (1, 1), (0, -1), (0, 1), (-1, 0), (1, 0)
+    
+    # Check bounds
+    if row < 1 or col < 1 or row >= len(grid) - 1 or col >= len(grid[0]) - 1:
+        return False
+    
+    # Check center position has 'A'
+    if grid[row][col] != 'A':
+        return False
+        
+    # Check the four possible X-MAS arrangements:
+    patterns = [
+        # MAS in top-right to bottom-left, MAS in top-left to bottom-right
+        (lambda: grid[row-1][col+1] == 'M' and grid[row][col] == 'A' and grid[row+1][col-1] == 'S' and
+         grid[row-1][col-1] == 'M' and grid[row][col] == 'A' and grid[row+1][col+1] == 'S'),
+        
+        # SAM in top-right to bottom-left, MAS in top-left to bottom-right
+        (lambda: grid[row-1][col+1] == 'S' and grid[row][col] == 'A' and grid[row+1][col-1] == 'M' and
+         grid[row-1][col-1] == 'M' and grid[row][col] == 'A' and grid[row+1][col+1] == 'S'),
+        
+        # MAS in top-right to bottom-left, SAM in top-left to bottom-right
+        (lambda: grid[row-1][col+1] == 'M' and grid[row][col] == 'A' and grid[row+1][col-1] == 'S' and
+         grid[row-1][col-1] == 'S' and grid[row][col] == 'A' and grid[row+1][col+1] == 'M'),
+        
+        # SAM in top-right to bottom-left, SAM in top-left to bottom-right
+        (lambda: grid[row-1][col+1] == 'S' and grid[row][col] == 'A' and grid[row+1][col-1] == 'M' and
+         grid[row-1][col-1] == 'S' and grid[row][col] == 'A' and grid[row+1][col+1] == 'M')
     ]
+    
+    return any(pattern() for pattern in patterns)
 
-    patterns = []
-    for i in range(len(directions)):
-        for j in range(len(directions)):
-            if i != j:
-                dx1, dy1 = directions[i]
-                dx2, dy2 = directions[j]
-                if (check_mas(grid, x + dx1, y + dy1, dx1, dy1) and
-                        check_mas(grid, x + dx2, y + dy2, dx2, dy2)):
-                    patterns.append(((dx1, dy1, dx1, dy1), (dx2, dy2, dx2, dy2)))
-
-    return patterns
-
-def count_xmas(input_str: str) -> int:
-    """Count number of X-MAS patterns in the grid."""
-    grid = make_grid(input_str)
-    if not grid:
-        return 0
-
-    height, width = len(grid), len(grid[0])
-    total = 0
-
-    for y in range(height):
-        for x in range(width):
-            patterns = get_xmas_patterns(grid, x, y)
-            total += len(patterns)
-
-    return total
+def count_xmas(grid_str: str) -> int:
+    """Count the number of X-MAS patterns in the grid."""
+    # Convert the input string to a 2D grid
+    grid = [list(line) for line in grid_str.strip().split('\n')]
+    
+    count = 0
+    # Check each position that could be the center of an X-MAS pattern
+    for row in range(1, len(grid) - 1):
+        for col in range(1, len(grid[0]) - 1):
+            if check_xmas_patterns(grid, row, col):
+                count += 1
+                
+    return count
 
 def solution() -> int:
     """Read from stdin and return the solution."""
-    return count_xmas(sys.stdin.read())
+    return count_xmas(sys.stdin.read().strip())
+
+if __name__ == "__main__":
+    print(solution())
