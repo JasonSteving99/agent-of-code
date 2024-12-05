@@ -49,7 +49,8 @@ class ExtractedProblemPart(BaseModel):
 @activity.defn
 async def extract_problem_part(args: ExtractProblemPartArgs) -> ExtractedProblemPart:
     # Make the solutions directory if it doesn't already exist.
-    os.makedirs(args.solutions_dir, exist_ok=True)
+    part_solutions_dir = os.path.join(args.solutions_dir, f"part{args.aoc_problem.part}")
+    os.makedirs(part_solutions_dir, exist_ok=True)
 
     async with aiohttp.ClientSession() as session:
         return ExtractedProblemPart(
@@ -58,9 +59,9 @@ async def extract_problem_part(args: ExtractProblemPartArgs) -> ExtractedProblem
                 year=args.aoc_problem.year,
                 day=args.aoc_problem.day,
                 part=args.aoc_problem.part,
-                # Intentionally cache to top level `advent_of_code/year*/day*/` dir, since this will
-                # be shared between part1 and part2.
-                solutions_dir=args.solutions_dir,
+                # Cache to `advent_of_code/year*/day*/part*/` dir, since this will NOT be shared
+                # between part1 and part2.
+                solutions_dir=part_solutions_dir,
             ),
             problem_input=await fetch_input(
                 session=session,
