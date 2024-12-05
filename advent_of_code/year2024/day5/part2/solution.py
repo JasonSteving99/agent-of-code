@@ -3,12 +3,12 @@ from typing import Dict, Set, List
 import sys
 import re
 
-def parse_input() -> tuple[List[tuple[int, int]], List[str]]:
+def parse_input(input_lines: List[str]) -> tuple[List[tuple[int, int]], List[str]]:
     rules: List[tuple[int, int]] = []
     updates: List[str] = []
     
     reading_rules = True
-    for line in sys.stdin:
+    for line in input_lines:
         line = line.strip()
         if not line:
             reading_rules = False
@@ -23,21 +23,18 @@ def parse_input() -> tuple[List[tuple[int, int]], List[str]]:
     return rules, updates
 
 def build_graph(rules: List[tuple[int, int]]) -> Dict[int, Set[int]]:
-    # Build adjacency list representation
     graph: Dict[int, Set[int]] = defaultdict(set)
     for before, after in rules:
         graph[before].add(after)
     return graph
 
 def topological_sort(nodes: List[int], graph: Dict[int, Set[int]]) -> List[int]:
-    # Create in-degree mapping
     in_degree = defaultdict(int)
     for node in nodes:
         for neighbor in graph[node]:
-            if neighbor in nodes:  # Only count edges between nodes in the update
+            if neighbor in nodes:
                 in_degree[neighbor] += 1
     
-    # Initialize queue with nodes having no prerequisites
     queue = [node for node in nodes if in_degree[node] == 0]
     result = []
     
@@ -45,52 +42,41 @@ def topological_sort(nodes: List[int], graph: Dict[int, Set[int]]) -> List[int]:
         current = queue.pop(0)
         result.append(current)
         
-        # Reduce in-degree for neighbors and add to queue if in-degree becomes 0
         for neighbor in graph[current]:
-            if neighbor in nodes:  # Only process edges between nodes in the update
+            if neighbor in nodes:
                 in_degree[neighbor] -= 1
                 if in_degree[neighbor] == 0:
                     queue.append(neighbor)
     
-    # If we couldn't sort all nodes, the given ordering was invalid
     if len(result) != len(nodes):
-        return nodes  # Return original order to indicate invalid sort
-        
+        return nodes
     return result
 
-def order_page_numbers(update: str) -> str:
-    """Orders page numbers according to the rules read from stdin."""
-    rules, _ = parse_input()
+def order_page_numbers(update: str, rules: List[tuple[int, int]]) -> str:
     graph = build_graph(rules)
-    
-    # Parse page numbers from update string
     page_numbers = [int(x) for x in update.split(',')]
-    
-    # Perform topological sort
     ordered = topological_sort(page_numbers, graph)
-    
-    # Return comma-separated string of ordered numbers
     return ','.join(str(x) for x in ordered)
 
 def solution() -> int:
-    rules, updates = parse_input()
-    graph = build_graph(rules)
-    result = 0
+    input_lines = [line.strip() for line in sys.stdin]
+    rules, updates = parse_input(input_lines)
     
-    def is_valid_order(numbers: List[int]) -> bool:
+    def is_valid_order(numbers: List[int], graph: Dict[int, Set[int]]) -> bool:
         seen = set()
         for num in numbers:
             seen.add(num)
             for after in graph[num]:
-                if after in seen:  # Found a violation
+                if after in seen:
                     return False
         return True
     
+    result = 0
+    graph = build_graph(rules)
     for update in updates:
         numbers = [int(x) for x in update.split(',')]
-        if not is_valid_order(numbers):  # Only process invalid orders
+        if not is_valid_order(numbers, graph):
             ordered = topological_sort(numbers, graph)
-            # Get middle index
             mid_idx = len(ordered) // 2
             result += ordered[mid_idx]
             
