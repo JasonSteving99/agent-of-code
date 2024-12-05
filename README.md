@@ -20,10 +20,10 @@ _I'm not a rule-breaker so I'm intentionally not running the agent until AFTER t
 
 | Day | Part 1 | Part 2 | Global Rank\* | Total Agent Workflow Time |
 |:---:|:---:|:---:|:---:|:---:|
-| 1 | ✅ | ✅ | ? | - |
-| 2 | ✅ | ✅ | ? | - |
-| 3 | ✅ | ✅ | ? | - |
-| 4 | ✅ | ✅ | #83 | <img src="https://github.com/JasonSteving99/agent-of-code/blob/main/images/day4_workflow_1_success.png?raw=true" alt="Image description" width="500" height="100"> |
-| 5 | ✅ | ✅ | #31 | <img src="https://github.com/JasonSteving99/agent-of-code/blob/main/images/day5_workflow_1_success.png?raw=true" alt="Image description" width="500" height="100"> |
+| [1](https://github.com/JasonSteving99/agent-of-code/tree/main/advent_of_code/year2024/day1) | ✅ | ✅ | ? | - |
+| [2](https://github.com/JasonSteving99/agent-of-code/tree/main/advent_of_code/year2024/day2) | ✅ | ✅ | ? | - |
+| [3](https://github.com/JasonSteving99/agent-of-code/tree/main/advent_of_code/year2024/day3) | ✅ | ✅ | ? | - |
+| [4](https://github.com/JasonSteving99/agent-of-code/tree/main/advent_of_code/year2024/day4) | ✅ | ✅ | #83 | <img src="https://github.com/JasonSteving99/agent-of-code/blob/main/images/day4_workflow_1_success.png?raw=true" alt="Image description" width="500" height="100"> |
+| [5](https://github.com/JasonSteving99/agent-of-code/tree/main/advent_of_code/year2024/day5) | ✅ | ✅ | #31 | <img src="https://github.com/JasonSteving99/agent-of-code/blob/main/images/day5_workflow_1_success.png?raw=true" alt="Image description" width="500" height="100"> |
 
 <img src="https://raw.githubusercontent.com/JasonSteving99/agent-of-code/refs/heads/main/images/aoc_stars.png" alt="Advent of Code - Stars" height="600">
