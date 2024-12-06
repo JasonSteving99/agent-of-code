@@ -59,8 +59,14 @@ def simulate_guard_path(
     return visited
 
 def count_obstruction_locations(grid_str: str) -> int:
+    if not grid_str:
+        raise ValueError("Map cannot be empty")
+
     # Parse grid
     grid = [list(row) for row in grid_str.strip().splitlines()]
+    if not grid or not grid[0]:
+        raise ValueError("Map cannot be empty")
+    
     height = len(grid)
     width = len(grid[0])
     
@@ -89,10 +95,11 @@ def count_obstruction_locations(grid_str: str) -> int:
                 path = simulate_guard_path(grid, start_pos, start_direction)
                 
                 # If the path forms a loop (doesn't exit the grid)
-                last_pos = next(reversed(path))
-                if (0 <= last_pos[0] < width and 
-                    0 <= last_pos[1] < height):
-                    valid_positions += 1
+                if path:
+                    last_pos = list(path)[-1]
+                    if (0 <= last_pos[0] < width and 
+                        0 <= last_pos[1] < height):
+                        valid_positions += 1
                 
                 # Remove obstruction
                 grid[row][col] = '.'
