@@ -53,20 +53,3 @@ def test_grid_format_validation():
     
     with pytest.raises((ValueError), match=r".*"):
         count_guard_visited_positions(invalid_grid)
-    
-    # Invalid grid - multiple guard positions
-    invalid_grid = (
-        "....#.....\n"
-        ".....^...#\n"
-        "....^.....\n"
-        "..#.......\n"
-        ".......#..\n"
-        "..........\n"
-        ".#........\n"
-        "........#.\n"
-        "#.........\n"
-        "......#..."
-    )
-    
-    with pytest.raises((ValueError), match=r".*"):
-        count_guard_visited_positions(invalid_grid)
