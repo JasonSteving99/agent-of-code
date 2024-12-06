@@ -38,14 +38,12 @@ def count_obstruction_locations(input_map: str) -> int:
             if not is_valid(next_pos, grid):
                 direction = (direction + 1) % 4  # Turn right
                 next_pos = (pos[0] + directions[direction][0], pos[1] + directions[direction][1])
-            
-            if not is_valid(next_pos, grid):
-                return path, direction
-
+                if not is_valid(next_pos, grid):
+                    return path, direction
 
             if next_pos in path:
                 return path, direction
-
+            
             pos = next_pos
             path.add(pos)
 
