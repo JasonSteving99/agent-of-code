@@ -37,28 +37,28 @@ def simulate_guard_path(
     pos = start_pos
     direction = start_direction
     steps = 0
-    
+
     while True:
-        if (pos[1] < 0 or pos[1] >= len(grid) or 
-            pos[0] < 0 or pos[0] >= len(grid[0])):
-            break
-            
-        visited.add(pos)
+        if not (0 <= pos[1] < len(grid) and 0 <= pos[0] < len(grid[0])):
+            return None # Guard left the grid
+
+        if (pos, direction) in visited:
+            return visited # Loop detected
+
+        visited.add((pos, direction))
         next_pos, next_direction = get_next_position_direction(pos, direction, grid)
         
-        if next_pos == pos and next_direction == direction:  # Detected loop
-            break
-            
-        if steps > max_steps:  # Prevent infinite loops
-            break
-            
+        if steps > max_steps:
+            return None  # Prevent infinite loops in unexpected cases
+
         pos = next_pos
         direction = next_direction
         steps += 1
-    
-    return visited
 
 def count_obstruction_locations(grid_str: str) -> int:
+    if not isinstance(grid_str, str):
+        raise TypeError("Input must be a string")
+
     if not grid_str:
         raise ValueError("Map cannot be empty")
 
@@ -95,11 +95,8 @@ def count_obstruction_locations(grid_str: str) -> int:
                 path = simulate_guard_path(grid, start_pos, start_direction)
                 
                 # If the path forms a loop (doesn't exit the grid)
-                if path:
-                    last_pos = list(path)[-1]
-                    if (0 <= last_pos[0] < width and 
-                        0 <= last_pos[1] < height):
-                        valid_positions += 1
+                if path is not None:  # Check if the guard did not leave the grid
+                    valid_positions += 1
                 
                 # Remove obstruction
                 grid[row][col] = '.'
