@@ -61,7 +61,7 @@ def has_loop(grid: List[List[str]], guard_pos: Tuple[int, int, str]) -> bool:
     """Check if guard gets stuck in a loop."""
     visited = simulate_path(grid, guard_pos[0], guard_pos[1], guard_pos[2])
     last_pos = list(visited)[-1]
-    return last_pos in list(visited)[:-1] and is_valid_position(last_pos[0], last_pos[1], grid)
+    return last_pos in visited and is_valid_position(last_pos[0], last_pos[1], grid)
 
 
 def count_trap_positions(grid_str: str) -> int:
@@ -77,7 +77,7 @@ def count_trap_positions(grid_str: str) -> int:
                 grid[i][j] = 'O'
                 if has_loop(grid, guard_start):
                     trap_positions += 1
-                grid[i][j] = original_grid[i][j]
+                grid[i][j] = original_grid[i][j]  # Correctly revert to the initial character
 
     return trap_positions
 
