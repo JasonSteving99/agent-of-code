@@ -26,7 +26,7 @@ def count_obstruction_locations(input_map: str) -> int:
     def is_valid(pos: Tuple[int, int]) -> bool:
         return 0 <= pos[0] < rows and 0 <= pos[1] < cols
 
-    def get_path(grid: List[str], start: Tuple[int, int], start_dir: int) -> Set[Tuple[int, int]]:
+    def get_path(grid: List[str], start: Tuple[int, int], start_dir: int) -> Tuple[Set[Tuple[int, int]], Set[Tuple[Tuple[int, int], int]]]:
         pos = start
         direction = start_dir
         path = set()
@@ -37,7 +37,7 @@ def count_obstruction_locations(input_map: str) -> int:
             path.add(pos)
             state = (pos, direction)
             if state in visited_states:
-                return path
+                return path, visited_states
 
             visited_states.add(state)
             next_pos = (pos[0] + directions[direction][0], pos[1] + directions[direction][1])
@@ -50,7 +50,7 @@ def count_obstruction_locations(input_map: str) -> int:
 
             # If we've left the map
             if not is_valid(pos):
-                return path
+                return path, visited_states
 
     def try_obstruction(pos: Tuple[int, int], grid: List[str]) -> bool:
         if pos == start_pos or grid[pos[0]][pos[1]] == '#' or grid[pos[0]][pos[1]] == '^':
@@ -61,10 +61,10 @@ def count_obstruction_locations(input_map: str) -> int:
         new_grid[pos[0]] = new_grid[pos[0]][:pos[1]] + '#' + new_grid[pos[0]][pos[1] + 1:]
 
         # Get the path with the new obstruction
-        path = get_path(new_grid, start_pos, initial_dir)
+        path, visited_states = get_path(new_grid, start_pos, initial_dir)
 
         # Check if the path creates a loop (path is finite and doesn't leave the map)
-        return all(0 <= p[0] < rows and 0 <= p[1] < cols for p in path) and len(path) > 1
+        return len(visited_states) != len(path) 
 
 
     # Try placing an obstruction at each empty position
