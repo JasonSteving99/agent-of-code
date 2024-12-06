@@ -70,6 +70,7 @@ def solution() -> int:
             grid_str += line + "\n"
         except EOFError:
             break
+
     return count_trap_positions(grid_str.rstrip())
 
 
