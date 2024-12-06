@@ -1,7 +1,7 @@
 from typing import List, Set, Tuple
 import sys
 
-def simulate_path(grid: List[str], start_pos: Tuple[int, int], marked_cells: Set[Tuple[int, int]]) -> bool:
+def simulate_path(grid: List[str], start_pos: Tuple[int, int], marked_cells_orig: Set[Tuple[int, int]]) -> bool:
     """Simulate guard path and return True if loops, False if exits grid"""
     R, C = len(grid), len(grid[0])
     # Directions: up, right, down, left
@@ -9,7 +9,8 @@ def simulate_path(grid: List[str], start_pos: Tuple[int, int], marked_cells: Set
     curr_dir = 0  # Start facing up
 
     row, col = start_pos
-    visited_states = set()  # (row, col, direction) # Step 0: moved outside the loop
+    visited_states = set()  # (row, col, direction)
+    marked_cells = set(marked_cells_orig) # Step 0: Create a copy
 
     while True:
         if (row, col, curr_dir) in visited_states:
