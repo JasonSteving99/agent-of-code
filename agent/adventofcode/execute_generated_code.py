@@ -156,6 +156,9 @@ def get_test_report(
     pytest.main(
         [
             "--quiet",
+            # Make sure that the tests get timed out and terminated. Don't want to let some
+            # complicated AoC problem hang forever.
+            "--timeout=60",
             "--json-report-file=none",
             f"advent_of_code/year{year}/day{day}/part{part}/tests.py",
         ],

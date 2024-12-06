@@ -26,9 +26,9 @@ async def extract_examples_from_problem_html(
     system_prompt_text = f"""
 You are a skilled technical reader tasked with extracting input/output examples from coding problems presented within HTML. Your goal is to provide these examples in a format suitable for unit testing.
 
-Ignore all HTML tags and focus solely on the input/output data. Do not attempt to solve the problem; only extract the examples.
+Don't get confused by HTML tags and focus solely on the input/output data. Do not attempt to solve the problem; only extract the examples.
 
-Remember to ignore all HTML tags and do not attempt to solve the problem. Extract ONLY the example inputs and outputs in the JSON format specified.
+Extract ONLY the example inputs and outputs in the JSON format specified.
 
 {"""
  !!!!MOST IMPORTANT!!!!: 
@@ -36,17 +36,22 @@ Remember to ignore all HTML tags and do not attempt to solve the problem. Extrac
     - The problem parts 1 and 2 are denoted by the following HTML comments: "<!-- Part 1 -->", and "<!-- Part 2 -->".
     - You MUST FOCUS on part 2.
     - Keep in mind that part 2 is a modification/variation on part 1 so pay attention to how part 2 specifies modifications on part 1.
-    - Part 2 specifies completely new example inputs and outputs - EXTRACT EXAMPLES FOR PART 2 ONLY! 
+    - Part 2 MAY EITHER specify completely new example inputs and outputs OR build on top of examples given in part 1 - IN EITHER CASE EXTRACT EXAMPLES THAT APPLY TO PART 2! 
 
  """ if solve_part_2 else ""}
 IMPORTANT! You MUST return examples with a SINGLE input mapping to its SINGLE corresponding output.
 """  # noqa: E501
-    return await prompt(
+    extracted_examples = await prompt(
         GeminiModel.GEMINI_1_5_PRO,
         system_prompt=system_prompt_text,
         prompt=problem_html,
         response_type=AoCProblemExtractedExamples,
     )
+
+    if len(extracted_examples.examples) == 0:
+        raise ValueError(f"No examples extracted: {extracted_examples}")
+
+    return extracted_examples
 
 
 @click.command()

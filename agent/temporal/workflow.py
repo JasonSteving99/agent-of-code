@@ -48,6 +48,8 @@ with workflow.unsafe.imports_passed_through():
 
 # Independent attempts starting from scratch.
 _MAX_PROBLEM_PART_ATTEMPTS = 3
+# Really make sure that the extracted examples are legit.
+_MAX_EXTRACT_EXAMPLES_ATTEMPTS = 3
 # Debugging loop iterations.
 _MAX_UNIT_TEST_FIX_ITERATIONS = 6
 
@@ -128,12 +130,16 @@ class SolveAoCProblemWorkflow:
         # Some of the prompts get modified to extract solutions to part 2.
         solve_part_2 = solve_aoc_problem_req.part == 2
 
-        extracted_examples = await workflow.execute_activity(
-            extract_examples,
-            ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
-            start_to_close_timeout=timedelta(seconds=60),
-            retry_policy=RetryPolicy(maximum_attempts=5),
-        )
+        for _ in range(_MAX_EXTRACT_EXAMPLES_ATTEMPTS):
+            extracted_examples = await workflow.execute_activity(
+                extract_examples,
+                ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
+                start_to_close_timeout=timedelta(seconds=60),
+                retry_policy=RetryPolicy(maximum_attempts=5),
+            )
+
+            # Before returning the examples, we should at least do our due diligence and ATTEMPT to
+            # validate that the unit tests are valid.
 
         examples_context = await workflow.execute_activity(
             get_examples_context,
@@ -392,6 +398,8 @@ async def _run_unit_tests(solve_aoc_problem_req: AoCProblem) -> TestResults:
     return await workflow.execute_activity(
         run_generated_tests,
         solve_aoc_problem_req,
-        start_to_close_timeout=timedelta(seconds=30),
-        # Don't allow any retries for these unit tests.
+        # The implementation times out pytest execution at 60 seconds so this should be longer just
+        # so the timeouts can also be signaled to the agent.
+        start_to_close_timeout=timedelta(seconds=90),
+        retry_policy=RetryPolicy(maximum_attempts=2),
     )
