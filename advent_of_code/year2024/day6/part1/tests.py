@@ -62,5 +62,5 @@ def test_guard_starting_position_validation():
                          "......#...")
     
     # Act & Assert
-    with pytest.raises(ValueError, match=r".*guard position.*"):
+    with pytest.raises(ValueError, match=r".*guard starting position.*"):
         count_guard_visited_positions(grid_without_guard)
