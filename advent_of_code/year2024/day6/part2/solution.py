@@ -1,78 +1,121 @@
-"""Day 6, Part 2: Find possible trap positions for a guard following strict patrol protocol."""
+"""Solution for finding how many positions could trap the guard in a loop."""
+from enum import Enum, auto
 from typing import List, Set, Tuple
-import copy
+
+
+class Direction(Enum):
+    """Enum for grid direction."""
+    UP = auto()
+    RIGHT = auto()
+    DOWN = auto()
+    LEFT = auto()
 
 
 def parse_grid(grid_str: str) -> List[List[str]]:
+    """Parse input grid string into 2D list."""
     return [list(line) for line in grid_str.strip().split('\n')]
 
 
-def find_guard_start(grid: List[List[str]]) -> Tuple[int, int, str]:
-    for r, row in enumerate(grid):
-        for c, cell in enumerate(row):
-            if cell in ('^', '>', 'v', '<'):
-                return r, c, cell
-    raise ValueError("Guard not found in grid")
+def get_initial_position(grid: List[List[str]]) -> Tuple[int, int, Direction]:
+    """Find initial guard position and direction."""
+    for i, row in enumerate(grid):
+        for j, cell in enumerate(row):
+            if cell == '^':
+                return i, j, Direction.UP
+    raise ValueError("No guard found in grid")
 
 
-def get_next_direction(current: str) -> str:
-    return {'^': '>', '>': 'v', 'v': '<', '<': '^'}[current]
+def is_valid(pos: Tuple[int, int], grid: List[List[str]]) -> bool:
+    """Check if position is within grid bounds."""
+    i, j = pos
+    return 0 <= i < len(grid) and 0 <= j < len(grid[0])
 
 
-def get_next_position(row: int, col: int, direction: str) -> Tuple[int, int]:
-    moves = {'^': (-1, 0), '>': (0, 1), 'v': (1, 0), '<': (0, -1)}
-    dr, dc = moves[direction]
-    return row + dr, col + dc
+def get_next_pos(pos: Tuple[int, int], direction: Direction) -> Tuple[int, int]:
+    """Get next position based on current direction."""
+    i, j = pos
+    match direction:
+        case Direction.UP:    return (i-1, j)
+        case Direction.RIGHT: return (i, j+1)
+        case Direction.DOWN:  return (i+1, j)
+        case Direction.LEFT:  return (i, j-1)
 
 
-def is_valid_position(row: int, col: int, grid: List[List[str]]) -> bool:
-    return 0 <= row < len(grid) and 0 <= col < len(grid[0])
+def turn_right(direction: Direction) -> Direction:
+    """Get new direction after turning right."""
+    match direction:
+        case Direction.UP:    return Direction.RIGHT
+        case Direction.RIGHT: return Direction.DOWN
+        case Direction.DOWN:  return Direction.LEFT
+        case Direction.LEFT:  return Direction.UP
 
 
-def has_loop(grid: List[List[str]], start_row: int, start_col: int, start_dir: str) -> bool:
-    visited: Set[Tuple[int, int, str]] = set()
-    row, col, direction = start_row, start_col, start_dir
-
-    while (row, col, direction) not in visited and is_valid_position(row, col, grid):
-        visited.add((row, col, direction))
-        next_row, next_col = get_next_position(row, col, direction)
-
-        if not is_valid_position(next_row, next_col, grid) or grid[next_row][next_col] in '#O':
-            direction = get_next_direction(direction)
+def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, int], 
+                                start_dir: Direction, obstruction_pos: Tuple[int, int]) -> bool:
+    """
+    Simulate guard's path with additional obstruction.
+    Returns True if guard gets stuck in a loop.
+    """
+    visited_states = set()
+    curr_pos = start_pos
+    curr_dir = start_dir
+    steps = 0
+    max_steps = len(grid) * len(grid[0]) * 4  # Maximum possible unique states
+    
+    test_grid = [row[:] for row in grid]
+    i, j = obstruction_pos
+    test_grid[i][j] = '#'  # Place test obstruction
+    
+    while steps < max_steps:
+        state = (curr_pos, curr_dir)
+        if state in visited_states:
+            return True  # Found a loop
+        
+        visited_states.add(state)
+        next_pos = get_next_pos(curr_pos, curr_dir)
+        
+        # Check if front is blocked
+        if (not is_valid(next_pos, test_grid) or 
+            test_grid[next_pos[0]][next_pos[1]] == '#'):
+            curr_dir = turn_right(curr_dir)
         else:
-            row, col = next_row, next_col
-
-    return (row, col, direction) in visited
+            curr_pos = next_pos
+            
+            # Check if guard left the grid
+            if not is_valid(curr_pos, test_grid):
+                return False
+        
+        steps += 1
+        
+    return True  # If we reach max steps, assume it's a loop
 
 
 def count_trap_positions(grid_str: str) -> int:
+    """Count number of positions where placing an obstruction would trap guard in a loop."""
     grid = parse_grid(grid_str)
-    start_row, start_col, start_dir = find_guard_start(grid)
-    original_grid = copy.deepcopy(grid)
-    count = 0
-
-    for r in range(len(grid)):
-        for c in range(len(grid[0])):
-            if grid[r][c] == '.' and (r, c) != (start_row, start_col):
-                grid[r][c] = 'O'
-                if has_loop(grid, start_row, start_col, start_dir):
-                    count += 1
-                grid[r][c] = original_grid[r][c]
-
-    return count
+    start_i, start_j, start_dir = get_initial_position(grid)
+    trap_positions = 0
+    
+    # Clear initial guard position for testing
+    grid[start_i][start_j] = '.'
+    
+    # Try each empty position
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            # Skip positions that already have obstacles or start position
+            if grid[i][j] == '#' or (i == start_i and j == start_j):
+                continue
+                
+            # Test if placing obstruction here creates a loop
+            if simulate_path_with_obstruction(grid, (start_i, start_j), 
+                                           start_dir, (i, j)):
+                trap_positions += 1
+    
+    return trap_positions
 
 
 def solution() -> int:
-    grid_str = ""
-    while True:
-        try:
-            line = input()
-            grid_str += line + "\n"
-        except EOFError:
-            break
-
-    return count_trap_positions(grid_str.rstrip())
-
-
-if __name__ == "__main__":
-    print(solution())
+    """Read input from stdin and solve the problem."""
+    import sys
+    grid_str = sys.stdin.read()
+    return count_trap_positions(grid_str)
