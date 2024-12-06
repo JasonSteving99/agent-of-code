@@ -25,7 +25,7 @@ class Direction(Enum):
 class Position:
     x: int
     y: int
-    
+
     def move(self, direction: Direction) -> 'Position':
         dx, dy = direction.value
         return Position(self.x + dx, self.y + dy)
@@ -42,7 +42,7 @@ class Grid:
         self.cells = [list(line) for line in raw_map.strip().split('\n')]
         self.height = len(self.cells)
         self.width = len(self.cells[0])
-        
+
         # Find guard's initial position and facing
         for y in range(self.height):
             for x in range(self.width):
@@ -50,30 +50,32 @@ class Grid:
                     self.initial_guard = Guard(Position(x, y), Direction.UP)
                     self.cells[y][x] = '.'
                     return
-    
+
     def is_valid_pos(self, pos: Position) -> bool:
         return 0 <= pos.x < self.width and 0 <= pos.y < self.height
-    
+
     def is_blocked(self, pos: Position) -> bool:
         return not self.is_valid_pos(pos) or self.cells[pos.y][pos.x] in '#O'
-    
-    def get_positions_visited(self, test_obstruction: Position | None = None) -> Set[Tuple[int, int, Direction]]:
+
+    def get_positions_visited(self, test_obstruction: Position | None = None) -> Set[Tuple[int, int, Direction]] | None:
         visited = set()
         guard = deepcopy(self.initial_guard)
+        exited = False
+
         while True:
             state = (guard.pos.x, guard.pos.y, guard.facing)
 
             if state in visited:
-                if all(self.is_valid_pos(Position(x,y)) for x, y, _ in visited):
-                    return visited
-                else:
-                    return set()
+                if exited:
+                    return None # Not a valid trap if the guard exited and re-entered
+                return visited
 
             visited.add(state)
             next_pos = guard.pos.move(guard.facing)
 
             if not self.is_valid_pos(next_pos):
                 guard.facing = guard.facing.turn_right()
+                exited = True
                 continue
 
             is_blocked = self.is_blocked(next_pos)
