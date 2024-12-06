@@ -50,7 +50,7 @@ def turn_right(direction: Direction) -> Direction:
         case Direction.LEFT:  return Direction.UP
 
 
-def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, int], 
+def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, int], \
                                 start_dir: Direction, obstruction_pos: Tuple[int, int]) -> bool:
     """
     Simulate guard's path with additional obstruction.
@@ -61,33 +61,30 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
     curr_dir = start_dir
     steps = 0
     max_steps = len(grid) * len(grid[0]) * 4  # Maximum possible unique states
-    
-    test_grid = [row[:] for row in grid]
+
+    test_grid = [row[:] for row in grid]  # Create a copy
     i, j = obstruction_pos
     test_grid[i][j] = '#'  # Place test obstruction
-    
+
     while steps < max_steps:
         state = (curr_pos, curr_dir)
         if state in visited_states:
             return True  # Found a loop
-        
+
         visited_states.add(state)
         next_pos = get_next_pos(curr_pos, curr_dir)
-        
-        # Check if front is blocked
-        if (not is_valid(next_pos, test_grid) or 
-            test_grid[next_pos[0]][next_pos[1]] == '#'):
+
+        if not is_valid(next_pos, test_grid) or test_grid[next_pos[0]][next_pos[1]] == '#':
             curr_dir = turn_right(curr_dir)
         else:
             curr_pos = next_pos
-            
-            # Check if guard left the grid
+
             if not is_valid(curr_pos, test_grid):
                 return False
-        
+
         steps += 1
-        
-    return True  # If we reach max steps, assume it's a loop
+
+    return True  # Assume loop if max steps reached
 
 
 def count_trap_positions(grid_str: str) -> int:
@@ -95,22 +92,17 @@ def count_trap_positions(grid_str: str) -> int:
     grid = parse_grid(grid_str)
     start_i, start_j, start_dir = get_initial_position(grid)
     trap_positions = 0
-    
-    # Clear initial guard position for testing
+
     grid[start_i][start_j] = '.'
-    
-    # Try each empty position
+
     for i in range(len(grid)):
         for j in range(len(grid[0])):
-            # Skip positions that already have obstacles or start position
             if grid[i][j] == '#' or (i == start_i and j == start_j):
                 continue
-                
-            # Test if placing obstruction here creates a loop
-            if simulate_path_with_obstruction(grid, (start_i, start_j), 
-                                           start_dir, (i, j)):
+
+            if simulate_path_with_obstruction(grid, (start_i, start_j), start_dir, (i, j)):
                 trap_positions += 1
-    
+
     return trap_positions
 
 
