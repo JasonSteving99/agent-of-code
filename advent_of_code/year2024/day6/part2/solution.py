@@ -9,8 +9,8 @@ def simulate_path(grid: List[str], start_pos: Tuple[int, int], marked_cells: Set
     curr_dir = 0  # Start facing up
 
     row, col = start_pos
-    visited_states = set()  # (row, col, direction)
     
+    visited_states = set()  # (row, col, direction) # Step 0: Moved this line
     while True:
         if (row, col, curr_dir) in visited_states:
             return True  # Found a loop
