@@ -27,21 +27,6 @@ def get_next_position_direction(
         return (next_col, next_row), direction
 
 
-def explore_reachable(grid: List[List[str]], pos: Tuple[int, int], reachable: Set[Tuple[int, int]]):
-    if (
-        not (0 <= pos[0] < len(grid[0]) and 0 <= pos[1] < len(grid))
-        or pos in reachable
-        or grid[pos[1]][pos[0]] != '.'
-    ):
-        return
-
-    reachable.add(pos)
-    explore_reachable(grid, (pos[0] + 1, pos[1]), reachable)
-    explore_reachable(grid, (pos[0] - 1, pos[1]), reachable)
-    explore_reachable(grid, (pos[0], pos[1] + 1), reachable)
-    explore_reachable(grid, (pos[0], pos[1] - 1), reachable)
-
-
 def simulate_guard_path(
     grid: List[List[str]],
     start_pos: Tuple[int, int],
@@ -58,13 +43,7 @@ def simulate_guard_path(
             return None  # Guard left the grid
 
         if (pos, direction) in visited:
-            reachable = set()
-            explore_reachable(grid, start_pos, reachable)            
-            visited_reachable = {p for p, d in visited if grid[p[1]][p[0]] == '.'}
-            if reachable == visited_reachable:
-                return visited
-            else:
-                return None
+            return visited
 
         visited.add((pos, direction))
         next_pos, next_direction = get_next_position_direction(pos, direction, grid)
