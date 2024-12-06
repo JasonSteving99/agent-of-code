@@ -37,22 +37,27 @@ def count_guard_visited_positions(grid_str: str) -> int:
     # Keep track of visited positions
     visited: Set[Tuple[int, int]] = {(row, col)}
     
-    while 0 <= row < height and 0 <= col < width:
+    while True:
         # Calculate next position
         dr, dc = directions[direction]
         next_row, next_col = row + dr, col + dc
         
         # Check if we're going out of bounds or hitting an obstacle
-        if (next_row < 0 or next_row >= height or 
-            next_col < 0 or next_col >= width or 
-            grid[next_row][next_col] == '#'):
-            # Turn right if blocked
+        if not (0 <= next_row < height and 0 <= next_col < width) or grid[next_row][next_col] == '#':
+            # Turn right if blocked or out of bounds
             direction = turn_right[direction]
+            # Check bounds after turning. Exit if out of bounds.
+            dr, dc = directions[direction]
+            next_row, next_col = row + dr, col + dc
+            if not (0 <= next_row < height and 0 <= next_col < width):
+                break
         else:
             # Move forward
             row, col = next_row, next_col
-            visited.add((row, col))
-    
+            if 0 <= row < height and 0 <= col < width:  # Check bounds before adding
+                visited.add((row, col))
+
+            
     return len(visited)
 
 def solution() -> int:
