@@ -1,55 +1,83 @@
+"""Solution for counting visited positions by a guard following movement rules."""
+from enum import Enum
 from typing import List, Set, Tuple
-import sys
 
-def count_guard_visited_positions(input_str: str) -> int:
-    # Parse the input grid
-    grid = [list(line.strip()) for line in input_str.splitlines()]
-    rows, cols = len(grid), len(grid[0])
+class Direction(Enum):
+    """Represents cardinal directions."""
+    UP = (0, -1)
+    RIGHT = (1, 0)
+    DOWN = (0, 1)
+    LEFT = (-1, 0)
+
+    def turn_right(self) -> 'Direction':
+        """Returns the direction after turning right 90 degrees."""
+        directions = list(Direction)
+        return directions[(directions.index(self) + 1) % 4]
+
+def parse_grid(input_str: str) -> Tuple[List[List[str]], Tuple[int, int], Direction]:
+    """Parse input string into grid and starting position/direction."""
+    grid = [list(line) for line in input_str.strip().split('\n')]
+    start_pos = None
+    start_dir = None
     
-    # Find guard's starting position and facing direction
-    guard_pos = None
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == '^':
-                guard_pos = (i, j)
-                facing = 0  # 0: up, 1: right, 2: down, 3: left
-                break
-        if guard_pos:
-            break
+    for y, row in enumerate(grid):
+        for x, cell in enumerate(row):
+            if cell == '^':
+                start_pos = (x, y)
+                start_dir = Direction.UP
+                grid[y][x] = '.'  # Clear the start position
+    
+    return grid, start_pos, start_dir
 
-    if not guard_pos:
+def is_valid_position(pos: Tuple[int, int], grid: List[List[str]]) -> bool:
+    """Check if position is within grid boundaries."""
+    x, y = pos
+    return (0 <= y < len(grid) and 
+            0 <= x < len(grid[0]))
+
+def count_visited_positions(input_str: str) -> int:
+    """
+    Count distinct positions visited by guard before leaving mapped area.
+    
+    Args:
+        input_str: String representation of the grid map
+    
+    Returns:
+        Number of distinct positions visited by the guard
+    """
+    # Parse input
+    grid, current_pos, current_dir = parse_grid(input_str)
+    if not current_pos or not current_dir:
         return 0
-
-    # Directions: up, right, down, left
-    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    visited: Set[Tuple[int, int]] = {guard_pos}
-    
-    curr_pos = guard_pos
-    curr_facing = facing
+        
+    visited: Set[Tuple[int, int]] = {current_pos}
     
     while True:
+        # Calculate next position
+        next_x = current_pos[0] + current_dir.value[0]
+        next_y = current_pos[1] + current_dir.value[1]
+        next_pos = (next_x, next_y)
+        
         # Check if we're still in bounds
-        row, col = curr_pos
-        if not (0 <= row < rows and 0 <= col < cols):
+        if not is_valid_position(next_pos, grid):
             break
             
-        # Check position in front
-        next_row = row + directions[curr_facing][0]
-        next_col = col + directions[curr_facing][1]
+        # Check if there's an obstacle ahead
+        if grid[next_y][next_x] == '#':
+            # Turn right
+            current_dir = current_dir.turn_right()
+            continue
+            
+        # Move forward
+        current_pos = next_pos
+        visited.add(current_pos)
         
-        # If next position is out of bounds or has an obstacle, turn right
-        if (not (0 <= next_row < rows and 0 <= next_col < cols) or 
-            grid[next_row][next_col] == '#'):
-            # Turn right (increment facing by 1 modulo 4)
-            curr_facing = (curr_facing + 1) % 4
-        else:
-            # Move forward
-            curr_pos = (next_row, next_col)
-            visited.add(curr_pos)
-    
     return len(visited)
 
 def solution() -> int:
-    # Read from stdin
-    input_str = sys.stdin.read()
-    return count_guard_visited_positions(input_str)
+    """Read input from stdin and return solution."""
+    import sys
+    return count_visited_positions(sys.stdin.read().strip())
+
+if __name__ == "__main__":
+    print(solution())

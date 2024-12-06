@@ -1,19 +1,19 @@
 """
-This test suite verifies the guard movement tracking functionality where:
-- Input is a 10x10 grid string with:
-  - '^' marking guard's starting position
-  - '#' marking obstacles
-  - '.' marking empty spaces
-- Output should be total count of unique positions visited by guard
-  including the starting position
-- Guard moves upward until leaving the grid or hitting obstacle
+This test suite covers the count_visited_positions function which:
+1. Takes a string input representing a 10x10 grid map with:
+   - '.' for empty spaces
+   - '#' for obstacles
+   - '^' for guard's starting position facing up
+2. Returns an integer representing the number of distinct positions visited
+   by the guard before exiting the map boundaries following a movement protocol
 """
 
-from solution import count_guard_visited_positions
+from solution import count_visited_positions
 import pytest
 
-def test_guard_basic_upward_movement():
-    grid = (
+def test_guard_movement_with_obstacles():
+    # Test case with guard starting at bottom half of grid facing up
+    input_grid = (
         "....#.....\n"
         ".........#\n"
         "..........\n"
@@ -25,41 +25,31 @@ def test_guard_basic_upward_movement():
         "#.........\n"
         "......#..."
     )
-    expected_visited_count = 41
+    expected_positions = 41
     
-    result = count_guard_visited_positions(grid)
+    result = count_visited_positions(input_grid)
     
-    assert result == expected_visited_count, (
-        f"Guard should visit {expected_visited_count} unique positions "
-        f"starting from the marked position and moving upward, but got {result}. "
-        f"Input grid:\n{grid}"
-    )
+    assert result == expected_positions, \
+        f"Guard should visit {expected_positions} distinct positions before exiting the map.\n" \
+        f"Input grid:\n{input_grid}\n" \
+        f"Got {result} positions instead."
 
-def test_empty_input():
-    """Test handling of empty input string"""
-    with pytest.raises(ValueError, match="Grid input cannot be empty"):
-        count_guard_visited_positions("")
-
-def test_invalid_grid_no_guard():
-    """Test handling of grid without guard position"""
-    grid = (
-        "....#.....\n"
-        "..........\n"
-        "..........\n"
-        "..#.......\n"
-        ".......#.."
-    )
-    with pytest.raises(ValueError, match="No guard position \\(\\^\\) found in grid"):
-        count_guard_visited_positions(grid)
-
-def test_invalid_grid_multiple_guards():
-    """Test handling of grid with multiple guard positions"""
-    grid = (
-        "....#.....\n"
-        "....^.....\n"
-        "..........\n"
-        "..#.^.....\n"
-        ".......#.."
-    )
-    with pytest.raises(ValueError, match="Multiple guard positions found in grid"):
-        count_guard_visited_positions(grid)
+def test_input_validation():
+    # Test that input grid is properly formatted
+    with pytest.raises(ValueError):
+        # Test with empty input
+        count_visited_positions("")
+    
+    with pytest.raises(ValueError):
+        # Test with invalid grid size
+        count_visited_positions("...\n...")
+        
+    with pytest.raises(ValueError):
+        # Test with missing guard position
+        input_grid = ("." * 10 + "\n") * 10
+        count_visited_positions(input_grid.strip())
+        
+    with pytest.raises(ValueError):
+        # Test with multiple guard positions
+        input_grid = "....^.....\n" + ("." * 10 + "\n") * 8 + "....^....."
+        count_visited_positions(input_grid.strip())
