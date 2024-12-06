@@ -42,21 +42,20 @@ def count_guard_visited_positions(grid_str: str) -> int:
         dr, dc = directions[direction]
         next_row, next_col = row + dr, col + dc
         
-        # Check if we're going out of bounds or hitting an obstacle
+        # Check if next move is out of bounds or hitting an obstacle
         if not (0 <= next_row < height and 0 <= next_col < width) or grid[next_row][next_col] == '#':
-            # Turn right if blocked or out of bounds
-            direction = turn_right[direction]
-            # Check bounds after turning. Exit if out of bounds.
-            dr, dc = directions[direction]
-            next_row, next_col = row + dr, col + dc
-            if not (0 <= next_row < height and 0 <= next_col < width):
-                break
+            direction = turn_right[direction]  # Turn right
         else:
-            # Move forward
             row, col = next_row, next_col
-            if 0 <= row < height and 0 <= col < width:  # Check bounds before adding
-                visited.add((row, col))
+            visited.add((row, col))
+            
+        # Recalculate next position based on potentially new direction        
+        dr, dc = directions[direction]
+        next_row, next_col = row + dr, col + dc
 
+        # Check if current position (after potential move or turn) is out of bounds. Break if so
+        if not (0 <= next_row < height and 0 <= next_col < width):
+            break
             
     return len(visited)
 
