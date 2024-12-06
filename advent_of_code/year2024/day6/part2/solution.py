@@ -1,71 +1,123 @@
 from typing import List, Set, Tuple
+from dataclasses import dataclass
+from enum import Enum
 import sys
-import copy
+from copy import deepcopy
 
+class Direction(Enum):
+    UP = (0, -1)
+    RIGHT = (1, 0)
+    DOWN = (0, 1)
+    LEFT = (-1, 0)
+    
+    def turn_right(self) -> 'Direction':
+        return {
+            Direction.UP: Direction.RIGHT,
+            Direction.RIGHT: Direction.DOWN,
+            Direction.DOWN: Direction.LEFT,
+            Direction.LEFT: Direction.UP
+        }[self]
 
-def count_obstruction_locations(input_map: str) -> int:
-    # Convert input map to 2D grid
-    grid = input_map.strip().split('\n')
-    rows = len(grid)
-    cols = len(grid[0])
+@dataclass
+class Guard:
+    x: int
+    y: int
+    direction: Direction
 
-    # Find starting position and direction of guard
-    start_pos = None
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == '^':
-                start_pos = (i, j)
+@dataclass
+class Lab:
+    grid: List[List[str]]
+    rows: int
+    cols: int
+    
+    def is_valid_position(self, x: int, y: int) -> bool:
+        return 0 <= x < self.cols and 0 <= y < self.rows
+    
+    def is_obstacle(self, x: int, y: int) -> bool:
+        return not self.is_valid_position(x, y) or self.grid[y][x] == '#'
+
+def parse_input(lab_map: str) -> Tuple[Lab, Guard]:
+    grid = [list(line) for line in lab_map.strip().splitlines()]
+    rows, cols = len(grid), len(grid[0])
+    
+    guard_x, guard_y = -1, -1
+    for y in range(rows):
+        for x in range(cols):
+            if grid[y][x] == '^':
+                guard_x, guard_y = x, y
+                grid[y][x] = '.'
                 break
-        if start_pos:
+        if guard_x != -1:
             break
+    
+    return Lab(grid, rows, cols), Guard(guard_x, guard_y, Direction.UP)
 
-    # Directions: UP, RIGHT, DOWN, LEFT
-    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    initial_dir = 0  # UP
-
-    def is_valid(pos: Tuple[int, int], grid: List[str]) -> bool:
-        return 0 <= pos[0] < rows and 0 <= pos[1] < cols and grid[pos[0]][pos[1]] != '#'
-
-    def get_path(grid: List[str], start: Tuple[int, int], start_dir: int) -> Tuple[Set[Tuple[int, int]], int]:
-        pos = start
-        direction = start_dir
-        path = set()
-        path.add(pos)
-
-        while True:
-            next_pos = (pos[0] + directions[direction][0], pos[1] + directions[direction][1])
-
-            if not is_valid(next_pos, grid):
-                direction = (direction + 1) % 4  # Turn right
-                next_pos = (pos[0] + directions[direction][0], pos[1] + directions[direction][1])
-                if not is_valid(next_pos, grid):
-                    return path, direction
-
-            if next_pos in path:
-                return path, direction
+def simulate_guard_path(lab: Lab, guard: Guard) -> Set[Tuple[int, int]]:
+    visited = set()
+    visited.add((guard.x, guard.y))
+    
+    while True:
+        next_x = guard.x + guard.direction.value[0]
+        next_y = guard.y + guard.direction.value[1]
+        
+        if lab.is_obstacle(next_x, next_y):
+            guard.direction = guard.direction.turn_right()
+            continue
             
-            pos = next_pos
-            path.add(pos)
+        guard.x, guard.y = next_x, next_y
+        if not lab.is_valid_position(guard.x, guard.y):
+            break
+            
+        visited.add((guard.x, guard.y))
+    
+    return visited
 
-    def try_obstruction(pos: Tuple[int, int], grid: List[str], start_pos: Tuple[int, int], initial_dir: int) -> bool:
-        if pos == start_pos or grid[pos[0]][pos[1]] == '#' or grid[pos[0]][pos[1]] == '^':
+def is_guard_loops(lab: Lab, guard: Guard, visited: Set[Tuple[int, int]]) -> bool:
+    # If guard visits same position in same direction twice, it's a loop
+    positions_with_directions = set()
+    curr_guard = Guard(guard.x, guard.y, guard.direction)
+    
+    while True:
+        state = (curr_guard.x, curr_guard.y, curr_guard.direction)
+        if state in positions_with_directions:
+            return True
+        
+        positions_with_directions.add(state)
+        next_x = curr_guard.x + curr_guard.direction.value[0]
+        next_y = curr_guard.y + curr_guard.direction.value[1]
+        
+        if lab.is_obstacle(next_x, next_y):
+            curr_guard.direction = curr_guard.direction.turn_right()
+            continue
+            
+        curr_guard.x, curr_guard.y = next_x, next_y
+        if not lab.is_valid_position(curr_guard.x, curr_guard.y):
             return False
 
-        new_grid = copy.deepcopy(grid)
-        new_grid[pos[0]] = new_grid[pos[0]][:pos[1]] + '#' + new_grid[pos[0]][pos[1] + 1:]
-        path, direction = get_path(new_grid, start_pos, initial_dir)
-        return start_pos in path and initial_dir == direction
-
-    count = 0
-    for i in range(rows):
-        for j in range(cols):
-            if try_obstruction((i, j), grid, start_pos, initial_dir):
-                count += 1
-    return count
+def count_loop_obstruction_positions(input_str: str) -> int:
+    lab, initial_guard = parse_input(input_str)
+    original_path = simulate_guard_path(lab, deepcopy(initial_guard))
+    loop_positions = 0
+    
+    # Try placing an obstruction at each position
+    for y in range(lab.rows):
+        for x in range(lab.cols):
+            # Skip if position is already an obstacle or guard's starting position
+            if lab.grid[y][x] == '#' or (x == initial_guard.x and y == initial_guard.y):
+                continue
+                
+            # Place temporary obstruction
+            lab.grid[y][x] = '#'
+            
+            # Check if guard gets stuck in a loop
+            if is_guard_loops(lab, deepcopy(initial_guard), original_path):
+                loop_positions += 1
+            
+            # Remove temporary obstruction
+            lab.grid[y][x] = '.'
+    
+    return loop_positions
 
 def solution() -> int:
     input_data = sys.stdin.read()
-    return count_obstruction_locations(input_data)
-
-if __name__ == "__main__":
-    print(solution())
+    return count_loop_obstruction_positions(input_data)
