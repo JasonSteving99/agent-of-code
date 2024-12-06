@@ -62,7 +62,7 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
     steps = 0
     max_steps = len(grid) * len(grid[0]) * 4
 
-    test_grid = [row[:] for row in grid]
+    test_grid = [row[:] for row in grid]  # Create a deep copy
     i, j = obstruction_pos
     test_grid[i][j] = '#'
 
@@ -72,8 +72,7 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
             return True
 
         visited_states.add(state)
-
-        # Check boundary *before* calculating next_pos
+        
         next_pos = get_next_pos(curr_pos, curr_dir)
         if not is_valid(next_pos, test_grid):
             curr_dir = turn_right(curr_dir)
@@ -81,7 +80,6 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
             curr_dir = turn_right(curr_dir)
         else:
             curr_pos = next_pos
-            # No need to check boundary here since next_pos was checked
 
         steps += 1
 
