@@ -1,112 +1,112 @@
-"""Solution for finding how many positions could trap the guard in a loop."""
-from enum import Enum, auto
+"""Find the number of positions where placing an obstruction will trap the guard in a loop."""
+
 from typing import List, Set, Tuple
+from enum import Enum
+from dataclasses import dataclass
+from copy import deepcopy
 
 
 class Direction(Enum):
-    """Enum for grid direction."""
-    UP = auto()
-    RIGHT = auto()
-    DOWN = auto()
-    LEFT = auto()
+    UP = (0, -1)
+    RIGHT = (1, 0)
+    DOWN = (0, 1)
+    LEFT = (-1, 0)
+
+    def turn_right(self) -> 'Direction':
+        return {
+            Direction.UP: Direction.RIGHT,
+            Direction.RIGHT: Direction.DOWN,
+            Direction.DOWN: Direction.LEFT,
+            Direction.LEFT: Direction.UP
+        }[self]
 
 
-def parse_grid(grid_str: str) -> List[List[str]]:
-    """Parse input grid string into 2D list."""
-    return [list(line) for line in grid_str.strip().split('\n')]
+@dataclass
+class Position:
+    x: int
+    y: int
+    
+    def move(self, direction: Direction) -> 'Position':
+        dx, dy = direction.value
+        return Position(self.x + dx, self.y + dy)
 
 
-def get_initial_position(grid: List[List[str]]) -> Tuple[int, int, Direction]:
-    """Find initial guard position and direction."""
-    for i, row in enumerate(grid):
-        for j, cell in enumerate(row):
-            if cell == '^':
-                return i, j, Direction.UP
-    raise ValueError("No guard found in grid")
+@dataclass
+class Guard:
+    pos: Position
+    facing: Direction
 
 
-def is_valid(pos: Tuple[int, int], grid: List[List[str]]) -> bool:
-    """Check if position is within grid bounds."""
-    i, j = pos
-    return 0 <= i < len(grid) and 0 <= j < len(grid[0])
-
-
-def get_next_pos(pos: Tuple[int, int], direction: Direction) -> Tuple[int, int]:
-    """Get next position based on current direction."""
-    i, j = pos
-    match direction:
-        case Direction.UP:    return (i-1, j)
-        case Direction.RIGHT: return (i, j+1)
-        case Direction.DOWN:  return (i+1, j)
-        case Direction.LEFT:  return (i, j-1)
-
-
-def turn_right(direction: Direction) -> Direction:
-    """Get new direction after turning right."""
-    match direction:
-        case Direction.UP:    return Direction.RIGHT
-        case Direction.RIGHT: return Direction.DOWN
-        case Direction.DOWN:  return Direction.LEFT
-        case Direction.LEFT:  return Direction.UP
-
-
-def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, int], \
-                                start_dir: Direction, obstruction_pos: Tuple[int, int]) -> bool:
-    """
-    Simulate guard's path with additional obstruction.
-    Returns True if guard gets stuck in a loop, False otherwise.
-    """
-    test_grid = [row[:] for row in grid]  # Create deep copy here
-    visited_states = set()
-    curr_pos = start_pos
-    curr_dir = start_dir
-    steps = 0
-    max_steps = len(grid) * len(grid[0]) * 4
-
-    i, j = obstruction_pos
-    test_grid[i][j] = '#'
-
-    while steps < max_steps:
-        state = (curr_pos, curr_dir)
-        if state in visited_states:
-            return True
-
-        visited_states.add(state)
-
-        next_pos = get_next_pos(curr_pos, curr_dir)
-        if not is_valid(next_pos, test_grid):
-            curr_dir = turn_right(curr_dir)
-        elif test_grid[next_pos[0]][next_pos[1]] == '#':
-            curr_dir = turn_right(curr_dir)
-        else:
-            curr_pos = next_pos
-
-        steps += 1
-
-    return False
+class Grid:
+    def __init__(self, raw_map: str):
+        self.cells = [list(line) for line in raw_map.strip().split('\n')]
+        self.height = len(self.cells)
+        self.width = len(self.cells[0])
+        
+        # Find guard's initial position and facing
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.cells[y][x] == '^':
+                    self.initial_guard = Guard(Position(x, y), Direction.UP)
+                    self.cells[y][x] = '.'
+                    return
+    
+    def is_valid_pos(self, pos: Position) -> bool:
+        return 0 <= pos.x < self.width and 0 <= pos.y < self.height
+    
+    def is_blocked(self, pos: Position) -> bool:
+        return not self.is_valid_pos(pos) or self.cells[pos.y][pos.x] in '#O'
+    
+    def get_positions_visited(self, test_obstruction: Position | None = None) -> Set[Tuple[int, int, Direction]]:
+        visited = set()
+        guard = deepcopy(self.initial_guard)
+        
+        while True:
+            state = (guard.pos.x, guard.pos.y, guard.facing)
+            if state in visited:
+                return visited
+            
+            if not self.is_valid_pos(guard.pos):
+                return visited
+                
+            visited.add(state)
+            
+            # Check if blocked
+            next_pos = guard.pos.move(guard.facing)
+            is_blocked = self.is_blocked(next_pos)
+            if test_obstruction and next_pos.x == test_obstruction.x and next_pos.y == test_obstruction.y:
+                is_blocked = True
+            
+            if is_blocked:
+                guard.facing = guard.facing.turn_right()
+            else:
+                guard.pos = next_pos
 
 
 def count_trap_positions(grid_str: str) -> int:
-    """Count trap positions."""
-    grid = parse_grid(grid_str)
-    start_i, start_j, start_dir = get_initial_position(grid)
-    trap_positions = 0
-
-    grid[start_i][start_j] = '.'
-
-    for i in range(len(grid)):
-        for j in range(len(grid[0])):
-            if grid[i][j] == '#' or (i == start_i and j == start_j):
+    grid = Grid(grid_str)
+    count = 0
+    
+    # Try placing an obstruction at each empty cell
+    for y in range(grid.height):
+        for x in range(grid.width):
+            # Skip if not empty or if it's the guard's starting position
+            if grid.cells[y][x] != '.' or (x == grid.initial_guard.pos.x and y == grid.initial_guard.pos.y):
                 continue
-
-            if simulate_path_with_obstruction(grid, (start_i, start_j), start_dir, (i, j)):
-                trap_positions += 1
-
-    return trap_positions
+            
+            # Test placing obstruction at this position
+            test_pos = Position(x, y)
+            visited = grid.get_positions_visited(test_pos)
+            
+            # If the guard's path forms a loop (doesn't exit the grid)
+            # and visits at least one position, this is a valid trap position
+            if visited and all(grid.is_valid_pos(Position(x, y)) for x, y, _ in visited):
+                count += 1
+                
+    return count
 
 
 def solution() -> int:
-    """Read input and solve."""
+    """Read from stdin and return the result."""
     import sys
-    grid_str = sys.stdin.read()
-    return count_trap_positions(grid_str)
+    return count_trap_positions(sys.stdin.read())
