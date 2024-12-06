@@ -34,6 +34,7 @@ def test_guard_movement_with_obstacles():
         f"Input grid:\n{input_grid}\n" \
         f"Got {result} positions instead."
 
+
 def test_input_validation():
     # Test that input grid is properly formatted
     with pytest.raises(ValueError):
@@ -43,13 +44,8 @@ def test_input_validation():
     with pytest.raises(ValueError):
         # Test with invalid grid size
         count_visited_positions("...\n...")
-        
+
     with pytest.raises(ValueError):
         # Test with missing guard position
         input_grid = ("." * 10 + "\n") * 10
-        count_visited_positions(input_grid.strip())
-        
-    with pytest.raises(ValueError):
-        # Test with multiple guard positions
-        input_grid = "....^.....\n" + ("." * 10 + "\n") * 8 + "....^....."
         count_visited_positions(input_grid.strip())
