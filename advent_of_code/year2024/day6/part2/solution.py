@@ -54,7 +54,7 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
                                 start_dir: Direction, obstruction_pos: Tuple[int, int]) -> bool:
     """
     Simulate guard's path with additional obstruction.
-    Returns True if guard gets stuck in a loop.
+    Returns True if guard gets stuck in a loop, False otherwise.
     """
     visited_states = set()
     curr_pos = start_pos
@@ -84,7 +84,7 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
 
         steps += 1
 
-    return True  # Assume loop if max steps reached
+    return False  # Explicitly return False if max steps reached without loop
 
 
 def count_trap_positions(grid_str: str) -> int:
