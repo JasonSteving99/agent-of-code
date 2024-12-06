@@ -213,8 +213,9 @@ class SolveAoCProblemWorkflow:
             problem_solution_result = await workflow.execute_activity(
                 run_generated_solution,
                 solve_aoc_problem_req,
-                start_to_close_timeout=timedelta(minutes=5),
+                start_to_close_timeout=timedelta(minutes=4),
                 # Don't allow any retries for execution of the actual problem solution.
+                retry_policy=RetryPolicy(maximum_attempts=1),
             )
 
             match problem_solution_result.result:
@@ -396,6 +397,6 @@ async def _run_unit_tests(solve_aoc_problem_req: AoCProblem) -> TestResults:
         solve_aoc_problem_req,
         # The implementation times out pytest execution at 60 seconds so this should be longer just
         # so the timeouts can also be signaled to the agent.
-        start_to_close_timeout=timedelta(seconds=90),
+        start_to_close_timeout=timedelta(minutes=4),
         retry_policy=RetryPolicy(maximum_attempts=2),
     )

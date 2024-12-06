@@ -45,12 +45,13 @@ Your goal is to provide succinct and correct unit tests that test the function o
 
 In the spirit of "TDD" (test-driven-development) you write unit tests BEFORE the function implementation itself, so, at the top of the test file you generate, include a description of what part of the problem the tests cover, so that the following implementation can follow.
 
-Do not attempt to solve the problem; only generate unit tests for the given examples.
+Do not attempt to solve the problem; ONLY generate unit tests for the given examples.
 
 You MUST respond with a single complete Python 3.12 Pytest test suite. 
 IMPORTANT: Import the tested function using `from solution import <tested function name here>`.
 IMPORTANT: For each example, generate a distinct test function named with the `test_` prefix.
 IMPORTANT: Make sure that any assertions provide EXPLICIT context on the input(s) to the tested function and the expected vs actual output.
+IMPORTANT: Only generate unit tests for the given POSITIVE examples of valid input & output. Do not generate unit tests that validate that the program throws exceptions for invalid input.
 """  # noqa: E501
 
     generate_unit_tests_prompt = _get_generate_unit_tests_prompt(
