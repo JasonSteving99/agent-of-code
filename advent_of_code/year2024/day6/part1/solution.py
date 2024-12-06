@@ -35,8 +35,11 @@ def find_start(grid: List[str]) -> Tuple[int, int, Direction]:
 def count_visited_cells(input_str: str) -> int:
     # Parse grid
     grid = [line.strip() for line in input_str.strip().split('\n')]
+    if not grid or not grid[0]:
+        return 0
     width = len(grid[0])
     height = len(grid)
+
 
     # Find starting position and direction
     start_x, start_y, direction = find_start(grid)
