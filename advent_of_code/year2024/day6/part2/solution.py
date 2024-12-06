@@ -56,22 +56,24 @@ class Grid:
     
     def is_blocked(self, pos: Position) -> bool:
         return not self.is_valid_pos(pos) or self.cells[pos.y][pos.x] in '#O'
-    
+
     def get_positions_visited(self, test_obstruction: Position | None = None) -> Set[Tuple[int, int, Direction]]:
         visited = set()
         guard = deepcopy(self.initial_guard)
 
         while True:
-            if not self.is_valid_pos(guard.pos):
-                return set()  # Return empty set if guard exits the map
-
             state = (guard.pos.x, guard.pos.y, guard.facing)
             if state in visited:
                 return visited
 
             visited.add(state)
-
             next_pos = guard.pos.move(guard.facing)
+
+            # Treat moving off the map as hitting an obstruction
+            if not self.is_valid_pos(next_pos):
+                guard.facing = guard.facing.turn_right()
+                continue
+
             is_blocked = self.is_blocked(next_pos)
             if test_obstruction and next_pos.x == test_obstruction.x and next_pos.y == test_obstruction.y:
                 is_blocked = True
@@ -80,12 +82,11 @@ class Grid:
                 guard.facing = guard.facing.turn_right()
             else:
                 guard.pos = next_pos
-            
 
 def count_trap_positions(grid_str: str) -> int:
     grid = Grid(grid_str)
     count = 0
-    
+
     for y in range(grid.height):
         for x in range(grid.width):
             if grid.cells[y][x] != '.' or (x == grid.initial_guard.pos.x and y == grid.initial_guard.pos.y):
@@ -94,9 +95,9 @@ def count_trap_positions(grid_str: str) -> int:
             test_pos = Position(x, y)
             visited = grid.get_positions_visited(test_pos)
 
-            if visited and all(grid.is_valid_pos(Position(x, y)) for x, y, _ in visited):  # All visited positions must be valid
+            if visited and all(grid.is_valid_pos(Position(x, y)) for x, y, _ in visited):
                 count += 1
-                
+
     return count
 
 
