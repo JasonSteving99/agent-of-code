@@ -1,35 +1,40 @@
 """
-Tests for count_obstruction_locations function.
+This test suite verifies the count_obstruction_locations function that:
+1. Takes a garden map string as input representing a garden with a guard's starting position
+2. Counts the number of valid locations where an obstruction ('O') can be placed such that 
+   the guard's movement creates a closed loop
+3. Returns the count of these valid obstruction locations
 
-The function takes a multiline string representing an ASCII map and returns the number of possible positions
-where an obstruction ('O') can be placed to force the guard starting at '^' to move in a closed loop.
+The guard movement follows these rules (same as part 1):
+- Guard starts at the '^' position
+- Guard moves in a cardinal direction until hitting a wall ('#') or obstruction ('O')
+- When hitting a wall/obstruction, guard turns right 90 degrees and continues
+- Movement continues until a loop is formed
 
-The function should:
-1. Read the input map which contains a start position marked by '^'
-2. Calculate all possible positions where placing an 'O' would cause the guard's movement to form a loop
-3. Return the count of such valid positions
-
-The movement rules for the guard are:
-- Follows a path based on ASCII map markers
-- Cannot move through '#' walls or 'O' obstructions
-- Must follow valid path segments
+The tests verify that for a given garden map, the function correctly counts the number
+of possible obstruction locations that result in the guard's movement forming a closed loop.
 """
 
 from solution import count_obstruction_locations
 
-def test_count_obstruction_locations_example_map():
-    test_map = """#.#####################
-#.......#########...###
-#######.#########.#.###
-###...#.....####..#.###
-###.#.#####.####.##.###
-###.#.#####.####.^..###
-###.#.#####.####.#.####
-###.#.#####.####.#.####
-###.#..####.####.#.####
-###.#########....#.####
-###...........####.####""".strip()
+
+def test_given_garden_map_example():
+    garden_map = """
+#########
+#.......#
+#.......#
+#...^...#
+#.......#
+#.......#
+#########
+""".strip()
     
-    # Test that the function correctly identifies 6 possible obstruction locations
-    result = count_obstruction_locations(test_map)
-    assert result == 6, f"Expected 6 possible obstruction locations but got {result} for map:\n{test_map}"
+    result = count_obstruction_locations(garden_map)
+    assert result == 6, f"""
+Failed for garden map:
+{garden_map}
+Expected 6 valid obstruction locations that create a closed loop,
+but got {result} instead.
+This map should have exactly 6 different positions where placing an 'O'
+would cause the guard's movement pattern to form a closed loop.
+"""
