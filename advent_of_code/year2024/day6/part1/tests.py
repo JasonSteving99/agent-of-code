@@ -1,34 +1,35 @@
 """
-This test suite validates the count_visited_positions function which:
-- Takes a string input representing a grid with '#' as obstacles and '^' as guard starting position
-- Tracks guard movement according to specified rules (moving up from initial position)
-- Returns count of unique positions visited by guard before leaving grid
+Tests for count_guard_visited_positions function that calculates the number of distinct positions 
+visited by a guard moving in a grid.
+
+The tests verify that:
+1. The function correctly processes a multi-line grid string input
+2. The guard starts at the '^' position and follows movement rules
+3. The function accurately counts distinct visited positions before the guard leaves the grid
+4. The function handles obstacles marked with '#' correctly
+5. The function returns an integer representing total visited positions
 """
 
-from solution import count_visited_positions
+from solution import count_guard_visited_positions
 
-
-def test_guard_movement_until_exit():
-    # Test grid with guard starting in bottom portion moving up,
-    # obstacles scattered throughout
-    input_grid = (
-        "....#.....\n"
-        ".........#\n"
-        "..........\n"
-        "..#.......\n"
-        ".......#..\n"
-        "..........\n"
-        ".#..^.....\n"
-        "........#.\n"
-        "#.........\n"
-        "......#..."
-    )
-    expected_visited_count = 41
+def test_guard_path_with_obstacles():
+    # Test with the provided grid example where the guard starts at '^'
+    # and navigates through a 10x10 grid with multiple '#' obstacles
+    grid = ("....#.....\n"
+            ".........#\n"
+            "..........\n"
+            "..#.......\n"
+            ".......#..\n"
+            "..........\n"
+            ".#..^.....\n"
+            "........#.\n"
+            "#.........\n"
+            "......#...")
     
-    result = count_visited_positions(input_grid)
-    
-    assert result == expected_visited_count, (
-        f"Guard movement should visit {expected_visited_count} unique positions before "
-        f"exiting grid, but got {result} positions.\n"
-        f"Input grid:\n{input_grid}"
+    # Assert that the guard visits exactly 41 distinct positions
+    # before leaving the grid boundaries
+    result = count_guard_visited_positions(grid)
+    assert result == 41, (
+        f"Expected 41 visited positions for the given grid:\n{grid}\n"
+        f"But got {result} positions instead"
     )

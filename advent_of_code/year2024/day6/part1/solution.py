@@ -1,72 +1,64 @@
 from typing import List, Set, Tuple
 import sys
 
+def get_guard_start_position(grid: List[str]) -> Tuple[int, int, str]:
+    """Find the starting position and direction of the guard."""
+    for i, row in enumerate(grid):
+        for j, cell in enumerate(row):
+            if cell == '^':
+                return (i, j, 'N')
+    raise ValueError("No guard starting position found")
 
-def count_visited_positions(initial_map: str) -> int:
+def count_guard_visited_positions(grid_str: str) -> int:
     """
-    Count the number of distinct positions visited by the guard before leaving the mapped area.
+    Count the number of distinct positions visited by the guard before leaving the map area.
     
     Args:
-        initial_map: String representation of the map with guard position and obstacles
-        
+        grid_str: String representation of the grid with newlines
     Returns:
-        Number of distinct positions visited
+        Integer count of distinct positions visited by the guard
     """
-    # Convert the map to a 2D grid
-    grid = [list(line) for line in initial_map.strip().split('\n')]
-    rows, cols = len(grid), len(grid[0])
+    # Parse grid into list of strings
+    grid = grid_str.strip().split('\n')
+    height, width = len(grid), len(grid[0])
     
-    # Find guard's starting position and direction
-    start_pos = None
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == '^':
-                start_pos = (i, j)
-                break
-        if start_pos:
-            break
-            
-    # Define direction vectors (up, right, down, left)
-    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    dir_chars = ['^', '>', 'v', '<']
-    current_dir = 0  # Start facing up
+    # Direction mapping for movement and turning right
+    directions = {
+        'N': (-1, 0),  # Up
+        'E': (0, 1),   # Right
+        'S': (1, 0),   # Down
+        'W': (0, -1)   # Left
+    }
+    turn_right = {'N': 'E', 'E': 'S', 'S': 'W', 'W': 'N'}
     
-    visited: Set[Tuple[int, int]] = {start_pos}
-    current_pos = start_pos
+    # Get starting position and direction
+    row, col, direction = get_guard_start_position(grid)
     
-    while True:
-        row, col = current_pos
+    # Keep track of visited positions
+    visited: Set[Tuple[int, int]] = {(row, col)}
+    
+    while 0 <= row < height and 0 <= col < width:
+        # Calculate next position
+        dr, dc = directions[direction]
+        next_row, next_col = row + dr, col + dc
         
-        # Check if we're still in bounds
-        if row < 0 or row >= rows or col < 0 or col >= cols:
-            break
-        
-        # Get the next position in current direction
-        next_row = row + directions[current_dir][0]
-        next_col = col + directions[current_dir][1]
-        
-        # Check if there's an obstacle or out of bounds ahead
-        if (next_row < 0 or next_row >= rows or 
-            next_col < 0 or next_col >= cols or 
+        # Check if we're going out of bounds or hitting an obstacle
+        if (next_row < 0 or next_row >= height or 
+            next_col < 0 or next_col >= width or 
             grid[next_row][next_col] == '#'):
-            # Turn right
-            current_dir = (current_dir + 1) % 4
+            # Turn right if blocked
+            direction = turn_right[direction]
         else:
             # Move forward
-            current_pos = (next_row, next_col)
-            visited.add(current_pos)
+            row, col = next_row, next_col
+            visited.add((row, col))
     
     return len(visited)
 
-
 def solution() -> int:
-    """Read input from stdin and solve the problem."""
-    # Read input lines until EOF
-    input_lines = []
-    for line in sys.stdin:
-        input_lines.append(line.rstrip())
-    
-    # Join lines with newlines to create the map string
-    initial_map = '\n'.join(input_lines)
-    
-    return count_visited_positions(initial_map)
+    """Read the input from stdin and return the solution."""
+    input_data = sys.stdin.read().strip()
+    return count_guard_visited_positions(input_data)
+
+if __name__ == "__main__":
+    print(solution())
