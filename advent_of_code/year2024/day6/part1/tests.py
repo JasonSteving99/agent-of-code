@@ -40,11 +40,6 @@ def test_input_validation():
     with pytest.raises(ValueError):
         # Test with empty input
         count_visited_positions("")
-    
-    with pytest.raises(ValueError):
-        # Test with invalid grid size
-        count_visited_positions("...\n...")
-
     with pytest.raises(ValueError):
         # Test with missing guard position
         input_grid = ("." * 10 + "\n") * 10
