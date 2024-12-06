@@ -56,13 +56,13 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
     Simulate guard's path with additional obstruction.
     Returns True if guard gets stuck in a loop, False otherwise.
     """
+    test_grid = [row[:] for row in grid]  # Create deep copy here
     visited_states = set()
     curr_pos = start_pos
     curr_dir = start_dir
     steps = 0
     max_steps = len(grid) * len(grid[0]) * 4
 
-    test_grid = [row[:] for row in grid]  # Create a deep copy
     i, j = obstruction_pos
     test_grid[i][j] = '#'
 
@@ -72,7 +72,7 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
             return True
 
         visited_states.add(state)
-        
+
         next_pos = get_next_pos(curr_pos, curr_dir)
         if not is_valid(next_pos, test_grid):
             curr_dir = turn_right(curr_dir)
