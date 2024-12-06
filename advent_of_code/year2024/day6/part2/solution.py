@@ -40,41 +40,28 @@ def is_valid_position(row: int, col: int, grid: List[List[str]]) -> bool:
     return 0 <= row < len(grid) and 0 <= col < len(grid[0])
 
 
-def simulate_path(grid: List[List[str]], start_row: int, start_col: int, start_dir: str,
-                 max_steps: int = 10000) -> Set[Tuple[int, int]]:
-    """Simulate guard's path and return visited positions."""
+def simulate_path(grid: List[List[str]], start_row: int, start_col: int, start_dir: str) -> Set[Tuple[int, int, str]]:
+    """Simulate guard's path until it loops or leaves the grid, returning visited positions."""
     visited = set()
-    current = (start_row, start_col, start_dir)
-    steps = 0
+    current_pos = (start_row, start_col, start_dir)
 
-    while steps < max_steps:
-        row, col, direction = current
-        if not is_valid_position(row, col, grid):
-            break
-
-        visited.add((row, col))
+    while current_pos not in visited and is_valid_position(current_pos[0], current_pos[1], grid):
+        visited.add(current_pos)
+        row, col, direction = current_pos
         next_row, next_col = get_next_position(row, col, direction)
-
-        # Check if next position is blocked
-        if (not is_valid_position(next_row, next_col, grid) or
-                grid[next_row][next_col] in '#O'):
-            # Turn right
-            new_direction = get_next_direction(direction)
-            current = (row, col, new_direction)
+        if not is_valid_position(next_row, next_col, grid) or grid[next_row][next_col] in '#O':
+            direction = get_next_direction(direction)
+            current_pos = (row, col, direction)
         else:
-            # Move forward
-            current = (next_row, next_col, direction)
-
-        steps += 1
-
+            current_pos = (next_row, next_col, direction)
     return visited
 
 
 def has_loop(grid: List[List[str]], guard_pos: Tuple[int, int, str]) -> bool:
-    """Check if guard's path forms a loop."""
-    visited_positions = simulate_path(grid, guard_pos[0], guard_pos[1], guard_pos[2])
-    # If path is finite and doesn't exit grid, it must contain a loop
-    return len(visited_positions) < 10000  # Using same max_steps as simulate_path
+    """Check if guard gets stuck in a loop."""
+    visited = simulate_path(grid, guard_pos[0], guard_pos[1], guard_pos[2])
+    last_pos = list(visited)[-1]
+    return last_pos in list(visited)[:-1] and is_valid_position(last_pos[0], last_pos[1], grid)
 
 
 def count_trap_positions(grid_str: str) -> int:
@@ -84,19 +71,13 @@ def count_trap_positions(grid_str: str) -> int:
     original_grid = copy.deepcopy(grid)
     trap_positions = 0
 
-    # Try placing obstacle at each empty position
     for i in range(len(grid)):
         for j in range(len(grid[0])):
             if grid[i][j] == '.' and (i, j) != (guard_start[0], guard_start[1]):
-                # Place obstacle
                 grid[i][j] = 'O'
-                
-                # Check if this creates a loop
                 if has_loop(grid, guard_start):
                     trap_positions += 1
-                
-                # Reset grid
-                grid[i][j] = '.'
+                grid[i][j] = original_grid[i][j]
 
     return trap_positions
 
