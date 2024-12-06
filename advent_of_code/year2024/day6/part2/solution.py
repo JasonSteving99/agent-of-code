@@ -9,6 +9,9 @@ class Direction(Enum):
     RIGHT = (1, 0)
     DOWN = (0, 1)
     LEFT = (-1, 0)
+
+    def __hash__(self):
+        return hash(self.value)
     
     def turn_right(self) -> 'Direction':
         return {
@@ -38,6 +41,8 @@ class Lab:
 
 def parse_input(lab_map: str) -> Tuple[Lab, Guard]:
     grid = [list(line) for line in lab_map.strip().splitlines()]
+    if not grid:
+        return Lab([], 0, 0), Guard(-1, -1, Direction.UP)
     rows, cols = len(grid), len(grid[0])
     
     guard_x, guard_y = -1, -1
