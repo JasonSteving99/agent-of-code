@@ -1,17 +1,20 @@
 """
-Tests for count_visited_cells function that calculates the number of distinct cells 
-visited by a guard on a grid. The guard:
-- starts at position marked by '^' facing upward
-- moves forward until hitting an obstacle ('#') or grid boundary
-- turns right when blocked
-- continues this pattern until moving off the grid
-- each cell visited is counted only once in the total
+This test suite verifies the functionality of counting distinct positions visited by a guard
+moving through a grid map. The guard is represented by '^' and rocks are represented by '#'.
+The map is a multi-line string where:
+- '.' represents empty space
+- '#' represents rocks/obstacles
+- '^' represents the guard's starting position facing up
+
+The tests verify that given an initial map configuration, the function correctly calculates
+the total number of unique positions the guard visits before leaving the area.
 """
 
-from solution import count_visited_cells
+from solution import count_visited_spots
+import pytest
 
-def test_guard_movement_in_10x10_grid():
-    grid = (
+def test_guard_movement_basic_map():
+    initial_map = (
         "....#.....\n"
         ".........#\n"
         "..........\n"
@@ -23,45 +26,26 @@ def test_guard_movement_in_10x10_grid():
         "#.........\n"
         "......#..."
     )
-    result = count_visited_cells(grid)
+    
+    result = count_visited_spots(initial_map)
+    
     assert result == 41, (
-        f"Expected guard to visit 41 distinct cells in the grid:\n{grid}\n"
-        f"Got {result} visited cells instead."
+        f"Expected 41 unique visited positions for the given map:\n{initial_map}\n"
+        f"But got {result} positions instead"
     )
 
-def test_input_validation_empty_string():
-    """Test that empty input is handled appropriately"""
-    empty_grid = ""
-    result = count_visited_cells(empty_grid)
-    assert result == 0, (
-        f"Expected 0 visited cells for empty grid input, got {result}"
-    )
+def test_input_validation():
+    """Verify that the function properly handles input validation"""
+    with pytest.raises(ValueError, match="Input map cannot be empty"):
+        count_visited_spots("")
+    
+    with pytest.raises(ValueError, match="Map must contain exactly one guard position"):
+        no_guard_map = "....#.....\n..........\n"
+        count_visited_spots(no_guard_map)
 
-def test_input_validation_single_guard():
-    """Test that grid contains exactly one guard starting position"""
-    invalid_grid = (
-        "....#.....\n"
-        ".....^...#\n"
-        "....^.....\n"  # Multiple guards
-        "..#.......\n"
-        ".......#.."
-    )
-    try:
-        count_visited_cells(invalid_grid)
-        assert False, "Expected ValueError for multiple guard positions"
-    except ValueError as e:
-        assert str(e), "Expected error message for multiple guard positions"
-
-def test_input_validation_no_guard():
-    """Test that grid contains at least one guard starting position"""
-    no_guard_grid = (
-        "....#.....\n"
-        ".........#\n"
-        "..........\n"
-        "..#......"
-    )
-    try:
-        count_visited_cells(no_guard_grid)
-        assert False, "Expected ValueError for no guard position"
-    except ValueError as e:
-        assert str(e), "Expected error message for missing guard position"
+def test_input_type_validation():
+    """Verify that the function enforces correct input types"""
+    with pytest.raises(TypeError, match="Input map must be a string"):
+        count_visited_spots(None)
+    with pytest.raises(TypeError, match="Input map must be a string"):
+        count_visited_spots(123)

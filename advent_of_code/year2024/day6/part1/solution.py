@@ -1,88 +1,81 @@
-from typing import List, Set, Tuple
+"""Day 6: Find number of distinct positions visited by the guard."""
 import sys
+from dataclasses import dataclass
 from enum import Enum
-
+from typing import List, Set, Tuple
 
 class Direction(Enum):
+    """Represents possible directions the guard can face."""
     UP = (0, -1)
     RIGHT = (1, 0)
     DOWN = (0, 1)
     LEFT = (-1, 0)
 
-    def right(self):
-        return {
-            Direction.UP: Direction.RIGHT,
-            Direction.RIGHT: Direction.DOWN,
-            Direction.DOWN: Direction.LEFT,
-            Direction.LEFT: Direction.UP
-        }[self]
+@dataclass
+class Position:
+    """Represents a position in the grid."""
+    x: int
+    y: int
 
+    def move(self, direction: Direction) -> 'Position':
+        """Return new position after moving in given direction."""
+        dx, dy = direction.value
+        return Position(self.x + dx, self.y + dy)
 
-def find_start(grid: List[str]) -> Tuple[int, int, Direction]:
-    start_positions = []
+    def __hash__(self) -> int:
+        """Make Position hashable for use in sets."""
+        return hash((self.x, self.y))
+
+def find_guard_start(grid: List[str]) -> Tuple[Position, Direction]:
+    """Find guard's starting position and direction."""
     for y, row in enumerate(grid):
         for x, cell in enumerate(row):
-            if cell in ['^', '>', 'v', '<']:
-                start_positions.append((x, y, cell))
-            elif cell not in ['.', '#']:
-                raise ValueError(f"Invalid grid character: {cell}")
+            if cell == '^':
+                return Position(x, y), Direction.UP
+    raise ValueError("No guard found in grid")
 
-    if len(start_positions) != 1:
-        raise ValueError("Grid must contain exactly one starting position")
+def is_valid_position(pos: Position, grid: List[str]) -> bool:
+    """Check if position is within grid boundaries."""
+    return (0 <= pos.y < len(grid) and 
+            0 <= pos.x < len(grid[0]))
 
-    x, y, char = start_positions[0]
-    if char == '^':
-        return x, y, Direction.UP
-    elif char == '>':
-        return x, y, Direction.RIGHT
-    elif char == 'v':
-        return x, y, Direction.DOWN
-    elif char == '<':
-        return x, y, Direction.LEFT
+def turn_right(current_dir: Direction) -> Direction:
+    """Return the direction after turning 90 degrees right."""
+    directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
+    current_idx = directions.index(current_dir)
+    return directions[(current_idx + 1) % 4]
 
-
-def count_visited_cells(input_str: str) -> int:
-    # Parse grid
-    grid = [line.strip() for line in input_str.strip().split('\n')]
-    if not grid or not grid[0]:
-        return 0
-    width = len(grid[0])
-    height = len(grid)
-
-    # Find starting position and direction
-    start_x, start_y, direction = find_start(grid)
-
+def count_visited_spots(input_map: str) -> int:
+    """Count distinct positions visited by the guard before leaving the area."""
+    # Parse input
+    grid = [line.strip() for line in input_map.strip().splitlines()]
+    
+    # Find guard's starting position and direction
+    current_pos, current_dir = find_guard_start(grid)
+    
     # Track visited positions
-    visited: Set[Tuple[int, int]] = {(start_x, start_y)}
-    x, y = start_x, start_y
-    current_direction = direction
-
-    while True:
+    visited: Set[Position] = {current_pos}
+    
+    # Keep moving until guard leaves the area
+    while is_valid_position(current_pos, grid):
         # Calculate next position
-        dx, dy = current_direction.value
-        next_x, next_y = x + dx, y + dy
-
-        # Check if we're leaving the grid
-        if not (0 <= next_x < width and 0 <= next_y < height):
-            break
-
-        # Check if there's an obstacle in front
-        if grid[next_y][next_x] == '#':
-            # Turn right
-            current_direction = current_direction.right()
+        next_pos = current_pos.move(current_dir)
+        
+        # Check if there's an obstacle ahead or we're going out of bounds
+        if (not is_valid_position(next_pos, grid) or 
+            grid[next_pos.y][next_pos.x] == '#'):
+            # Turn right if blocked
+            current_dir = turn_right(current_dir)
         else:
             # Move forward
-            x, y = next_x, next_y
-            visited.add((x, y))
-
+            current_pos = next_pos
+            visited.add(current_pos)
+    
     return len(visited)
 
-
 def solution() -> int:
-    # Read input from stdin
-    input_data = sys.stdin.read()
-    return count_visited_cells(input_data)
-
+    """Read input from stdin and solve the problem."""
+    return count_visited_spots(sys.stdin.read())
 
 if __name__ == "__main__":
     print(solution())
