@@ -37,7 +37,7 @@ def execute_generated_solution(
         ],
         capture_output=True,
         text=True,
-        timeout=2400,
+        timeout=240,  # 4 minutes.
     )
     try:
         return Ok(result.stdout.strip())
