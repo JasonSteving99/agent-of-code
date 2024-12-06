@@ -1,81 +1,55 @@
 from typing import List, Set, Tuple
 import sys
 
-def parse_guard_map(input_map: str) -> Tuple[List[List[str]], Tuple[int, int, str]]:
-    # Convert input map to 2D grid and find guard starting position
-    grid = [list(line) for line in input_map.strip().splitlines()]
-    if not grid:
-        raise ValueError("Input map cannot be empty.")
-    if len(grid) != 10 or any(len(row) != 10 for row in grid):
-        raise ValueError("Input map must be 10x10.")
-
-    start_pos = None
-    start_pos_count = 0
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            if grid[i][j] == '^':
-                if start_pos_count >= 1:
-                    raise ValueError("Input map cannot have multiple guard starting positions.")
-                start_pos = (i, j, '^')
-                start_pos_count += 1
-    if not start_pos:
-        raise ValueError("Input map must have one guard starting position.")
-    return grid, start_pos
-
-def get_next_direction(current: str, turn_right: bool = True) -> str:
-    directions = ['^', '>', 'v', '<']
-    current_idx = directions.index(current)
-    if turn_right:
-        return directions[(current_idx + 1) % 4]
-    return directions[(current_idx - 1) % 4]
-
-def get_next_position(pos: Tuple[int, int], direction: str) -> Tuple[int, int]:
-    row, col = pos
-    if direction == '^':
-        return (row - 1, col)
-    elif direction == '>':
-        return (row, col + 1)
-    elif direction == 'v':
-        return (row + 1, col)
-    else:  # direction == '<'
-        return (row, col - 1)
-
-def is_valid_position(grid: List[List[str]], pos: Tuple[int, int]) -> bool:
+def count_guard_visited_positions(input_str: str) -> int:
+    # Parse the input grid
+    grid = [list(line.strip()) for line in input_str.splitlines()]
     rows, cols = len(grid), len(grid[0])
-    row, col = pos
-    return 0 <= row < rows and 0 <= col < cols
-
-def count_guard_visited_positions(input_map: str) -> int:
-    # Parse the input map
-    grid, start_pos = parse_guard_map(input_map)
-
-    # Initialize visited positions set
-    visited: Set[Tuple[int, int]] = set()
-    current_pos = (start_pos[0], start_pos[1])
-    current_direction = start_pos[2]
-    visited.add(current_pos)
-
-    while True:
-        # Get next forward position
-        next_pos = get_next_position(current_pos, current_direction)
-
-        # Check if guard would leave the map
-        if not is_valid_position(grid, next_pos):
+    
+    # Find guard's starting position and facing direction
+    guard_pos = None
+    for i in range(rows):
+        for j in range(cols):
+            if grid[i][j] == '^':
+                guard_pos = (i, j)
+                facing = 0  # 0: up, 1: right, 2: down, 3: left
+                break
+        if guard_pos:
             break
 
-        # Check if there's an obstacle ahead
-        next_row, next_col = next_pos
-        if grid[next_row][next_col] == '#':
-            # Turn right if obstacle ahead
-            current_direction = get_next_direction(current_direction)
-        else:
-            # Move forward if no obstacle
-            current_pos = next_pos
-            visited.add(current_pos)
+    if not guard_pos:
+        return 0
 
+    # Directions: up, right, down, left
+    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    visited: Set[Tuple[int, int]] = {guard_pos}
+    
+    curr_pos = guard_pos
+    curr_facing = facing
+    
+    while True:
+        # Check if we're still in bounds
+        row, col = curr_pos
+        if not (0 <= row < rows and 0 <= col < cols):
+            break
+            
+        # Check position in front
+        next_row = row + directions[curr_facing][0]
+        next_col = col + directions[curr_facing][1]
+        
+        # If next position is out of bounds or has an obstacle, turn right
+        if (not (0 <= next_row < rows and 0 <= next_col < cols) or 
+            grid[next_row][next_col] == '#'):
+            # Turn right (increment facing by 1 modulo 4)
+            curr_facing = (curr_facing + 1) % 4
+        else:
+            # Move forward
+            curr_pos = (next_row, next_col)
+            visited.add(curr_pos)
+    
     return len(visited)
 
 def solution() -> int:
-    # Read input from stdin
-    input_data = sys.stdin.read()
-    return count_guard_visited_positions(input_data)
+    # Read from stdin
+    input_str = sys.stdin.read()
+    return count_guard_visited_positions(input_str)
