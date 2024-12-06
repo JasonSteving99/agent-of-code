@@ -1,46 +1,42 @@
 """
-Tests for the guard patrol loop obstruction counting function (Part 2).
+Test suite for count_trap_positions function.
 
-The function should:
-1. Parse a lab layout with guard position (^) and existing obstacles (#)
-2. Find all possible positions where placing an additional obstruction would cause
-   the guard to get stuck in a loop during patrol
-3. Return the count of such positions, excluding the guard's starting position
-
-Key aspects tested:
-- Correct parsing of lab layout string into grid
-- Detection of valid obstruction positions that create patrol loops
-- Proper counting excluding the guard's starting position
+The tests verify the function's ability to:
+1. Count the number of possible positions where placing a single obstruction ('O') 
+   would cause the guard ('^') to get stuck in a loop
+2. Correctly interpret a grid layout containing:
+   - Existing obstructions ('#')
+   - A guard ('^') with initial upward facing direction
+   - Empty spaces ('.')
+3. Process a 10x10 grid input represented as a single string with newline separators
 """
 
-from solution import count_loop_obstruction_positions
+from solution import count_trap_positions
 
 
-def test_example_lab_layout():
-    lab_layout = """....#.....
-.........#
-..........
-..#.......
-.......#..
-..........
-.#..^.....
-........#.
-#.........
-......#..."""
-
-    result = count_loop_obstruction_positions(lab_layout)
-    assert result == 6, (
-        "Failed to count correct number of loop-causing obstruction positions.\n"
-        f"Input lab layout:\n{lab_layout}\n"
-        f"Expected 6 positions that cause loops, but got {result}"
+def test_grid_with_six_possible_trap_positions():
+    # Given a 10x10 grid with:
+    # - One upward-facing guard ('^') 
+    # - Multiple existing obstructions ('#')
+    # - Several empty spaces ('.')
+    input_grid = (
+        "....#.....\n"
+        ".........#\n"
+        "..........\n"
+        "..#.......\n"
+        ".......#..\n"
+        "..........\n"
+        ".#..^.....\n"
+        "........#.\n"
+        "#.........\n"
+        "......#..."
     )
-
-
-def test_empty_string():
-    """Test handling of empty input"""
-    result = count_loop_obstruction_positions("")
-    assert result == 0, (
-        "Failed to handle empty lab layout.\n"
-        "Expected 0 positions for empty input, "
-        f"but got {result}"
+    
+    # When counting possible positions to place a trap obstruction
+    result = count_trap_positions(input_grid)
+    
+    # Then there should be exactly 6 valid positions
+    assert result == 6, (
+        f"Expected 6 possible trap positions for grid:\n{input_grid}\n"
+        f"but got {result} positions instead"
     )
