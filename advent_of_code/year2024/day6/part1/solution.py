@@ -8,6 +8,11 @@ class Direction(Enum):
     LEFT = 3
 
 def count_guard_visited_positions(input_str: str) -> int:
+    if not isinstance(input_str, str):
+        raise TypeError("Input must be a string.")
+    if not input_str:
+        raise ValueError("Input string cannot be empty.")
+
     # Parse input grid
     grid = [list(line) for line in input_str.strip().split('\n')]
     rows, cols = len(grid), len(grid[0])
@@ -29,9 +34,9 @@ def count_guard_visited_positions(input_str: str) -> int:
             elif grid[i][j] == '<':
                 start_pos = (i, j)
                 start_dir = Direction.LEFT
-                
+    
     if not start_pos:
-        return 0
+        raise ValueError("Invalid grid: No guard found.")
 
     # Movement vectors for each direction (row, col)
     moves = {
@@ -64,17 +69,20 @@ def count_guard_visited_positions(input_str: str) -> int:
     curr_dir = start_dir
 
     while is_valid_pos(curr_pos):
-        visited.add(curr_pos)
-        
         if has_obstacle(curr_pos, curr_dir):
-            # Turn right if there's an obstacle
             curr_dir = turn_right[curr_dir]
+            if has_obstacle(curr_pos, curr_dir):
+                break  # No valid move after turning
+        
+        # Move forward
+        curr_pos = (
+            curr_pos[0] + moves[curr_dir][0],
+            curr_pos[1] + moves[curr_dir][1]
+        )
+        if is_valid_pos(curr_pos):
+            visited.add(curr_pos)
         else:
-            # Move forward
-            curr_pos = (
-                curr_pos[0] + moves[curr_dir][0],
-                curr_pos[1] + moves[curr_dir][1]
-            )
+            break
 
     return len(visited)
 
