@@ -10,7 +10,7 @@ def simulate_path(grid: List[str], start_pos: Tuple[int, int], marked_cells_orig
 
     row, col = start_pos
     visited_states = set()  # (row, col, direction)
-    marked_cells = set(marked_cells_orig) # Step 0: Create a copy
+    marked_cells = set(marked_cells_orig)  # Step 0: Create a copy
 
     while True:
         if (row, col, curr_dir) in visited_states:
@@ -43,7 +43,7 @@ def count_obstruction_locations(map_str: str) -> int:
         for j in range(C):
             if grid[i][j] == '^':
                 start_pos = (i, j)
-                grid[i][j] = '.'
+                grid[i][j] = '.'  # Ensure starting position is treated as empty
                 break
         if start_pos:
             break
