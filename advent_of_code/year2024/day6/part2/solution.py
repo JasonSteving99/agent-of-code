@@ -60,47 +60,41 @@ class Grid:
     def get_positions_visited(self, test_obstruction: Position | None = None) -> Set[Tuple[int, int, Direction]]:
         visited = set()
         guard = deepcopy(self.initial_guard)
-        
+
         while True:
+            if not self.is_valid_pos(guard.pos):
+                return set()  # Return empty set if guard exits the map
+
             state = (guard.pos.x, guard.pos.y, guard.facing)
             if state in visited:
                 return visited
-            
-            if not self.is_valid_pos(guard.pos):
-                return visited
-                
+
             visited.add(state)
-            
-            # Check if blocked
+
             next_pos = guard.pos.move(guard.facing)
             is_blocked = self.is_blocked(next_pos)
             if test_obstruction and next_pos.x == test_obstruction.x and next_pos.y == test_obstruction.y:
                 is_blocked = True
-            
+
             if is_blocked:
                 guard.facing = guard.facing.turn_right()
             else:
                 guard.pos = next_pos
-
+            
 
 def count_trap_positions(grid_str: str) -> int:
     grid = Grid(grid_str)
     count = 0
     
-    # Try placing an obstruction at each empty cell
     for y in range(grid.height):
         for x in range(grid.width):
-            # Skip if not empty or if it's the guard's starting position
             if grid.cells[y][x] != '.' or (x == grid.initial_guard.pos.x and y == grid.initial_guard.pos.y):
                 continue
-            
-            # Test placing obstruction at this position
+
             test_pos = Position(x, y)
             visited = grid.get_positions_visited(test_pos)
-            
-            # If the guard's path forms a loop (doesn't exit the grid)
-            # and visits at least one position, this is a valid trap position
-            if visited and all(grid.is_valid_pos(Position(x, y)) for x, y, _ in visited):
+
+            if visited and all(grid.is_valid_pos(Position(x, y)) for x, y, _ in visited):  # All visited positions must be valid
                 count += 1
                 
     return count
