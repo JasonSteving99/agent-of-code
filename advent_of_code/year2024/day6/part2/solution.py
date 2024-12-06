@@ -59,11 +59,12 @@ def simulate_guard_path(
 
         if (pos, direction) in visited:
             reachable = set()
-            explore_reachable(grid, start_pos, reachable)
-            if len(reachable) == len([p for p,d in visited if grid[p[1]][p[0]] == '.']):
+            explore_reachable(grid, start_pos, reachable)            
+            visited_reachable = {p for p, d in visited if grid[p[1]][p[0]] == '.'}
+            if reachable == visited_reachable:
                 return visited
             else:
-                return None # Smaller loop within the grid
+                return None
 
         visited.add((pos, direction))
         next_pos, next_direction = get_next_position_direction(pos, direction, grid)
