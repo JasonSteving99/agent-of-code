@@ -60,35 +60,36 @@ def simulate_path_with_obstruction(grid: List[List[str]], start_pos: Tuple[int, 
     curr_pos = start_pos
     curr_dir = start_dir
     steps = 0
-    max_steps = len(grid) * len(grid[0]) * 4  # Maximum possible unique states
+    max_steps = len(grid) * len(grid[0]) * 4
 
-    test_grid = [row[:] for row in grid]  # Create a copy
+    test_grid = [row[:] for row in grid]
     i, j = obstruction_pos
-    test_grid[i][j] = '#'  # Place test obstruction
+    test_grid[i][j] = '#'
 
     while steps < max_steps:
         state = (curr_pos, curr_dir)
         if state in visited_states:
-            return True  # Found a loop
+            return True
 
         visited_states.add(state)
-        next_pos = get_next_pos(curr_pos, curr_dir)
 
-        if not is_valid(next_pos, test_grid) or test_grid[next_pos[0]][next_pos[1]] == '#':
+        # Check boundary *before* calculating next_pos
+        next_pos = get_next_pos(curr_pos, curr_dir)
+        if not is_valid(next_pos, test_grid):
+            curr_dir = turn_right(curr_dir)
+        elif test_grid[next_pos[0]][next_pos[1]] == '#':
             curr_dir = turn_right(curr_dir)
         else:
             curr_pos = next_pos
-
-            if not is_valid(curr_pos, test_grid):
-                return False
+            # No need to check boundary here since next_pos was checked
 
         steps += 1
 
-    return False  # Explicitly return False if max steps reached without loop
+    return False
 
 
 def count_trap_positions(grid_str: str) -> int:
-    """Count number of positions where placing an obstruction would trap guard in a loop."""
+    """Count trap positions."""
     grid = parse_grid(grid_str)
     start_i, start_j, start_dir = get_initial_position(grid)
     trap_positions = 0
@@ -107,7 +108,7 @@ def count_trap_positions(grid_str: str) -> int:
 
 
 def solution() -> int:
-    """Read input from stdin and solve the problem."""
+    """Read input and solve."""
     import sys
     grid_str = sys.stdin.read()
     return count_trap_positions(grid_str)
