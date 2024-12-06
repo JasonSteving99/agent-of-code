@@ -130,16 +130,12 @@ class SolveAoCProblemWorkflow:
         # Some of the prompts get modified to extract solutions to part 2.
         solve_part_2 = solve_aoc_problem_req.part == 2
 
-        for _ in range(_MAX_EXTRACT_EXAMPLES_ATTEMPTS):
-            extracted_examples = await workflow.execute_activity(
-                extract_examples,
-                ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
-                start_to_close_timeout=timedelta(seconds=60),
-                retry_policy=RetryPolicy(maximum_attempts=5),
-            )
-
-            # Before returning the examples, we should at least do our due diligence and ATTEMPT to
-            # validate that the unit tests are valid.
+        extracted_examples = await workflow.execute_activity(
+            extract_examples,
+            ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
+            start_to_close_timeout=timedelta(seconds=60),
+            retry_policy=RetryPolicy(maximum_attempts=5),
+        )
 
         examples_context = await workflow.execute_activity(
             get_examples_context,
