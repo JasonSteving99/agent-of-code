@@ -1,5 +1,5 @@
 """Day 6, Part 2: Find possible trap positions for a guard following strict patrol protocol."""
-from typing import List, Tuple
+from typing import List, Set, Tuple
 import copy
 
 
@@ -30,11 +30,11 @@ def is_valid_position(row: int, col: int, grid: List[List[str]]) -> bool:
 
 
 def has_loop(grid: List[List[str]], start_row: int, start_col: int, start_dir: str) -> bool:
-    visited = []
+    visited: Set[Tuple[int, int, str]] = set()
     row, col, direction = start_row, start_col, start_dir
 
     while (row, col, direction) not in visited and is_valid_position(row, col, grid):
-        visited.append((row, col, direction))
+        visited.add((row, col, direction))
         next_row, next_col = get_next_position(row, col, direction)
 
         if not is_valid_position(next_row, next_col, grid) or grid[next_row][next_col] in '#O':
