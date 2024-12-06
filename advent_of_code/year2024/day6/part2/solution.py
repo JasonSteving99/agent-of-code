@@ -1,5 +1,6 @@
 from typing import List, Set, Tuple
 import sys
+import copy
 
 
 def count_obstruction_locations(input_map: str) -> int:
@@ -56,16 +57,15 @@ def count_obstruction_locations(input_map: str) -> int:
             return False
 
         # Create a new grid with the obstruction
-        new_grid = [list(row) for row in grid]
-        new_grid[pos[0]][pos[1]] = '#'
-        new_grid = [''.join(row) for row in new_grid]
+        new_grid = copy.deepcopy(grid)
+        new_grid[pos[0]] = new_grid[pos[0]][:pos[1]] + '#' + new_grid[pos[0]][pos[1] + 1:]
 
         # Get the path with the new obstruction
         path = get_path(new_grid, start_pos, initial_dir)
 
         # Check if the path creates a loop (path is finite and doesn't leave the map)
-        first_pos = next(iter(path)) if path else None
         return all(0 <= p[0] < rows and 0 <= p[1] < cols for p in path) and len(path) > 1
+
 
     # Try placing an obstruction at each empty position
     count = 0
