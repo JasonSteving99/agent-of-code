@@ -58,6 +58,7 @@ class SolveAoCProblemWorkflowArgs(BaseModel):
     year: int
     day: int
     solutions_dir: str
+    dry_run: bool
 
 
 class SolveAoCProblemWorkflowResult(BaseModel):
@@ -80,6 +81,7 @@ class SolveAoCProblemWorkflow:
             solve_aoc_part_1_problem_req,
             problem_part,
             solutions_dir=path_join(args.solutions_dir, "part1"),
+            dry_run=args.dry_run,
         )
         if isinstance(part_1_solution.result, GeneratedSolutionRes.Failure):
             # If we weren't even able to solve part 1, we can't move on to part 2.
@@ -96,6 +98,7 @@ class SolveAoCProblemWorkflow:
             solve_aoc_part_2_problem_req,
             problem_part,
             solutions_dir=path_join(args.solutions_dir, "part2"),
+            dry_run=args.dry_run,
         )
 
         # Return the solutions we were able to get.
@@ -126,6 +129,7 @@ class SolveAoCProblemWorkflow:
         solve_aoc_problem_req: AoCProblem,
         problem_part: ExtractedProblemPart,
         solutions_dir: str,
+        dry_run: bool,
     ) -> GeneratedSolutionRes:
         # Some of the prompts get modified to extract solutions to part 2.
         solve_part_2 = solve_aoc_problem_req.part == 2
@@ -185,6 +189,7 @@ class SolveAoCProblemWorkflow:
                     unit_tests=unit_tests.generated_unit_tests,
                     implementation=implementation.generated_implementation,
                     commit_message="Initial Attempt",
+                    dry_run=dry_run,
                 ),
                 start_to_close_timeout=timedelta(seconds=60),
                 retry_policy=RetryPolicy(maximum_attempts=5),
@@ -199,6 +204,7 @@ class SolveAoCProblemWorkflow:
                     solve_aoc_problem_req=solve_aoc_problem_req,
                     solutions_dir=solutions_dir,
                     problem_part=problem_part,
+                    dry_run=dry_run,
                     extracted_examples=extracted_examples,
                     examples_context=examples_context,
                     unit_tests=unit_tests,
@@ -254,6 +260,7 @@ async def iteratively_make_unit_tests_pass(
     solve_aoc_problem_req: AoCProblem,
     solutions_dir: str,
     problem_part: ExtractedProblemPart,
+    dry_run: bool,
     extracted_examples: AoCProblemExtractedExamples,
     examples_context: ExamplesContext,
     unit_tests: GenerateUnitTestsOutput,
@@ -375,6 +382,7 @@ async def iteratively_make_unit_tests_pass(
 {impl_refactoring_plan.model_dump_json(indent=4)}
 """ if theorized_solution.optional_theorized_implementation_fix else ""}
 """,
+                        dry_run=dry_run,
                     ),
                     start_to_close_timeout=timedelta(seconds=60),
                     retry_policy=RetryPolicy(maximum_attempts=5),

@@ -10,9 +10,11 @@ from agent.temporal.workflow import SolveAoCProblemWorkflow, SolveAoCProblemWork
 @click.command()
 @click.option("--year", required=True)
 @click.option("--day", required=True)
+@click.option("--dry-run", default=False, is_flag=True)
 async def main(
     year: int,
     day: int,
+    dry_run: bool,
 ) -> None:
     # Need to get the path to the dir where solutions should be written. Implementing this to work
     # on various machines.
@@ -31,7 +33,9 @@ async def main(
     # Start the workflow.
     result = await client.execute_workflow(
         SolveAoCProblemWorkflow.run,
-        SolveAoCProblemWorkflowArgs(year=year, day=day, solutions_dir=aoc_solutions_dir),
+        SolveAoCProblemWorkflowArgs(
+            year=year, day=day, solutions_dir=aoc_solutions_dir, dry_run=dry_run
+        ),
         id=f"solve-aoc-problem-{year}-{day}",
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
     )

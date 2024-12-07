@@ -141,6 +141,7 @@ class CommitChangesArgs(BaseModel):
     unit_tests: GeneratedUnitTests
     implementation: GeneratedImplementation
     commit_message: str
+    dry_run: bool
 
 
 @activity.defn
@@ -160,6 +161,7 @@ async def commit_changes(
         ],
         aoc_problem=args.aoc_problem,
         commit_message=args.commit_message,
+        dry_run=args.dry_run,
     )
 
 
