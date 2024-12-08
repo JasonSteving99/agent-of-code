@@ -37,11 +37,9 @@ def count_antinodes(grid_str: str) -> int:
                 dy = y2 - y1
                 
                 # Find both antinode positions
-                # One antinode is 1/2 distance from first antenna
-                # Other antinode is 1/2 distance past second antenna
                 for factor in (-0.5, 1.5):
-                    antinode_x = int(x1 + dx * factor)
-                    antinode_y = int(y1 + dy * factor)
+                    antinode_x = int(x1 + (x1 + dx) * factor)
+                    antinode_y = int(y1 + (y1 + dy) * factor)
                     
                     # Add antinode if it's within grid bounds
                     if (0 <= antinode_x < width and 
