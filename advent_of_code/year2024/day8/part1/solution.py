@@ -37,22 +37,15 @@ def find_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[int, i
     dy = p2[1] - p1[1]
     dist = math.sqrt(dx*dx + dy*dy)
     
-    # Unit vector perpendicular to line between antennas
     if dist == 0:
         return []
-    perp_x = -dy/dist
-    perp_y = dx/dist
-    
-    # Points at 1/2 and 2x distance along perpendicular lines
+
     antinodes = []
-    for factor in [-1, 1]:
-        for ratio in [0.5, 2.0]:
-            mid_x = (p1[0] + p2[0])/2
-            mid_y = (p1[1] + p2[1])/2
-            antinode_x = round(mid_x + factor * dist * ratio * perp_x)
-            antinode_y = round(mid_y + factor * dist * ratio * perp_y)
-            antinodes.append((antinode_x, antinode_y))
-    
+    for ratio in [1/3, 3]:
+        antinode_x = round(p1[0] + (p2[0] - p1[0]) * ratio)
+        antinode_y = round(p1[1] + (p2[1] - p1[1]) * ratio)
+        antinodes.append((antinode_x, antinode_y))
+
     return antinodes
 
 def get_grid_bounds(grid: str) -> Tuple[int, int]:
