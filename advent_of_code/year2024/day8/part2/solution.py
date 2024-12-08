@@ -39,9 +39,6 @@ def find_collinear_points(antenna_positions: List[Tuple[int, int]], rows: int, c
     for i in range(rows):
         for j in range(cols):
             point = (i, j)
-            
-            if point in antenna_positions:
-                continue
 
             # Check if this point is collinear with any pair of antennas
             for ant1, ant2 in combinations(antenna_positions, 2):
@@ -60,9 +57,13 @@ def count_harmonic_antinodes(grid: str) -> int:
     
     # Process each frequency group separately
     for freq, positions in freq_positions.items():
-        freq_antinodes = find_collinear_points(positions, rows, cols)
+        freq_antinodes = find_collinear_points(positions, rows, cols)        
         antinodes.update(freq_antinodes)
-    
+
+        # Add the antenna positions themselves as they're considered antinodes
+        if len(positions) > 1:
+            antinodes.update(positions)
+
     return len(antinodes)
 
 
