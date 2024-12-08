@@ -71,15 +71,6 @@ def count_part2_antinodes(grid_str: str) -> int:
                 # Get all points on the line between these antennas
                 line_points = get_line_points(p1, p2, rows, cols)
                 antinodes.update(line_points)
-                
-                # Any third antenna that's collinear with these two creates
-                # additional antinodes along their line
-                for k in range(len(positions)):
-                    if k != i and k != j:
-                        p3 = positions[k]
-                        if are_collinear(p1, p2, p3):
-                            antinodes.update(get_line_points(p1, p3, rows, cols))
-                            antinodes.update(get_line_points(p2, p3, rows, cols))
 
     return len(antinodes)
 
