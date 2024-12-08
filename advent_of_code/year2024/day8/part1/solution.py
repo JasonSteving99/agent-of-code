@@ -20,16 +20,16 @@ def get_antinode_positions(coord1: Tuple[int, int], coord2: Tuple[int, int]) -> 
     """Calculate antinode positions for a pair of same-frequency antennas."""
     x1, y1 = coord1
     x2, y2 = coord2
-
+    
     if (x1, y1) == (x2, y2):
         return []
 
     dx = x2 - x1
     dy = y2 - y1
 
-    antinode1 = (x1 - dx // 2, y1 - dy // 2)
-    antinode2 = (x2 + dx // 2, y2 + dy // 2)
-
+    antinode1 = (x1 - dx, y1 - dy)
+    antinode2 = (x2 + dx, y2 + dy)
+    
     return [antinode1, antinode2]
 
 
