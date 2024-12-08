@@ -35,15 +35,14 @@ def find_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[int, i
     """Find antinodes for two antennas of same frequency."""
     dx = p2[0] - p1[0]
     dy = p2[1] - p1[1]
-    dist = math.sqrt(dx*dx + dy*dy)
     
-    if dist == 0:
+    if dx == 0 and dy == 0:
         return []
 
     antinodes = []
     for ratio in [1/3, 3]:
-        antinode_x = round(p1[0] + (p2[0] - p1[0]) * ratio)
-        antinode_y = round(p1[1] + (p2[1] - p1[1]) * ratio)
+        antinode_x = int(p1[0] + dx * ratio)
+        antinode_y = int(p1[1] + dy * ratio)
         antinodes.append((antinode_x, antinode_y))
 
     return antinodes
