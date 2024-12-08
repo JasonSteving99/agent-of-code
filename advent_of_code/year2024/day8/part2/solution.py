@@ -19,19 +19,25 @@ def get_line_points(x1: int, y1: int, x2: int, y2: int) -> Set[Tuple[int, int]]:
     # Handle vertical lines
     if dx == 0:
         y_min, y_max = min(y1, y2), max(y1, y2)
-        return {(x1, y) for y in range(y_min, y_max + 1)}
+        for y in range(y_min, y_max + 1):
+            points.add((x1, y))
+        return points
     
     # Handle horizontal lines
     if dy == 0:
         x_min, x_max = min(x1, x2), max(x1, x2)
-        return {(x, y1) for x in range(x_min, x_max + 1)}
+        for x in range(x_min, x_max + 1):
+            points.add((x, y1))
+        return points
     
     # Handle diagonal lines
     if abs(dx) == abs(dy):
         step_x = 1 if dx > 0 else -1
         step_y = 1 if dy > 0 else -1
         steps = abs(dx)
-        return {(x1 + i * step_x, y1 + i * step_y) for i in range(steps + 1)}
+        for i in range(steps + 1):
+            points.add((x1 + i * step_x, y1 + i * step_y))
+        return points
     
     return points
 
@@ -47,16 +53,22 @@ def find_collinear_points(points: List[Tuple[int, int, str]]) -> Set[Tuple[int, 
     
     # Process each frequency group
     for freq_points in freq_groups.values():
-        if len(freq_points) < 2:  # Need at least 2 points for collinearity
+        if len(freq_points) < 3:  # Need at least 3 points for collinearity to create antinode
             continue
             
-        # Each point in a frequency group with multiple antennas is an antinode
-        antinodes.update(freq_points)
-        
-        # Check each pair of points
-        for (x1, y1), (x2, y2) in combinations(freq_points, 2):
-            antinodes.update(get_line_points(x1, y1, x2, y2))
-    
+        for x, y in freq_points:
+            is_antinode = False
+            for x1, y1 in freq_points:
+                for x2, y2 in freq_points:
+                    if (x, y) != (x1, y1) and (x,y) != (x2, y2) and (x1, y1) != (x2, y2) \
+                        and (x, y) in get_line_points(x1, y1, x2, y2):
+                            is_antinode = True
+                            break
+                if is_antinode:
+                    break
+            if is_antinode:
+                antinodes.add((x, y))
+
     return antinodes
 
 
