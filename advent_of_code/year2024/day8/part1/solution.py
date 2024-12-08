@@ -29,25 +29,32 @@ def parse_grid(input_str: str) -> Dict[str, List[Point]]:
 def find_antinodes(a1: Point, a2: Point) -> Set[Point]:
     """Find antinodes for a pair of antennas with same frequency."""
     antinodes = set()
-    
-    # Vector from a1 to a2
-    dx = a2.x - a1.x
-    dy = a2.y - a1.y
-    
+    tolerance = 1e-6  # Tolerance for float comparisons
+
     # Calculate antinode points based on 2:1 distance ratio
-    antinode1_x = a2.x + dx / 2
-    antinode1_y = a2.y + dy / 2
-    
-    antinode2_x = a1.x - dx / 2
-    antinode2_y = a1.y - dy / 2
+    antinode1_x = a2.x + (a1.x - a2.x) / 2
+    antinode1_y = a2.y + (a1.y - a2.y) / 2
+    antinode2_x = a1.x + (a2.x - a1.x) / 2
+    antinode2_y = a1.y + (a2.y - a1.y) / 2
+
+
+    #Helper function to calculate euclidean distance
+    def distance(p1: Point, p2: Point) -> float:
+        return ((p1.x - p2.x)**2 + (p1.y - p2.y)**2)**0.5
 
     # Check if a1 is twice as far from antinode1 as a2
-    if (antinode1_x - a1.x) / (antinode1_x - a2.x) == 2 and (antinode1_y - a1.y) / (antinode1_y - a2.y) == 2:
-        antinodes.add(Point(antinode1_x, antinode1_y))
+    dist_a1_antinode1 = distance(a1, Point(antinode1_x, antinode1_y))
+    dist_a2_antinode1 = distance(a2, Point(antinode1_x, antinode1_y))
 
-    #Check if a2 is twice as far from antinode2 as a1
-    if (antinode2_x - a2.x) / (antinode2_x - a1.x) == 2 and (antinode2_y - a2.y) / (antinode2_y - a1.y) == 2:
-      antinodes.add(Point(antinode2_x, antinode2_y))
+    if abs(dist_a1_antinode1 / dist_a2_antinode1 - 2.0) < tolerance:
+        antinodes.add(Point(antinode1_x, antinode1_y))
+    
+    # Check if a2 is twice as far from antinode2 as a1
+    dist_a2_antinode2 = distance(a2, Point(antinode2_x, antinode2_y))
+    dist_a1_antinode2 = distance(a1, Point(antinode2_x, antinode2_y))
+    if abs(dist_a2_antinode2 / dist_a1_antinode2 - 2.0) < tolerance:
+        antinodes.add(Point(antinode2_x, antinode2_y))
+
     return antinodes
 
 
