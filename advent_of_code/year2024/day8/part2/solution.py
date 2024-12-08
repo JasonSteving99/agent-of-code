@@ -17,40 +17,38 @@ def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
     return coords
 
 
-def are_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
-    """Check if three points are collinear using cross product."""
+def bresenham_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, int]]:
+    """Generate points on the line segment between two points using Bresenham's algorithm."""
     x1, y1 = p1
     x2, y2 = p2
-    x3, y3 = p3
-    return (y2 - y1) * (x3 - x1) == (y3 - y1) * (x2 - x1)
+    points = set()
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x2 > x1 else -1
+    sy = 1 if y2 > y1 else -1
+    err = dx - dy
+
+    while True:
+        points.add((x1, y1))
+        if x1 == x2 and y1 == y2:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x1 += sx
+        if e2 < dx:
+            err += dx
+            y1 += sy
+
+    return points
 
 
 def get_collinear_points(points: List[Tuple[int, int]], width: int, height: int) -> Set[Tuple[int, int]]:
-    """Get all points that are collinear with at least two antennas."""
-    if len(points) < 2:
-        return set()
-
+    """Get all collinear points between pairs of antennas."""
     antinodes: Set[Tuple[int, int]] = set()
-
     for i in range(len(points)):
         for j in range(i + 1, len(points)):
-            x1, y1 = points[i]
-            x2, y2 = points[j]
-
-            # Iterate over the line segment between the two antennas
-            dx = abs(x2 - x1)
-            dy = abs(y2 - y1)
-            if dx == 0:
-                for y in range(min(y1, y2), max(y1, y2) + 1):
-                    antinodes.add((x1, y))
-            elif dy == 0:
-                for x in range(min(x1, x2), max(x1, x2) + 1):
-                    antinodes.add((x, y1))
-            else:
-                for x in range(min(x1, x2), max(x1, x2) + 1):
-                    y = y1 + (y2 - y1) * (x - x1) // (x2 - x1)
-                    antinodes.add((x, y))
-
+            antinodes.update(bresenham_line(points[i], points[j]))
     return antinodes
 
 
