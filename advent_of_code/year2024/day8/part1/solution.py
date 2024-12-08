@@ -8,6 +8,8 @@ from typing import Dict, List, Set, Tuple
 from collections import defaultdict
 import math
 
+EPSILON = 1e-9
+
 def get_antennas(grid: str) -> Dict[str, List[Tuple[int, int]]]:
     """Parse grid to get antenna positions by frequency."""
     antennas = defaultdict(list)
@@ -24,15 +26,14 @@ def is_twice_distance(p1: Tuple[float, float], p2: Tuple[float, float],
     d2 = math.sqrt((p3[0] - p1[0])**2 + (p3[1] - p1[1])**2)
     if d1 == 0 or d2 == 0:
         return False
-
-    return abs(d1 / d2 - 2) < 1e-10 or abs(d2 / d1 - 2) < 1e-10
+    return abs(d1 / d2 - 2) < EPSILON or abs(d2 / d1 - 2) < EPSILON
 
 def are_collinear(p1: Tuple[float, float], p2: Tuple[float, float], 
                   p3: Tuple[float, float]) -> bool:
     """Check if three points are collinear."""
     # Using the area of triangle formed by three points
     area = p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1])
-    return abs(area) < 1e-10
+    return abs(area) < EPSILON
 
 def find_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[float, float]]:
     """Find antinodes for two antennas of same frequency."""
