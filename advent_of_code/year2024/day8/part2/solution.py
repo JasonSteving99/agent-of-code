@@ -39,13 +39,9 @@ def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int], width: 
             points.add((x, y1))
     else:
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            y_num = (y2 - y1) * (x - x1)
-            y_den = (x2 - x1)
-            if y_num % y_den == 0:
-                y = y1 + (y_num // y_den)
-                if 0 <= y < height and is_collinear(point1, point2, (x, y)):
-                    points.add((x, y))
-
+            y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+            if y.is_integer() and 0 <= int(y) < height and is_collinear(point1, point2, (x, int(y))):
+                points.add((x, int(y)))
     return points
 
 
