@@ -25,18 +25,37 @@ def count_antinodes(input_str: str) -> int:
                 dx = x2 - x1
                 dy = y2 - y1
 
-                # Antinode 1
-                ax1 = x1 - dx // 2 if dx % 2 == 0 else x1 - dx // 2
-                ay1 = y1 - dy // 2 if dy % 2 == 0 else y1 - dy //2
-                if 0 <= ax1 < rows and 0 <= ay1 < cols:
-                    antinodes.add((ax1, ay1))
-                
-                # Antinode 2
-                ax2 = x2 + dx // 2 if dx % 2 == 0 else x2 + dx // 2 
-                ay2 = y2 + dy // 2 if dy % 2 == 0 else y2 + dy // 2
-                if 0 <= ax2 < rows and 0 <= ay2 < cols:
-                    antinodes.add((ax2, ay2))
-                    
+                if dx == 0:
+                    ax = x1
+                    ay1 = y1 - dy
+                    ay2 = y2 + dy
+
+                    if 0 <= ax < rows and 0 <= ay1 < cols:
+                        antinodes.add((ax, ay1))
+                    if 0 <= ax < rows and 0 <= ay2 < cols:
+                        antinodes.add((ax, ay2))
+                        
+                elif dy == 0:
+                    ay = y1
+                    ax1 = x1 - dx
+                    ax2 = x2 + dx
+
+                    if 0 <= ax1 < rows and 0 <= ay < cols:
+                        antinodes.add((ax1, ay))
+                    if 0 <= ax2 < rows and 0 <= ay < cols:
+                        antinodes.add((ax2, ay))
+                else:
+                    # Antinode 1
+                    ax1 = x1 - dx // 2
+                    ay1 = y1 - dy // 2
+                    if 0 <= ax1 < rows and 0 <= ay1 < cols:
+                        antinodes.add((ax1, ay1))
+
+                    # Antinode 2
+                    ax2 = x2 + dx // 2
+                    ay2 = y2 + dy // 2
+                    if 0 <= ax2 < rows and 0 <= ay2 < cols:
+                        antinodes.add((ax2, ay2))
     return len(antinodes)
 
 def solution() -> int:
