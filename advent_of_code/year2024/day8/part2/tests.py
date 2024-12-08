@@ -1,26 +1,20 @@
 """
-Test module for count_part2_antinodes function.
+Tests for the count_harmonic_antinodes function that counts the number of unique antinode positions
+created by antennas of the same frequency on a grid. An antinode is formed at any grid position
+that lies in line (horizontally, vertically, or diagonally) with at least two antennas of the
+same frequency.
 
-The function accepts a string representing a grid of antennas and calculates resonant harmonics.
-Each line in the input string represents a row in the grid, with:
-- Letters (uppercase or lowercase) representing antenna frequencies
-- '.' representing empty spaces
-- '#' representing obstacles
-- Numbers ('0') also representing frequencies
-
-The function should count unique antinode locations that occur when:
-- Two matching characters are aligned horizontally or vertically
-- The path between them is unobstructed
-- Including the positions of the antennas themselves
-
-The resulting count includes all unique positions where antinodes occur.
+The tests cover:
+- Grid with single frequency antennas marked with 'T' and obstacles marked with '#'
+- Grid with multiple antennas marked with digits '0' and letters 'A'
+- Different grid sizes and antenna placements
+- Antinodes formed in horizontal, vertical, and diagonal lines
 """
 
-from solution import count_part2_antinodes
+from solution import count_harmonic_antinodes
 
-
-def test_simple_grid_with_t_antennas():
-    input_grid = (
+def test_grid_with_t_antennas_and_obstacles():
+    grid = (
         "T....#....\n"
         "...T......\n"
         ".T....#...\n"
@@ -32,36 +26,29 @@ def test_simple_grid_with_t_antennas():
         "....#.....\n"
         ".........."
     )
-    expected_antinodes = 9
-    
-    result = count_part2_antinodes(input_grid)
-    
-    assert result == expected_antinodes, (
-        f"For grid with T antennas:\n{input_grid}\n"
-        f"Expected {expected_antinodes} antinodes but got {result}"
+    result = count_harmonic_antinodes(grid)
+    assert result == 9, (
+        f"Expected 9 antinodes for grid with T antennas and obstacles:\n{grid}\n"
+        f"but got {result} instead"
     )
 
-
-def test_complex_grid_with_mixed_frequencies():
-    input_grid = (
-        "##....#....#\n"
-        ".#.#....0...\n"
-        "..#.#0....#.\n"
-        "..##...0....\n"
-        "....0....#..\n"
-        ".#...#A....#\n"
-        "...#..#.....\n"
-        "#....#.#....\n"
-        "..#.....A...\n"
-        "....#....A..\n"
-        ".#........#.\n"
-        "...#......##"
+def test_grid_with_multiple_frequency_antennas():
+    grid = (
+        "............\n"
+        "........0...\n"
+        ".....0......\n"
+        ".......0....\n"
+        "....0.......\n"
+        "......A.....\n"
+        "............\n"
+        "............\n"
+        "........A...\n"
+        ".........A..\n"
+        "............\n"
+        "............"
     )
-    expected_antinodes = 34
-    
-    result = count_part2_antinodes(input_grid)
-    
-    assert result == expected_antinodes, (
-        f"For complex grid with mixed frequencies (0 and A):\n{input_grid}\n"
-        f"Expected {expected_antinodes} antinodes but got {result}"
+    result = count_harmonic_antinodes(grid)
+    assert result == 34, (
+        f"Expected 34 antinodes for grid with 0 and A antennas:\n{grid}\n"
+        f"but got {result} instead"
     )
