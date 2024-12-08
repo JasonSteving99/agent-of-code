@@ -1,21 +1,19 @@
 """
-Tests for count_antinodes function that counts unique antinode locations on a grid map.
-
-An antinode is a point in line with two antennas of the same frequency, where one antenna
-is twice as far from the antinode as the other. The tests verify calculation of antinodes
-for given antenna configurations.
-
-The grid map is represented as a string with newline-separated rows. Each character can be:
-- '.' representing empty space
-- '0','A', etc. representing antennas of different frequencies
+This test suite validates the count_antinodes function which:
+1. Takes a grid map as a string input representing antenna signals
+2. Processes antenna locations and frequencies 
+3. Returns the count of unique antinode locations based on antenna alignments
+   where one antenna is twice as far from the antinode as another antenna 
+   of the same frequency
 """
 
 from solution import count_antinodes
 
 
-def test_count_antinodes_with_mixed_frequencies():
-    # Test case with both '0' and 'A' frequency antennas
-    input_grid = (
+def test_grid_with_mixed_frequency_antennas():
+    # Test case with multiple antennas where same-frequency antennas create
+    # antinodes and some may overlap
+    grid_input = (
         "............\n"
         "........0...\n"
         ".....0......\n"
@@ -31,9 +29,10 @@ def test_count_antinodes_with_mixed_frequencies():
     )
     expected_antinodes = 14
     
-    result = count_antinodes(input_grid)
+    result = count_antinodes(grid_input)
     
     assert result == expected_antinodes, (
-        f"Expected {expected_antinodes} antinodes for the given grid with '0' and 'A' "
-        f"frequency antennas, but got {result}. Input grid:\n{input_grid}"
+        f"Failed to correctly count antinodes in grid.\n"
+        f"Input grid:\n{grid_input}\n"
+        f"Expected {expected_antinodes} antinodes, but got {result}"
     )
