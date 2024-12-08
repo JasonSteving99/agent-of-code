@@ -12,24 +12,24 @@ def get_line_points(x1: int, y1: int, x2: int, y2: int) -> Set[Tuple[int, int]]:
     points = set()
     points.add((x1, y1))
     points.add((x2, y2))
-    
+
     dx = x2 - x1
     dy = y2 - y1
-    
+
     # Handle vertical lines
     if dx == 0:
         y_min, y_max = min(y1, y2), max(y1, y2)
         for y in range(y_min, y_max + 1):
             points.add((x1, y))
         return points
-    
+
     # Handle horizontal lines
     if dy == 0:
         x_min, x_max = min(x1, x2), max(x1, x2)
         for x in range(x_min, x_max + 1):
             points.add((x, y1))
         return points
-    
+
     # Handle diagonal lines
     if abs(dx) == abs(dy):
         step_x = 1 if dx > 0 else -1
@@ -38,7 +38,7 @@ def get_line_points(x1: int, y1: int, x2: int, y2: int) -> Set[Tuple[int, int]]:
         for i in range(steps + 1):
             points.add((x1 + i * step_x, y1 + i * step_y))
         return points
-    
+
     return points
 
 
@@ -47,30 +47,16 @@ def find_collinear_points(points: List[Tuple[int, int, str]]) -> Set[Tuple[int, 
     freq_groups: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
     antinodes = set()
 
-    # Group points by frequency
     for x, y, freq in points:
         freq_groups[freq].append((x, y))
 
-    # Find collinear antennas within each frequency group
     for freq, coords in freq_groups.items():
-        if len(coords) < 2:
-            continue
+        for (x1, y1), (x2, y2) in combinations(coords, 2):
+            line_points = get_line_points(x1, y1, x2, y2)
+            for x, y in coords:  # Iterate through all points for collinearity check
+                if (x, y) in line_points:
+                    antinodes.add((x, y))
 
-        n = len(coords)
-        for i in range(n):
-            for j in range(n):
-                if i == j:
-                    continue
-                for k in range(n):
-                    if k == i or k == j:
-                        continue
-
-                    line_points = get_line_points(coords[j][0], coords[j][1], coords[k][0], coords[k][1])
-                    if coords[i] in line_points:
-                        antinodes.add(coords[i])
-                        break # Antenna i forms a line with antennas j and k, no need to check further for i
-                if coords[i] in antinodes:
-                    break # No need to check any other starting point j for this i
     return antinodes
 
 
