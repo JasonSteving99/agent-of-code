@@ -9,9 +9,10 @@ def get_positions(grid: List[str]) -> defaultdict[str, List[Tuple[int, int]]]:
     positions = defaultdict(list)
     for y, row in enumerate(grid):
         for x, char in enumerate(row):
-            # Treat uppercase and lowercase as same frequency
-            freq = char.lower()
-            positions[freq].append((x, y))
+            if char.isalnum():
+                # Treat uppercase and lowercase as same frequency
+                freq = char.lower()
+                positions[freq].append((x, y))
     return positions
 
 
@@ -67,11 +68,11 @@ def count_part2_antinodes(input_data: str) -> int:
 
         # Add antenna positions themselves as antinodes (if more than one of same frequency)
         if len(pos_list) > 1:
-            antinodes.update(pos_list)  
+            antinodes.update(pos_list)
 
         # Check all combinations of two points
         for i, p1 in enumerate(pos_list):
-            for j, p2 in enumerate(pos_list[i+1:], i+1):
+            for j, p2 in enumerate(pos_list[i + 1:], i + 1):
                 # Add all points on the line between these two antennas
                 antinodes.update(get_all_points_on_line(p1, p2, width, height))
 
