@@ -1,65 +1,103 @@
-"""Solution for calculating unique antinode locations in an antenna grid."""
-from typing import List, Set, Tuple
-import sys
-
-
-def get_antennas(grid: List[str]) -> List[Tuple[int, int, str]]:
-    """Extract antenna positions and frequencies from the grid."""
-    antennas = []
-    for y, row in enumerate(grid):
-        for x, char in enumerate(row):
-            if char != '.':
-                antennas.append((x, y, char))
-    return antennas
-
-
-def find_antinodes(antennas: List[Tuple[int, int, str]], width: int, height: int) -> Set[Tuple[int, int]]:
-    """Find all unique antinode locations within grid bounds."""
-    antinodes: Set[Tuple[int, int]] = set()
-
-    freq_groups = {}
-    for x, y, freq in antennas:
-        freq_groups.setdefault(freq, []).append((x, y))
-
-    for freq, positions in freq_groups.items():
-        if len(positions) < 2:
-            continue
-
-        for i in range(len(positions)):
-            for j in range(i + 1, len(positions)):
-                x1, y1 = positions[i]
-                x2, y2 = positions[j]
-
-                dx = x2 - x1
-                dy = y2 - y1
-
-                for ratio in [1/3, 2/3]:
-                    ax = int(x1 + dx * ratio)
-                    ay = int(y1 + dy * ratio)
-
-                    if 0 <= ax < width and 0 <= ay < height:
-                        antinodes.add((ax, ay))
-
-    return antinodes
-
-
-def count_antinodes(grid_str: str) -> int:
-    """Count unique antinode locations within the grid's boundaries."""
-    grid = [line.strip() for line in grid_str.strip().split('\n')]
-    height = len(grid)
-    width = len(grid[0]) if height > 0 else 0
-
-    antennas = get_antennas(grid)
-    antinodes = find_antinodes(antennas, width, height)
-
-    return len(antinodes)
+"""Solution for a grid-based antinode counting problem."""
+from collections import defaultdict
+from typing import Dict, List, Set, Tuple
 
 
 def solution() -> int:
-    """Read input from stdin and return the solution."""
-    grid_str = sys.stdin.read()
-    return count_antinodes(grid_str)
+    """Read input from stdin and return the solution.
+    
+    Returns:
+        int: Number of unique antinode locations
+    """
+    import sys
+    input_text = sys.stdin.read().strip()
+    return count_antinodes(input_text)
 
 
-if __name__ == "__main__":
-    print(solution())
+def get_antenna_positions(grid: List[str]) -> Dict[str, List[Tuple[int, int]]]:
+    """Extract positions of all antennas by frequency.
+    
+    Args:
+        grid: List of strings representing the grid
+        
+    Returns:
+        Dict mapping frequency to list of (row, col) positions
+    """
+    positions = defaultdict(list)
+    for row in range(len(grid)):
+        for col in range(len(grid[row])):
+            char = grid[row][col]
+            if char != '.':
+                positions[char].append((row, col))
+    return positions
+
+
+def find_antinodes(pos1: Tuple[int, int], pos2: Tuple[int, int]) -> Set[Tuple[int, int]]:
+    """Find antinode positions for two antennas of same frequency.
+    
+    Args:
+        pos1: (row, col) of first antenna
+        pos2: (row, col) of second antenna
+        
+    Returns:
+        Set of (row, col) antinode positions
+    """
+    r1, c1 = pos1
+    r2, c2 = pos2
+    
+    # Vector from antenna 1 to antenna 2
+    dr = r2 - r1
+    dc = c2 - c1
+    
+    # Find antinode positions at 1/2 and 2x distances
+    antinodes = set()
+    
+    # Mid antinode (antenna 2 is twice as far from antinode as antenna 1)
+    antinode1 = (r1 - dr//2, c1 - dc//2)
+    
+    # Far antinode (antenna 1 is twice as far from antinode as antenna 2) 
+    antinode2 = (r2 + dr, c2 + dc)
+    
+    antinodes.add(antinode1)
+    antinodes.add(antinode2)
+    
+    return antinodes
+
+
+def count_antinodes(input_text: str) -> int:
+    """Count unique antinode locations in the grid.
+    
+    An antinode occurs at points collinear with two antennas of same frequency,
+    where one antenna is twice as far from the antinode as the other.
+    
+    Args:
+        input_text: String containing grid representation
+        
+    Returns:
+        Number of unique antinode locations within grid bounds
+    """
+    # Parse grid
+    grid = [line for line in input_text.strip().split('\n')]
+    height = len(grid)
+    width = len(grid[0])
+    
+    # Get antenna positions by frequency
+    antenna_positions = get_antenna_positions(grid)
+    
+    # Find all antinodes
+    all_antinodes = set()
+    for freq, positions in antenna_positions.items():
+        # Check all pairs of antennas with same frequency
+        for i in range(len(positions)):
+            pos1 = positions[i]
+            for j in range(i + 1, len(positions)):
+                pos2 = positions[j]
+                antinodes = find_antinodes(pos1, pos2)
+                
+                # Only keep antinodes within grid bounds
+                for antinode in antinodes:
+                    r, c = antinode
+                    if 0 <= r < height and 0 <= c < width:
+                        all_antinodes.add(antinode)
+    
+    return len(all_antinodes)

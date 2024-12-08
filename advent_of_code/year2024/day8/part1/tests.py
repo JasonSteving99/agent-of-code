@@ -1,40 +1,38 @@
 """
-Tests for count_antinodes function that counts unique antinode locations in a grid map.
+Tests for the count_antinodes function that counts unique antinode locations in a grid map.
 
-The function should:
-1. Accept a string input representing a grid map with:
-   - '.' for empty spaces
-   - 'A' for antenna type A
-   - '0' for antenna type 0
-2. Find all antinodes: points collinear with two antennas of same frequency
-   where one antenna is twice as far from the point as the other
-3. Return total count of unique antinode locations within map boundaries
+An antinode occurs when two antennas of the same frequency (same character) are positioned 
+such that one antenna is twice as far from a point as the other antenna. The antinode is
+located at this special point between the two antennas.
+
+These tests verify:
+1. Basic case with multiple same-frequency antennas (marked as '0' and 'A')
+   creating antinode points between them based on the 2:1 distance rule
 """
 
 from solution import count_antinodes
 
-
-def test_grid_with_multiple_antinodes():
-    # Example grid with multiple antennas of different frequencies
-    grid = ("............\n"
-            "........0...\n"
-            ".....0......\n"
-            ".......0....\n"
-            "....0.......\n"
-            "......A.....\n"
-            "............\n"
-            "............\n"
-            "........A...\n"
-            ".........A..\n"
-            "............\n"
-            "............")
+def test_basic_grid_with_zero_and_a_antennas():
+    grid = (
+        "............\n"
+        "........0...\n"
+        ".....0......\n"
+        ".......0....\n"
+        "....0.......\n"
+        "......A.....\n"
+        "............\n"
+        "............\n"
+        "........A...\n"
+        ".........A..\n"
+        "............\n"
+        "............"
+    )
     
     result = count_antinodes(grid)
     
-    # Verify that for this complex grid configuration with
-    # multiple antennas of type '0' and type 'A', the function
-    # correctly identifies 14 unique antinode locations
+    # For this grid configuration with '0' and 'A' antennas,
+    # there should be 14 unique antinode locations
     assert result == 14, (
-        f"Expected 14 unique antinodes for grid:\n{grid}\n"
-        f"but got {result} instead"
+        f"Expected 14 antinodes for the given grid configuration, but got {result}. "
+        f"Input grid:\n{grid}"
     )
