@@ -1,19 +1,21 @@
 """
 This test suite validates the count_antinodes function which:
-1. Takes a grid map as a string input representing antenna signals
-2. Processes antenna locations and frequencies 
-3. Returns the count of unique antinode locations based on antenna alignments
-   where one antenna is twice as far from the antinode as another antenna 
-   of the same frequency
+1. Takes a string input representing a grid map with antennas marked by their frequencies
+2. Calculates the number of unique antinode locations that form when two antennas of the same 
+   frequency are aligned (one antenna being twice as far from the antinode as the other)
+3. Returns the total count of unique antinode locations within the map's bounds
+
+The test case provided validates a scenario with multiple antennas of frequencies '0' and 'A',
+resulting in 14 unique antinode locations based on their relative positions.
 """
 
 from solution import count_antinodes
 
-
-def test_grid_with_mixed_frequency_antennas():
-    # Test case with multiple antennas where same-frequency antennas create
-    # antinodes and some may overlap
-    grid_input = (
+def test_grid_with_0_and_A_frequency_antennas():
+    # Input grid with:
+    # - Four '0' frequency antennas
+    # - Three 'A' frequency antennas
+    input_grid = (
         "............\n"
         "........0...\n"
         ".....0......\n"
@@ -27,12 +29,11 @@ def test_grid_with_mixed_frequency_antennas():
         "............\n"
         "............"
     )
-    expected_antinodes = 14
     
-    result = count_antinodes(grid_input)
+    result = count_antinodes(input_grid)
     
-    assert result == expected_antinodes, (
-        f"Failed to correctly count antinodes in grid.\n"
-        f"Input grid:\n{grid_input}\n"
-        f"Expected {expected_antinodes} antinodes, but got {result}"
+    # Assert that the total number of unique antinode locations is 14
+    assert result == 14, (
+        f"Expected 14 unique antinode locations for the given grid layout, "
+        f"but got {result}. Input grid:\n{input_grid}"
     )

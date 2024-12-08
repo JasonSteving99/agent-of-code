@@ -1,91 +1,85 @@
-"""Solution for counting antinodes in antenna grid."""
-from dataclasses import dataclass
-import sys
-from typing import Dict, List, Set, Tuple
+"""Module for calculating unique antinode locations in a signal map."""
+from typing import List, Set, Tuple
+from collections import defaultdict
 
 
-@dataclass(frozen=True)
-class Point:
-    """Represents a point in 2D space."""
-    x: float
-    y: float
+def parse_grid(grid_str: str) -> List[List[str]]:
+    """Parse the input grid string into a 2D list."""
+    return [list(line) for line in grid_str.strip().splitlines()]
 
 
-def parse_grid(input_str: str) -> Dict[str, List[Point]]:
-    """Parse the input grid and return a dictionary of antenna frequencies and their locations."""
-    antennas: Dict[str, List[Point]] = {}
-    lines = input_str.strip().split('\n')
-    
-    for y, line in enumerate(lines):
-        for x, char in enumerate(line):
-            if char != '.':
-                if char not in antennas:
-                    antennas[char] = []
-                antennas[char].append(Point(x, y))
-                
-    return antennas
+def get_antenna_positions(grid: List[List[str]], frequency: str) -> List[Tuple[int, int]]:
+    """Get positions of antennas with the given frequency."""
+    positions = []
+    for y, row in enumerate(grid):
+        for x, cell in enumerate(row):
+            if cell == frequency:
+                positions.append((x, y))
+    return positions
 
 
-def find_antinodes(a1: Point, a2: Point) -> Set[Point]:
-    """Find antinodes for a pair of antennas with same frequency."""
+def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
+    """Check if three points are collinear."""
+    x1, y1 = p1
+    x2, y2 = p2
+    x3, y3 = p3
+    return (y2 - y1) * (x3 - x1) == (y3 - y1) * (x2 - x1)
+
+
+def get_distance_squared(p1: Tuple[int, int], p2: Tuple[int, int]) -> int:
+    """Get squared distance between two points."""
+    return (p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2
+
+
+def find_antinodes(grid: List[List[str]], frequency: str) -> Set[Tuple[int, int]]:
+    """Find all antinode positions for a given frequency."""
+    antennas = get_antenna_positions(grid, frequency)
     antinodes = set()
-    tolerance = 1e-6  # Tolerance for float comparisons
-
-    # Calculate antinode points based on 2:1 distance ratio
-    antinode1_x = a2.x + (a1.x - a2.x) / 2
-    antinode1_y = a2.y + (a1.y - a2.y) / 2
-    antinode2_x = a1.x + (a2.x - a1.x) / 2
-    antinode2_y = a1.y + (a2.y - a1.y) / 2
-
-
-    #Helper function to calculate euclidean distance
-    def distance(p1: Point, p2: Point) -> float:
-        return ((p1.x - p2.x)**2 + (p1.y - p2.y)**2)**0.5
-
-    # Check if a1 is twice as far from antinode1 as a2
-    dist_a1_antinode1 = distance(a1, Point(antinode1_x, antinode1_y))
-    dist_a2_antinode1 = distance(a2, Point(antinode1_x, antinode1_y))
-
-    if abs(dist_a1_antinode1 / dist_a2_antinode1 - 2.0) < tolerance:
-        antinodes.add(Point(antinode1_x, antinode1_y))
     
-    # Check if a2 is twice as far from antinode2 as a1
-    dist_a2_antinode2 = distance(a2, Point(antinode2_x, antinode2_y))
-    dist_a1_antinode2 = distance(a1, Point(antinode2_x, antinode2_y))
-    if abs(dist_a2_antinode2 / dist_a1_antinode2 - 2.0) < tolerance:
-        antinodes.add(Point(antinode2_x, antinode2_y))
-
+    if len(antennas) < 2:
+        return antinodes
+        
+    height = len(grid)
+    width = len(grid[0])
+    
+    # Check each potential antinode position
+    for y in range(height):
+        for x in range(width):
+            pos = (x, y)
+            
+            # Check all pairs of antennas
+            for i, a1 in enumerate(antennas):
+                for a2 in antennas[i + 1:]:
+                    if not is_collinear(a1, a2, pos):
+                        continue
+                        
+                    d1 = get_distance_squared(pos, a1)
+                    d2 = get_distance_squared(pos, a2)
+                    
+                    # Check if one distance is twice the other
+                    if d1 * 2 == d2 or d2 * 2 == d1:
+                        antinodes.add(pos)
+                        
     return antinodes
 
 
-def is_in_bounds(point: Point, max_x: int, max_y: int) -> bool:
-    """Check if a point is within the grid bounds."""
-    return 0 <= point.x < max_x and 0 <= point.y < max_y
-
-
-def count_antinodes(grid: str) -> int:
-    """Count the total number of unique antinode locations."""
-    lines = grid.strip().split('\n')
-    height = len(lines)
-    width = len(lines[0])
-
-    antennas = parse_grid(grid)
+def count_antinodes(input_str: str) -> int:
+    """Count total unique antinode locations in the map."""
+    grid = parse_grid(input_str)
     
-    all_antinodes: Set[Tuple[float, float]] = set()
-
-    for frequency, antenna_points in antennas.items():
-        n = len(antenna_points)
-        for i in range(n):
-            for j in range(i + 1, n):
-                antinodes = find_antinodes(antenna_points[i], antenna_points[j])
-                for antinode in antinodes:
-                    if is_in_bounds(antinode, width, height):
-                        all_antinodes.add((antinode.x, antinode.y))
-
+    # Get all frequencies (unique non-dot characters)
+    frequencies = {c for row in grid for c in row if c != '.'}
+    
+    # Find antinodes for each frequency
+    all_antinodes = set()
+    for freq in frequencies:
+        freq_antinodes = find_antinodes(grid, freq)
+        all_antinodes.update(freq_antinodes)
+    
     return len(all_antinodes)
 
 
 def solution() -> int:
-    """Read input from stdin and return the solution."""
-    input_data = sys.stdin.read()
-    return count_antinodes(input_data)
+    """Read input from stdin and return result."""
+    import sys
+    return count_antinodes(sys.stdin.read())
