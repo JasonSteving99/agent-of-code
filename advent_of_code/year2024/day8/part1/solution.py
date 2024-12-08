@@ -17,15 +17,18 @@ def get_antennas(grid: str) -> Dict[str, List[Tuple[int, int]]]:
                 antennas[char].append((x, y))
     return antennas
 
-def is_twice_distance(p1: Tuple[int, int], p2: Tuple[int, int], 
-                     p3: Tuple[int, int]) -> bool:
+def is_twice_distance(p1: Tuple[float, float], p2: Tuple[float, float], 
+                     p3: Tuple[float, float]) -> bool:
     """Check if p2 is twice as far from p1 as p3 is from p1."""
     d1 = math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
     d2 = math.sqrt((p3[0] - p1[0])**2 + (p3[1] - p1[1])**2)
-    return abs(d1 - 2*d2) < 1e-10 or abs(d2 - 2*d1) < 1e-10
+    if d1 == 0 or d2 == 0:
+        return False
 
-def are_collinear(p1: Tuple[int, int], p2: Tuple[int, int], 
-                  p3: Tuple[int, int]) -> bool:
+    return abs(d1 / d2 - 2) < 1e-10 or abs(d2 / d1 - 2) < 1e-10
+
+def are_collinear(p1: Tuple[float, float], p2: Tuple[float, float], 
+                  p3: Tuple[float, float]) -> bool:
     """Check if three points are collinear."""
     # Using the area of triangle formed by three points
     area = p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1])
