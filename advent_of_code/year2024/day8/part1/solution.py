@@ -32,16 +32,16 @@ def is_collinear_with_ratio(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[
     # Check if ratio of distances is 2:1 or 1:2
     return 2 * d1_sq == d2_sq or d1_sq == 2 * d2_sq
 
-def get_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> Tuple[int, int]:
-    """Returns the antinode position given two antenna positions."""
-    # Antinode divides the line segment in ratio 2:1 or 1:2
-    if 2 * abs(p1[0] - p2[0]) > abs(p2[0] - p1[0]):
-        x = p1[0] + (p2[0] - p1[0]) * 2
-        y = p1[1] + (p2[1] - p1[1]) * 2
-    else:
-        x = p2[0] + (p1[0] - p2[0]) * 2
-        y = p2[1] + (p1[1] - p2[1]) * 2
-    return (x, y)
+
+def get_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+    """Returns the two possible antinode positions given two antenna positions."""
+    # Calculate antinodes on both sides of p1 and p2
+    x1 = p1[0] + 2 * (p2[0] - p1[0])
+    y1 = p1[1] + 2 * (p2[1] - p1[1])
+    x2 = p2[0] + 2 * (p1[0] - p2[0])
+    y2 = p2[1] + 2 * (p1[1] - p2[1])
+
+    return (x1, y1), (x2, y2)
 
 def get_all_frequencies(grid: List[str]) -> Set[str]:
     """Returns set of all frequencies in the grid."""
@@ -69,14 +69,14 @@ def count_antinodes(grid_str: str) -> int:
             for j in range(i + 1, len(positions)):
                 p1, p2 = positions[i], positions[j]
                 
-                # For each point in grid that could be an antinode
-                for x in range(-rows, rows * 2):
-                    for y in range(-cols, cols * 2):
-                        p3 = (x, y)
-                        if is_collinear_with_ratio(p1, p2, p3):
-                            # Only count antinodes within grid bounds
-                            if 0 <= x < rows and 0 <= y < cols:
-                                antinodes.add(p3)
+                # Calculate two possible antinode positions
+                an1, an2 = get_antinode(p1, p2)
+                
+                # Check if antinodes are within grid bounds
+                if 0 <= an1[0] < rows and 0 <= an1[1] < cols:
+                    antinodes.add(an1)
+                if 0 <= an2[0] < rows and 0 <= an2[1] < cols:
+                    antinodes.add(an2)
 
     return len(antinodes)
 
