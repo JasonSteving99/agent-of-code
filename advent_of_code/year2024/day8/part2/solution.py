@@ -4,29 +4,35 @@ from collections import defaultdict
 from typing import List, Set, Tuple
 
 
+def gcd(a: int, b: int) -> int:
+    """Calculate the greatest common divisor."""
+    while b:
+        a, b = b, a % b
+    return a
+
+
 def points_on_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, int]]:
-    """Returns all points that lie on a line between two points using Bresenham's line algorithm."""
+    """Returns all integer points on the line segment between two points."""
     x1, y1 = p1
     x2, y2 = p2
+    
+    dx = x2 - x1
+    dy = y2 - y1
+    
+    if dx == 0:
+        return {(x1, y) for y in range(min(y1, y2), max(y1, y2) + 1)}
+    
+    if dy == 0:
+        return {(x, y1) for x in range(min(x1, x2), max(x1, x2) + 1)}
+        
+    common_divisor = gcd(abs(dx), abs(dy))
+    dx //= common_divisor
+    dy //= common_divisor
+
     points = set()
+    for i in range(common_divisor + 1):
+        points.add((x1 + i * dx, y1 + i * dy))
 
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    sx = 1 if x1 < x2 else -1
-    sy = 1 if y1 < y2 else -1
-    err = dx - dy
-
-    while True:
-        points.add((x1, y1))
-        if x1 == x2 and y1 == y2:
-            break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x1 += sx
-        if e2 < dx:
-            err += dx
-            y1 += sy
     return points
 
 
@@ -58,24 +64,24 @@ def count_antinodes_harmonic(grid: str) -> int:
     width, height = get_grid_dimensions(grid)
     antinodes: Set[Tuple[int, int]] = set()
     antennas_by_freq = get_antennas_by_freq(grid)
-    
+
     # For each frequency and its antennas
     for freq, positions in antennas_by_freq.items():
         if len(positions) < 2:
             continue
-            
+
         # Check all pairs of antennas of the same frequency
         for i, pos1 in enumerate(positions):
             for j, pos2 in enumerate(positions[i+1:], i+1):
                 # Get all points on the line between these two antennas
                 line_points = points_on_line(pos1, pos2)
-                
+
                 # Only keep points within grid bounds
                 valid_points = {(x, y) for x, y in line_points 
                               if 0 <= x < width and 0 <= y < height}
-                
+
                 antinodes.update(valid_points)
-                
+
     return len(antinodes)
 
 
