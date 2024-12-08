@@ -24,50 +24,45 @@ def is_collinear(point1: Tuple[int, int], point2: Tuple[int, int], point3: Tuple
     return (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) == 0
 
 
-def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int]) -> Set[Tuple[int, int]]:
-    """Get all grid points that lie on the line segment between two points using Bresenham's line algorithm."""
+def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int], width: int, height: int) -> Set[Tuple[int, int]]:
+    """Get all grid points that lie on the line segment between two points."""
     x1, y1 = point1
     x2, y2 = point2
     points = set()
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    sx = 1 if x2 > x1 else -1
-    sy = 1 if y2 > y1 else -1
-    err = dx - dy
 
-    x, y = x1, y1
-    while True:
-        points.add((x, y))
-        if x == x2 and y == y2:
-            break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x += sx
-        if e2 < dx:
-            err += dx
-            y += sy
-
+    if x1 == x2:
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            points.add((x1, y))
+    else:
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+            if y.is_integer():
+                y = int(y)
+                if 0 <= y < height and is_collinear(point1, point2, (x, y)):
+                    points.add((x, y))
     return points
 
 
 def count_antinodes_harmonic(grid: str) -> int:
     """Count unique antinode locations within the grid bounds considering harmonics."""
     antinodes: Set[Tuple[int, int]] = set()
+    rows = grid.strip().split('\n')
+    height = len(rows)
+    width = len(rows[0]) if rows else 0
     freq_coords = get_coordinates(grid)
 
     for freq, coords in freq_coords.items():
         if len(coords) >= 2:
             antinodes.update(coords)  # Antennas are antinodes if multiple exist
             for point1, point2 in combinations(coords, 2):
-                line_points = get_points_on_line(point1, point2)
+                line_points = get_points_on_line(point1, point2, width, height)
                 antinodes.update(line_points)
+
     return len(antinodes)
 
 
 def solution() -> int:
     """Read input from stdin and return result."""
     import sys
-
     grid = sys.stdin.read()
     return count_antinodes_harmonic(grid)
