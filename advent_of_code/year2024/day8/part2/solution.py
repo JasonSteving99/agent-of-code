@@ -16,15 +16,6 @@ def get_positions(grid: List[str]) -> defaultdict[str, List[Tuple[int, int]]]:
     return positions
 
 
-def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
-    """Check if three points are collinear using cross product method."""
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-    # Using cross product: (x2-x1)(y3-y1) - (y2-y1)(x3-x1) = 0 for collinear points
-    return (x2 - x1) * (y3 - y1) == (y2 - y1) * (x3 - x1)
-
-
 def get_all_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], 
                           max_x: int, max_y: int) -> Set[Tuple[int, int]]:
     """Get all grid points that lie on the line between p1 and p2, inclusive."""
@@ -40,7 +31,16 @@ def get_all_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int],
         for x in range(min(x1, x2), max(x1, x2) + 1):
             if 0 <= x < max_x and 0 <= y1 < max_y:
                 points.add((x, y1))
-
+    else:
+        # Diagonal Line
+        dx = x2 - x1
+        dy = y2 - y1
+        steps = max(abs(dx), abs(dy))
+        for i in range(steps + 1):
+            x = x1 + (dx * i) // steps
+            y = y1 + (dy * i) // steps
+            if 0 <= x < max_x and 0 <= y < max_y:
+                points.add((x,y))
     return points
 
 
