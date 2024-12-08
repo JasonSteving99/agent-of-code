@@ -25,23 +25,11 @@ def calc_antinode_positions(pos1: Tuple[int, int], pos2: Tuple[int, int]) -> Set
     """Calculate the antinode positions for a pair of antennas."""
     x1, y1 = pos1
     x2, y2 = pos2
-    
-    dx = x2 - x1
-    dy = y2 - y1
-    
-    # Calculate distances from the first antenna to potential antinode positions
-    d1x = -dx // 2  # for the first antinode
-    d1y = -dy // 2
-    
-    d2x = dx * 2  # for the second antinode
-    d2y = dy * 2
-    
-    # Calculate the actual positions of the antinodes
+
     antinodes = {
-        (x1 + d1x, y1 + d1y),  # antinode before the antennas
-        (x2 + d2x, y2 + d2y)   # antinode after the antennas
+        (round(2 * x1 - 0.5 * x2), round(2 * y1 - 0.5 * y2)),
+        (round(2 * x2 - 0.5 * x1), round(2 * y2 - 0.5 * y1)),
     }
-    
     return antinodes
 
 
@@ -50,25 +38,17 @@ def count_antinodes(input_data: str) -> int:
     grid = parse_grid(input_data)
     height = len(grid)
     width = len(grid[0])
-    
-    # Get all antenna positions grouped by frequency
+
     antennas = find_antennas(grid)
-    
-    # Set to store all valid antinode positions
     antinodes: Set[Tuple[int, int]] = set()
-    
-    # For each frequency group
+
     for freq, positions in antennas.items():
-        # For each pair of antennas with the same frequency
         for ant1, ant2 in combinations(positions, 2):
-            # Calculate antinode positions for this pair
             new_antinodes = calc_antinode_positions(ant1, ant2)
-            
-            # Add only the antinodes that are within grid boundaries
             for x, y in new_antinodes:
                 if 0 <= x < width and 0 <= y < height:
                     antinodes.add((x, y))
-    
+
     return len(antinodes)
 
 
