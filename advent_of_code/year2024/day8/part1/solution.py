@@ -19,11 +19,12 @@ def get_antenna_positions(grid: List[List[str]], frequency: str) -> List[Tuple[i
 
 
 def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
-    """Check if three points are collinear."""
+    """Check if three points are collinear using the cross-product method with tolerance."""
     x1, y1 = p1
     x2, y2 = p2
     x3, y3 = p3
-    return (y2 - y1) * (x3 - x1) == (y3 - y1) * (x2 - x1)
+    tolerance = 1e-9  # Tolerance factor for floating-point comparisons
+    return abs((y2 - y1) * (x3 - x1) - (y3 - y1) * (x2 - x1)) < tolerance
 
 
 def get_distance_squared(p1: Tuple[int, int], p2: Tuple[int, int]) -> int:
@@ -41,41 +42,29 @@ def find_antinodes(grid: List[List[str]], frequency: str) -> Set[Tuple[int, int]
         
     height = len(grid)
     width = len(grid[0])
-    
-    # Check each potential antinode position
+
     for y in range(height):
         for x in range(width):
             pos = (x, y)
-            
-            # Check all pairs of antennas
             for i, a1 in enumerate(antennas):
                 for a2 in antennas[i + 1:]:
                     if not is_collinear(a1, a2, pos):
                         continue
-                        
                     d1 = get_distance_squared(pos, a1)
                     d2 = get_distance_squared(pos, a2)
-                    
-                    # Check if one distance is twice the other
                     if d1 * 2 == d2 or d2 * 2 == d1:
                         antinodes.add(pos)
-                        
     return antinodes
 
 
 def count_antinodes(input_str: str) -> int:
     """Count total unique antinode locations in the map."""
     grid = parse_grid(input_str)
-    
-    # Get all frequencies (unique non-dot characters)
     frequencies = {c for row in grid for c in row if c != '.'}
-    
-    # Find antinodes for each frequency
     all_antinodes = set()
     for freq in frequencies:
         freq_antinodes = find_antinodes(grid, freq)
         all_antinodes.update(freq_antinodes)
-    
     return len(all_antinodes)
 
 
