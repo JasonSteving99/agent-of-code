@@ -39,13 +39,13 @@ def find_antinodes(a1: Point, a2: Point) -> Set[Point]:
     # For antinode2: a2 is twice as far from antinode as a1
     
     # First antinode: extend a2->a1 by half
-    antinode1_x = a2.x + dx // 2
-    antinode1_y = a2.y + dy // 2
+    antinode1_x = round(a2.x + dx / 2)
+    antinode1_y = round(a2.y + dy / 2)
     antinodes.add(Point(antinode1_x, antinode1_y))
     
     # Second antinode: extend a1->a2 by half
-    antinode2_x = a1.x - dx // 2
-    antinode2_y = a1.y - dy // 2
+    antinode2_x = round(a1.x - dx / 2)
+    antinode2_y = round(a1.y - dy / 2)
     antinodes.add(Point(antinode2_x, antinode2_y))
     
     return antinodes
