@@ -1,78 +1,82 @@
-"""Day 8: Resonant Collinearity Part 2 Solution."""
+"""Calculate antinodes from antenna positions on a grid considering resonant harmonics."""
 from collections import defaultdict
 from itertools import combinations
 from typing import Dict, List, Set, Tuple
 
 
-def parse_grid(grid_str: str) -> Tuple[Dict[str, List[Tuple[int, int]]], int, int]:
-    """Parse the input grid into a dictionary mapping frequencies to their antenna positions."""
-    lines = grid_str.strip().splitlines()
-    rows, cols = len(lines), len(lines[0])
+def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
+    """Extract coordinates for each frequency from grid string."""
+    coords: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+    rows = grid_str.strip().split('\n')
     
-    # Map each frequency to list of its antenna positions
-    freq_positions: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+    for y, row in enumerate(rows):
+        for x, char in enumerate(row):
+            if char != '.':
+                coords[char].append((x, y))
     
-    for i, line in enumerate(lines):
-        for j, char in enumerate(line):
-            if char != '.' and char != '#':
-                freq_positions[char].append((i, j))
-                
-    return freq_positions, rows, cols
+    return coords
 
 
-def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
+def is_collinear(point1: Tuple[int, int], point2: Tuple[int, int], 
+                 point3: Tuple[int, int]) -> bool:
     """Check if three points are collinear."""
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-    # Using cross product to check collinearity
-    return (y2 - y1) * (x3 - x2) == (y3 - y2) * (x2 - x1)
-
-
-def find_collinear_points(antenna_positions: List[Tuple[int, int]], rows: int, cols: int) -> Set[Tuple[int, int]]:
-    """Find all points that are collinear with at least two antennas."""
-    antinodes: Set[Tuple[int, int]] = set()
-
-    if len(antenna_positions) < 2:
-        return antinodes
-
-    for i in range(rows):
-        for j in range(cols):
-            point = (i, j)
-
-            # Check if this point is collinear with any pair of antennas
-            for ant1, ant2 in combinations(antenna_positions, 2):
-                if is_collinear(ant1, ant2, point):
-                    antinodes.add(point)
-                    break
-
-    return antinodes
-
-
-def count_harmonic_antinodes(grid: str) -> int:
-    """Count unique antinode locations considering resonant harmonics within the grid boundaries."""
-    freq_positions, rows, cols = parse_grid(grid)
+    x1, y1 = point1
+    x2, y2 = point2
+    x3, y3 = point3
     
-    antinodes: Set[Tuple[int, int]] = set()
-    
-    # Process each frequency group separately
-    for freq, positions in freq_positions.items():
-        freq_antinodes = find_collinear_points(positions, rows, cols)        
-        antinodes.update(freq_antinodes)
+    # Calculate the area of the triangle formed by the three points
+    # If area is 0, points are collinear
+    area = (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2
+    return abs(area) == 0
 
-        # Add the antenna positions themselves as they're considered antinodes
-        if len(positions) > 1:
-            antinodes.update(positions)
+
+def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int], 
+                      width: int, height: int) -> Set[Tuple[int, int]]:
+    """Get all grid points that lie on the line between two points."""
+    x1, y1 = point1
+    x2, y2 = point2
+    points = {(x1, y1), (x2, y2)}
+    
+    # For each point in the grid bounds
+    for x in range(width):
+        for y in range(height):
+            if (x, y) != point1 and (x, y) != point2:
+                if is_collinear(point1, point2, (x, y)):
+                    # Check if point lies between the two endpoints
+                    if (min(x1, x2) <= x <= max(x1, x2) and 
+                        min(y1, y2) <= y <= max(y1, y2)):
+                        points.add((x, y))
+    
+    return points
+
+
+def count_antinodes_harmonic(grid: str) -> int:
+    """Count unique antinode locations within the grid bounds considering harmonics."""
+    antinodes: Set[Tuple[int, int]] = set()
+    rows = grid.strip().split('\n')
+    height = len(rows)
+    width = len(rows[0])
+
+    freq_coords = get_coordinates(grid)
+
+    # For each frequency
+    for freq, coords in freq_coords.items():
+        # If there's more than one antenna of this frequency
+        if len(coords) >= 2:
+            # Add all antenna positions as antinodes (since they're collinear with others)
+            antinodes.update(coords)
+            
+            # For each pair of antennas
+            for point1, point2 in combinations(coords, 2):
+                # Get all points that lie on the line between these antennas
+                line_points = get_points_on_line(point1, point2, width, height)
+                antinodes.update(line_points)
 
     return len(antinodes)
 
 
 def solution() -> int:
-    """Read input from stdin and solve the problem."""
-    from sys import stdin
-    input_data = "".join(stdin.readlines())
-    return count_harmonic_antinodes(input_data)
-
-
-if __name__ == "__main__":
-    print(solution())
+    """Read input from stdin and return result."""
+    import sys
+    grid = sys.stdin.read()
+    return count_antinodes_harmonic(grid)
