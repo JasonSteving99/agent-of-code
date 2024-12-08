@@ -16,21 +16,18 @@ def get_line_points(x1: int, y1: int, x2: int, y2: int) -> Set[Tuple[int, int]]:
     dx = x2 - x1
     dy = y2 - y1
 
-    # Handle vertical lines
     if dx == 0:
         y_min, y_max = min(y1, y2), max(y1, y2)
         for y in range(y_min, y_max + 1):
             points.add((x1, y))
         return points
 
-    # Handle horizontal lines
     if dy == 0:
         x_min, x_max = min(x1, x2), max(x1, x2)
         for x in range(x_min, x_max + 1):
             points.add((x, y1))
         return points
 
-    # Handle diagonal lines
     if abs(dx) == abs(dy):
         step_x = 1 if dx > 0 else -1
         step_y = 1 if dy > 0 else -1
@@ -44,17 +41,17 @@ def get_line_points(x1: int, y1: int, x2: int, y2: int) -> Set[Tuple[int, int]]:
 
 def find_collinear_points(points: List[Tuple[int, int, str]]) -> Set[Tuple[int, int]]:
     """Find all points that are collinear with at least two antennas of the same frequency."""
-    freq_groups: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+    freq_groups: Dict[str, List[Tuple[int, int, str]]] = defaultdict(list)  # Store original points with frequency
     antinodes = set()
 
     for x, y, freq in points:
-        freq_groups[freq].append((x, y))
+        freq_groups[freq].append((x, y, freq))
 
     for freq, coords in freq_groups.items():
-        for (x1, y1), (x2, y2) in combinations(coords, 2):
+        for (x1, y1, _), (x2, y2, _) in combinations(coords, 2):  # Use original points with frequency
             line_points = get_line_points(x1, y1, x2, y2)
-            for x, y in coords:  # Iterate through all points for collinearity check
-                if (x, y) in line_points:
+            for x, y, f in points: # Iterate through all original points for collinearity check and frequency match
+                if (x, y) in line_points and f == freq:
                     antinodes.add((x, y))
 
     return antinodes
