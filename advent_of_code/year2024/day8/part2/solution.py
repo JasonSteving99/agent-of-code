@@ -10,35 +10,19 @@ def find_collinear_antinodes(p1: Tuple[int, int], p2: Tuple[int, int], max_rows:
     antinodes = set()
     y1, x1 = p1
     y2, x2 = p2
-
-    # Handle vertical line case
-    if x1 == x2:
-        min_y, max_y = min(y1, y2), max(y1, y2)
-        for y in range(max_rows):
-            antinodes.add((y, x1))
-        return antinodes
-    
-    # Handle horizontal line case
-    if y1 == y2:
-        min_x, max_x = min(x1, x2), max(x1, x2)
-        for x in range(max_cols):
-            antinodes.add((y1, x))
-        return antinodes
-    
-    # For other lines, use line equation y = mx + b
     dx = x2 - x1
     dy = y2 - y1
-    
-    # Calculate slope and y-intercept
-    m = dy / dx
-    b = y1 - m * x1
 
-    # Find all points on line within grid bounds
     for x in range(max_cols):
-        y = m * x + b
-        if y.is_integer() and 0 <= y < max_rows:
-            antinodes.add((int(y), x))
-    
+        for y in range(max_rows):
+            if dx == 0:
+                if x == x1:
+                    antinodes.add((y, x))
+            elif dy == 0:
+                if y == y1:
+                    antinodes.add((y, x))
+            elif (y - y1) * dx == (x - x1) * dy:
+                antinodes.add((y, x))
     return antinodes
 
 
