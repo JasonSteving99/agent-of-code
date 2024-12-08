@@ -36,35 +36,23 @@ def get_inline_points(p1: Point, p2: Point, width: int, height: int) -> Set[Poin
     """Get all points that lie on the straight line between two points."""
     points = set()
     
-    # Handle vertical line
-    if p1.x == p2.x:
-        start, end = min(p1.y, p2.y), max(p1.y, p2.y)
-        points.update(Point(p1.x, y) for y in range(start, end + 1))
-        return points
-    
-    # Handle horizontal line
-    if p1.y == p2.y:
-        start, end = min(p1.x, p2.x), max(p1.x, p2.x)
-        points.update(Point(x, p1.y) for x in range(start, end + 1))
-        return points
-        
-    # Handle diagonal line
     dx = p2.x - p1.x
     dy = p2.y - p1.y
-    
-    # Check if line is diagonal at 45 degrees
-    if abs(dx) == abs(dy):
-        step_x = 1 if dx > 0 else -1
-        step_y = 1 if dy > 0 else -1
-        
-        x, y = p1.x, p1.y
-        while True:
+
+    if dx == 0:
+        steps = abs(dy) + 1
+    elif dy == 0:
+        steps = abs(dx) + 1
+    else:
+        steps = abs(dx) + 1
+
+    for i in range(steps):
+        x = round(p1.x + (dx * i / (steps -1)))
+        y = round(p1.y + (dy * i / (steps - 1)))
+
+        if 0 <= x < width and 0 <= y < height:  # Ensure point is within grid boundaries
             points.add(Point(x, y))
-            if x == p2.x:
-                break
-            x += step_x
-            y += step_y
-    
+
     return points
 
 
