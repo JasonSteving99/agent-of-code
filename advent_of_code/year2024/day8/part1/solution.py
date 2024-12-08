@@ -23,25 +23,18 @@ def find_antinodes(antenna1: Tuple[int, int], antenna2: Tuple[int, int]) -> List
     """Find antinode positions for a pair of antennas of the same frequency."""
     y1, x1 = antenna1
     y2, x2 = antenna2
-    
-    # Calculate vector from antenna1 to antenna2
+
     dy = y2 - y1
     dx = x2 - x1
-    
-    # Each antenna pair produces two antinodes - one on each side
+
     antinodes = []
-    
-    # Calculate positions that are half the distance from antenna1
-    # and twice the distance from antenna2
-    for mult in [-1/2, 1/2, 3/2]:  # These multipliers give us points on both sides
-        antinode_y = round(y1 + dy * mult)
-        antinode_x = round(x1 + dx * mult)
 
-        dist1 = ((antinode_y - y1)**2 + (antinode_x - x1)**2)**0.5
-        dist2 = ((antinode_y - y2)**2 + (antinode_x - x2)**2)**0.5
+    for mult in [-1, 2]:
+        ay = y1 + dy * mult
+        ax = x1 + dx * mult
 
-        if abs(dist1 * 2 - dist2) < 1e-6 or abs(dist2 * 2 - dist1) < 1e-6:
-            antinodes.append((int(antinode_y), int(antinode_x)))
+        if ay.is_integer() and ax.is_integer():
+            antinodes.append((int(ay), int(ax)))
 
     return antinodes
 
@@ -50,22 +43,16 @@ def count_antinodes(grid: str) -> int:
     """Count unique antinode locations within the grid boundaries."""
     freq_positions, rows, cols = parse_grid(grid)
     
-    # Set to store unique antinode positions
     antinodes: Set[Tuple[int, int]] = set()
     
-    # For each frequency
     for freq, positions in freq_positions.items():
-        # For each pair of antennas with the same frequency
         for i in range(len(positions)):
             for j in range(i + 1, len(positions)):
-                # Find antinodes for this pair
                 pair_antinodes = find_antinodes(positions[i], positions[j])
                 
-                # Add antinodes that are within grid boundaries
-                for pos in pair_antinodes:
-                    y, x = pos
+                for y, x in pair_antinodes:
                     if 0 <= y < rows and 0 <= x < cols:
-                        antinodes.add(pos)
+                        antinodes.add((y, x))
     
     return len(antinodes)
 
