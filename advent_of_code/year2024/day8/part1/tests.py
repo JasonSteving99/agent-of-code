@@ -1,23 +1,21 @@
 """
-This test suite covers the count_antinodes function which:
-1. Takes a string input representing a grid of antennas where:
-   - '.' represents empty space
-   - '0' represents antennas of frequency 0
-   - 'A' represents antennas of frequency A
-2. Returns an integer representing the count of unique antinode locations in the grid
+Tests for the count_antinodes function that calculates the number of unique locations 
+containing antinodes in a grid of antennas based on resonant collinearity conditions.
 
-The test verifies that for a given grid with multiple antennas of different frequencies,
-the function correctly identifies and counts the unique antinode locations.
+The function takes a string input representing a grid where:
+- '.' represents empty space
+- '0' represents type-0 antennas 
+- 'A' represents type-A antennas
+
+The function should count locations where antinodes form based on antenna resonance patterns
+according to the collinearity rules.
 """
 
 from solution import count_antinodes
 
-def test_multiple_antennas_grid():
-    # Grid with:
-    # - 4 antennas of frequency '0'
-    # - 3 antennas of frequency 'A'
-    # - Spread across different locations
-    grid = (
+def test_complex_antenna_grid():
+    # Test case with a mix of type-0 and type-A antennas
+    input_grid = (
         "............\n"
         "........0...\n"
         ".....0......\n"
@@ -31,12 +29,12 @@ def test_multiple_antennas_grid():
         "............\n"
         "............"
     )
-    expected_antinodes = 14
     
-    result = count_antinodes(grid)
+    expected_antinodes = 14
+    result = count_antinodes(input_grid)
     
     assert result == expected_antinodes, (
-        f"Failed to count correct number of antinodes.\n"
-        f"Input grid:\n{grid}\n"
+        f"Failed to correctly count antinodes in grid.\n"
+        f"Input grid:\n{input_grid}\n"
         f"Expected {expected_antinodes} antinodes, but got {result}"
     )

@@ -1,57 +1,62 @@
-"""Day 8: Resonant Collinearity Solution."""
+"""Solution for the resonant collinearity problem."""
+from collections import defaultdict
+from typing import List, Set, Tuple, Dict
+
 
 def count_antinodes(grid_str: str) -> int:
-    """Count unique locations of antinodes."""
-    # Parse input grid
+    """Count unique locations containing antinodes in the grid.
+    
+    Args:
+        grid_str: String representation of the grid with antenna frequencies
+        
+    Returns:
+        Number of unique antinode locations
+    """
+    # Parse the grid
     grid = [list(line) for line in grid_str.strip().splitlines()]
-    rows, cols = len(grid), len(grid[0])
-
-    # Find antennas by frequency
-    antennas = {}
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] != '.':
-                freq = grid[i][j]
-                if freq not in antennas:
-                    antennas[freq] = []
-                antennas[freq].append((i, j))
-
-    # Set to store unique antinode locations
-    antinodes = set()
-
-    # For each frequency, find antinodes
-    for freq, positions in antennas.items():
-        # Need at least 2 antennas of the same frequency
-        if len(positions) < 2:
-            continue
-
-        # Check all pairs of antennas with same frequency
-        for i in range(len(positions)):
-            for j in range(i + 1, len(positions)):
-                x1, y1 = positions[i]
-                x2, y2 = positions[j]
-
-                # Vector from first to second antenna
+    height = len(grid)
+    width = len(grid[0])
+    
+    # Collect antenna positions by frequency
+    freq_positions: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+    for y in range(height):
+        for x in range(width):
+            if grid[y][x] not in '.':
+                freq_positions[grid[y][x]].append((x, y))
+                
+    # Find all antinodes
+    antinodes: Set[Tuple[int, int]] = set()
+    
+    # For each frequency
+    for freq, positions in freq_positions.items():
+        # Check each pair of antennas with same frequency
+        for i, (x1, y1) in enumerate(positions):
+            for x2, y2 in positions[i + 1:]:
+                # Calculate vector between antennas
                 dx = x2 - x1
                 dy = y2 - y1
-
-                # Calculate antinode positions
-                # First antinode: one unit away from the first antenna
-                ax1 = x1 - dx
-                ay1 = y1 - dy
-                if 0 <= ax1 < rows and 0 <= ay1 < cols:
-                    antinodes.add((ax1, ay1))
-
-                # Second antinode: one unit away from the second antenna
-                ax2 = x2 + dx
-                ay2 = y2 + dy
-                if 0 <= ax2 < rows and 0 <= ay2 < cols:
-                    antinodes.add((ax2, ay2))
-
+                
+                # Find both antinode positions
+                # One antinode is 1/2 distance from first antenna
+                # Other antinode is 1/2 distance past second antenna
+                for factor in (-0.5, 1.5):
+                    antinode_x = int(x1 + dx * factor)
+                    antinode_y = int(y1 + dy * factor)
+                    
+                    # Add antinode if it's within grid bounds
+                    if (0 <= antinode_x < width and 
+                        0 <= antinode_y < height):
+                        antinodes.add((antinode_x, antinode_y))
+    
     return len(antinodes)
+
 
 def solution() -> int:
     """Read input from stdin and return the solution."""
     import sys
-    grid = sys.stdin.read()
-    return count_antinodes(grid)
+    input_data = sys.stdin.read()
+    return count_antinodes(input_data)
+
+
+if __name__ == "__main__":
+    print(solution())
