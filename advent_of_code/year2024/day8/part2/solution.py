@@ -14,7 +14,7 @@ def parse_grid(grid_str: str) -> Tuple[Dict[str, List[Tuple[int, int]]], int, in
     
     for i, line in enumerate(lines):
         for j, char in enumerate(line):
-            if char != '.':
+            if char != '.' and char != '#':
                 freq_positions[char].append((i, j))
                 
     return freq_positions, rows, cols
