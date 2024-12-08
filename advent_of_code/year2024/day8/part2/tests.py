@@ -1,20 +1,17 @@
 """
-Unit tests for the resonant harmonics calculation (Part 2).
+This test suite validates the count_antinodes_harmonic function that calculates 
+the number of unique antinode locations on a grid where an antinode occurs at any position 
+in line with at least two antennas of the same frequency.
 
-The tests verify the count_harmonic_antinodes function that:
-1. Takes a grid as a string input with antennas marked by characters (T, 0, A, etc.)
-2. Calculates antinodes that occur when 2+ antennas of the same frequency are in line
-   (horizontally, vertically, or diagonally)
-3. Returns the total count of such antinodes (including antenna positions themselves)
-
-Key aspects tested:
-- Simple grid with 'T' antennas creating antinodes
-- Complex grid with multiple antenna types ('0' and 'A') and obstacles ('#')
+Test cases cover:
+1. Grid with three 'T' antennas and '#' obstacles
+2. Grid with four '0' and three 'A' antennas
 """
 
-from solution import count_harmonic_antinodes
+from solution import count_antinodes_harmonic
 
-def test_three_t_antennas_with_obstacles():
+
+def test_grid_with_t_antennas_and_obstacles():
     grid = (
         "T....#....\n"
         "...T......\n"
@@ -27,29 +24,30 @@ def test_three_t_antennas_with_obstacles():
         "....#.....\n"
         ".........."
     )
-    result = count_harmonic_antinodes(grid)
+    result = count_antinodes_harmonic(grid)
     assert result == 9, (
-        f"Expected 9 antinodes for grid with three 'T' antennas, but got {result}.\n"
-        f"Input grid:\n{grid}"
+        f"Grid with three 'T' antennas and '#' obstacles should have 9 antinodes, "
+        f"but got {result}\nInput grid:\n{grid}"
     )
 
-def test_multiple_antenna_types_with_obstacles():
+
+def test_grid_with_zero_and_a_antennas():
     grid = (
-        "##....#....#\n"
-        ".#.#....0...\n"
-        "..#.#0....#.\n"
-        "..##...0....\n"
-        "....0....#..\n"
-        ".#...#A....#\n"
-        "...#..#.....\n"
-        "#....#.#....\n"
-        "..#.....A...\n"
-        "....#....A..\n"
-        ".#........#.\n"
-        "...#......##"
+        "............\n"
+        "........0...\n"
+        ".....0......\n"
+        ".......0....\n"
+        "....0.......\n"
+        "......A.....\n"
+        "............\n"
+        "............\n"
+        "........A...\n"
+        ".........A..\n"
+        "............\n"
+        "............"
     )
-    result = count_harmonic_antinodes(grid)
+    result = count_antinodes_harmonic(grid)
     assert result == 34, (
-        f"Expected 34 antinodes for grid with '0' and 'A' antennas, but got {result}.\n"
-        f"Input grid:\n{grid}"
+        f"Grid with four '0' antennas and three 'A' antennas should have 34 antinodes, "
+        f"but got {result}\nInput grid:\n{grid}"
     )
