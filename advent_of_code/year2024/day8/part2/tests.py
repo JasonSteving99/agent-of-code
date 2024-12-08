@@ -1,22 +1,17 @@
 """
-This test suite validates the count_harmonic_antinodes function which calculates 
-the total number of antinode positions in a resonant harmonics grid.
-
-The tests cover:
-1. Simple grid with 'T' frequency antennas where aligned positions contribute to antinodes
-2. Complex grid with mixed frequencies ('0' and 'A') and their resulting antinode patterns
-
-The function should:
-- Take a string input representing a grid with antenna positions marked by characters
-- Count unique antinode positions including antenna positions that become antinodes
-- Return an integer representing the total count of antinodes
+This test suite validates the count_antinodes_harmonic function which calculates
+the number of unique antinode locations on a map where antinodes occur at positions
+that are exactly in line (horizontally, vertically, or diagonally) with at least 
+two antennas of the same frequency. The tests cover:
+1. A map with 'T' frequency antennas and '#' obstacles
+2. A map with '0' and 'A' frequency antennas
 """
 
-from solution import count_harmonic_antinodes
+from solution import count_antinodes_harmonic
 
 
-def test_t_frequency_antenna_grid():
-    grid = (
+def test_map_with_t_frequency_antennas():
+    input_map = (
         "T....#....\n"
         "...T......\n"
         ".T....#...\n"
@@ -28,30 +23,30 @@ def test_t_frequency_antenna_grid():
         "....#.....\n"
         ".........."
     )
-    result = count_harmonic_antinodes(grid)
+    result = count_antinodes_harmonic(input_map)
     assert result == 9, (
-        f"For grid with 'T' frequency antennas:\n{grid}\n"
-        f"Expected 9 antinodes but got {result}"
+        f"Expected 9 antinodes for map with T-frequency antennas:\n{input_map}\n"
+        f"but got {result}"
     )
 
 
-def test_mixed_frequency_complex_grid():
-    grid = (
-        "##....#....#\n"
-        ".#.#....0...\n"
-        "..#.#0....#.\n"
-        "..##...0....\n"
-        "....0....#..\n"
-        ".#...#A....#\n"
-        "...#..#.....\n"
-        "#....#.#....\n"
-        "..#.....A...\n"
-        "....#....A..\n"
-        ".#........#.\n"
-        "...#......##"
+def test_map_with_zero_and_a_frequency_antennas():
+    input_map = (
+        "............\n"
+        "........0...\n"
+        ".....0......\n"
+        ".......0....\n"
+        "....0.......\n"
+        "......A.....\n"
+        "............\n"
+        "............\n"
+        "........A...\n"
+        ".........A..\n"
+        "............\n"
+        "............"
     )
-    result = count_harmonic_antinodes(grid)
+    result = count_antinodes_harmonic(input_map)
     assert result == 34, (
-        f"For complex grid with '0' and 'A' frequencies:\n{grid}\n"
-        f"Expected 34 antinodes but got {result}"
+        f"Expected 34 antinodes for map with 0 and A frequency antennas:\n{input_map}\n"
+        f"but got {result}"
     )
