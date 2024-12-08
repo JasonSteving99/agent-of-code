@@ -34,11 +34,14 @@ def find_antinodes(antenna1: Tuple[int, int], antenna2: Tuple[int, int]) -> List
     # Calculate positions that are half the distance from antenna1
     # and twice the distance from antenna2
     for mult in [1/2, 3/2]:  # These multipliers give us points on both sides
-        antinode_y = y1 + dy * mult
-        antinode_x = x1 + dx * mult
-        
-        # Only add if the coordinates are integers
-        if antinode_y.is_integer() and antinode_x.is_integer():
+        antinode_y = round(y1 + dy * mult)
+        antinode_x = round(x1 + dx * mult)
+
+        # Check distances using rounded coordinates. Tolerance for floating point errors.
+        dist1 = ((antinode_y - y1)**2 + (antinode_x - x1)**2)**0.5
+        dist2 = ((antinode_y - y2)**2 + (antinode_x - x2)**2)**0.5
+
+        if abs(dist1 * 2 - dist2) < 1e-6 or abs(dist2 * 2 - dist1) < 1e-6:
             antinodes.append((int(antinode_y), int(antinode_x)))
             
     return antinodes
