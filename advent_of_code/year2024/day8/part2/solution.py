@@ -46,12 +46,11 @@ def get_inline_points(p1: Point, p2: Point, width: int, height: int) -> Set[Poin
         for x in range(min(p1.x, p2.x), max(p1.x, p2.x) + 1):
             points.add(Point(x, p1.y))
     else:
-        steps = max(abs(dx), abs(dy))
-        for i in range(steps + 1):
-            x = p1.x + (dx * i // steps)
-            y = p1.y + (dy * i // steps)
-            points.add(Point(x, y))
-
+        for x in range(min(p1.x, p2.x), max(p1.x, p2.x) + 1):
+            y = p1.y + (x - p1.x) * dy // dx
+            if 0 <= y < height and (x - p1.x) * dy % dx == 0:  # Check if y is within bounds and integer
+                points.add(Point(x,y))
+                
     return points
 
 
