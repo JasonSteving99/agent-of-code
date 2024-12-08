@@ -1,25 +1,16 @@
-"""
-This test suite validates the count_antinodes function which:
-1. Takes a grid representation as a string where:
-   - '.' represents empty space
-   - '0' represents type-0 antenna 
-   - 'A' represents type-A antenna
-2. Counts unique antinode locations formed by:
-   - Antinodes that form when antennas of same frequency align
-   - One antenna being twice as far from antinode as the other
-3. Returns the total count of unique antinode positions within grid boundaries
+"""Unit tests for the count_antinodes function.
 
-The test verifies a specific case with multiple antennas of both types (0 and A)
-positioned in a way that creates 14 unique antinode locations.
+Given a grid where:
+- '.' represents empty cells
+- Characters (digits or letters) represent antennas with specific frequencies
+- Antinodes form at points that are equidistant from pairs of antennas with the same frequency
+- The tests verify that the function correctly counts unique antinode locations
 """
 
 from solution import count_antinodes
 
-
-def test_complex_antenna_grid_with_14_antinodes():
-    # Given a 12x12 grid with:
-    # - Four type-0 antennas
-    # - Three type-A antennas
+def test_grid_with_zeros_and_uppercase_a():
+    # Test grid with four '0' antennas and three 'A' antennas
     grid = (
         "............\n"
         "........0...\n"
@@ -35,11 +26,8 @@ def test_complex_antenna_grid_with_14_antinodes():
         "............"
     )
     
-    # When calculating the antinode positions
     result = count_antinodes(grid)
-    
-    # Then expect 14 unique antinode locations
     assert result == 14, (
-        f"Expected 14 antinodes for the given grid configuration, but got {result}.\n"
-        f"Grid configuration:\n{grid}"
+        f"Expected 14 antinodes for grid with four '0' antennas and three 'A' antennas, "
+        f"but got {result}.\nInput grid:\n{grid}"
     )
