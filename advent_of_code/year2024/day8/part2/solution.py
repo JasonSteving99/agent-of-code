@@ -35,17 +35,21 @@ def parse_antenna_positions(grid: str) -> Dict[str, List[Point]]:
 def get_inline_points(p1: Point, p2: Point, width: int, height: int) -> Set[Point]:
     """Get all points that lie on the straight line between two points."""
     points = set()
-    
+
     dx = p2.x - p1.x
     dy = p2.y - p1.y
 
-    steps = max(abs(dx), abs(dy)) + 1
-
-    for i in range(steps):
-        x = round(p1.x + (dx * i / (steps -1)))
-        y = round(p1.y + (dy * i / (steps - 1)))
-
-        if 0 <= x < width and 0 <= y < height:  # Ensure point is within grid boundaries
+    if dx == 0:
+        for y in range(min(p1.y, p2.y), max(p1.y, p2.y) + 1):
+            points.add(Point(p1.x, y))
+    elif dy == 0:
+        for x in range(min(p1.x, p2.x), max(p1.x, p2.x) + 1):
+            points.add(Point(x, p1.y))
+    else:
+        steps = max(abs(dx), abs(dy))
+        for i in range(steps + 1):
+            x = p1.x + (dx * i // steps)
+            y = p1.y + (dy * i // steps)
             points.add(Point(x, y))
 
     return points
