@@ -34,30 +34,24 @@ def find_antinodes(ant1: Tuple[int, int], ant2: Tuple[int, int], grid: List[List
     x2, y2 = ant2
     antinodes = set()
     
-    # Skip if antennas are at same position
-    if (x1, y1) == (x2, y2):
+    if ant1 == ant2:
         return antinodes
-    
-    # Check both directions for potential antinodes
+
+    dx = x2 - x1
+    dy = y2 - y1
+
     for direction in [-1, 1]:
-        # Calculate antinode position
-        # For any point P that divides the line between ant1 and ant2 in ratio 1:2
-        dx = x2 - x1
-        dy = y2 - y1
-        
-        # Antinode point is at 1/3 and 2/3 of the distance between antennas
-        x_antinode = x1 + (dx * 2 // 3)
-        y_antinode = y1 + (dy * 2 // 3)
-        
+        x_antinode = x1 + (2 * dx) // 3 if direction == 1 else x2 - (2 * dx) // 3
+        y_antinode = y1 + (2 * dy) // 3 if direction == 1 else y2 - (2 * dy) // 3
+        if is_in_bounds((x_antinode, y_antinode), grid):
+            antinodes.add((x_antinode, y_antinode))
+
+        x_antinode = x2 - dx // 3 if direction == 1 else x1 + dx // 3
+        y_antinode = y2 - dy // 3 if direction == 1 else y1 + dy // 3
+
         if is_in_bounds((x_antinode, y_antinode), grid):
             antinodes.add((x_antinode, y_antinode))
             
-        x_antinode = x2 - (dx * 2 // 3)
-        y_antinode = y2 - (dy * 2 // 3)
-        
-        if is_in_bounds((x_antinode, y_antinode), grid):
-            antinodes.add((x_antinode, y_antinode))
-    
     return antinodes
 
 
@@ -67,12 +61,10 @@ def count_antinodes(grid_str: str) -> int:
     antennas = get_antenna_positions(grid)
     all_antinodes = set()
     
-    # For each frequency
     for freq, positions in antennas.items():
-        # For each pair of antennas with same frequency
-        for i, ant1 in enumerate(positions):
-            for ant2 in positions[i+1:]:
-                antinodes = find_antinodes(ant1, ant2, grid)
+        for i in range(len(positions)):
+            for j in range(i + 1, len(positions)):
+                antinodes = find_antinodes(positions[i], positions[j], grid)
                 all_antinodes.update(antinodes)
     
     return len(all_antinodes)
