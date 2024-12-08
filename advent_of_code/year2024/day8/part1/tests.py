@@ -1,16 +1,26 @@
 """
-This test suite covers the functionality of counting antinodes in a grid map containing antennas with different frequencies.
-The function should:
-1. Accept a string input representing a grid map with '.' as empty space, digits 0-9 for frequency antennas, and 'A' for specific antenna types
-2. Return an integer representing the total number of unique antinode locations within the map's boundaries
+This test suite validates the count_antinodes function which:
+1. Takes a grid representation as a string where:
+   - '.' represents empty space
+   - '0' represents type-0 antenna 
+   - 'A' represents type-A antenna
+2. Counts unique antinode locations formed by:
+   - Antinodes that form when antennas of same frequency align
+   - One antenna being twice as far from antinode as the other
+3. Returns the total count of unique antinode positions within grid boundaries
+
+The test verifies a specific case with multiple antennas of both types (0 and A)
+positioned in a way that creates 14 unique antinode locations.
 """
 
 from solution import count_antinodes
 
 
-def test_basic_antenna_grid():
-    # Test grid with multiple antennas (0's and A's) and empty spaces (.)
-    input_grid = (
+def test_complex_antenna_grid_with_14_antinodes():
+    # Given a 12x12 grid with:
+    # - Four type-0 antennas
+    # - Three type-A antennas
+    grid = (
         "............\n"
         "........0...\n"
         ".....0......\n"
@@ -24,11 +34,12 @@ def test_basic_antenna_grid():
         "............\n"
         "............"
     )
-    expected_antinodes = 14
     
-    result = count_antinodes(input_grid)
+    # When calculating the antinode positions
+    result = count_antinodes(grid)
     
-    assert result == expected_antinodes, (
-        f"Expected {expected_antinodes} antinodes for grid:\n{input_grid}\n"
-        f"but got {result} antinodes instead"
+    # Then expect 14 unique antinode locations
+    assert result == 14, (
+        f"Expected 14 antinodes for the given grid configuration, but got {result}.\n"
+        f"Grid configuration:\n{grid}"
     )
