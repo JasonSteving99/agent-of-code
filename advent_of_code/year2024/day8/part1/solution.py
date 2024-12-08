@@ -45,19 +45,11 @@ def find_antinodes(pos1: Tuple[int, int], pos2: Tuple[int, int]) -> Set[Tuple[in
     r1, c1 = pos1
     r2, c2 = pos2
     
-    # Vector from antenna 1 to antenna 2
-    dr = r2 - r1
-    dc = c2 - c1
-    
-    # Find antinode positions at 1/2 and 2x distances
     antinodes = set()
     
-    # Mid antinode (antenna 2 is twice as far from antinode as antenna 1)
-    antinode1 = (r1 - dr//2, c1 - dc//2)
-    
-    # Far antinode (antenna 1 is twice as far from antinode as antenna 2) 
-    antinode2 = (r2 + dr, c2 + dc)
-    
+    antinode1 = (int((2 * r1 + r2) / 3), int((2 * c1 + c2) / 3))
+    antinode2 = (int((r1 + 2 * r2) / 3), int((c1 + 2 * c2) / 3))
+
     antinodes.add(antinode1)
     antinodes.add(antinode2)
     
