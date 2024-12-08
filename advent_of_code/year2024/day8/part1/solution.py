@@ -23,7 +23,7 @@ def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) 
     x1, y1 = p1
     x2, y2 = p2
     x3, y3 = p3
-    tolerance = 1e-9  # Tolerance factor for floating-point comparisons
+    tolerance = 1e-9
     return abs((y2 - y1) * (x3 - x1) - (y3 - y1) * (x2 - x1)) < tolerance
 
 
@@ -39,7 +39,7 @@ def find_antinodes(grid: List[List[str]], frequency: str) -> Set[Tuple[int, int]
     
     if len(antennas) < 2:
         return antinodes
-        
+    
     height = len(grid)
     width = len(grid[0])
 
@@ -52,7 +52,7 @@ def find_antinodes(grid: List[List[str]], frequency: str) -> Set[Tuple[int, int]
                         continue
                     d1 = get_distance_squared(pos, a1)
                     d2 = get_distance_squared(pos, a2)
-                    if d1 * 2 == d2 or d2 * 2 == d1:
+                    if d1 * 4 == d2 or d2 * 4 == d1:  # Correct distance comparison
                         antinodes.add(pos)
     return antinodes
 
