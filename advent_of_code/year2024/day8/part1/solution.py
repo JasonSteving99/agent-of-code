@@ -41,10 +41,14 @@ def find_antinodes(ant1: Tuple[int, int], ant2: Tuple[int, int], grid: List[List
     dy = y2 - y1
 
     for direction in [-1, 1]:
-        x_antinode = x1 + (2 * dx) // 3 if direction == 1 else x2 + (dx) // 3
-        y_antinode = y1 + (2 * dy) // 3 if direction == 1 else y2 + (dy) // 3
-        if is_in_bounds((x_antinode, y_antinode), grid):
-            antinodes.add((x_antinode, y_antinode))
+        x_antinode = x1 + (2 * dx) / 3 if direction == 1 else x2 + (dx) / 3
+        y_antinode = y1 + (2 * dy) / 3 if direction == 1 else y2 + (dy) / 3
+
+        x_antinode_int = int(round(x_antinode))
+        y_antinode_int = int(round(y_antinode))
+
+        if is_in_bounds((x_antinode_int, y_antinode_int), grid):
+            antinodes.add((x_antinode_int, y_antinode_int))
             
     return antinodes
 
