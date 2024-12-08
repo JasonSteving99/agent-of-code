@@ -1,91 +1,77 @@
-"""Calculates antinodes based on resonant harmonics between antennas."""
+"""Calculate antinodes according to harmonic rules."""
+from typing import Set, Tuple, List
+import sys
 
-from collections import defaultdict
-from typing import List, Set, Tuple
-
-
-def gcd(a: int, b: int) -> int:
-    """Calculate the greatest common divisor."""
-    while b:
-        a, b = b, a % b
-    return a
-
-
-def points_on_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, int]]:
-    """Returns all integer points on the line segment between two points."""
-    x1, y1 = p1
-    x2, y2 = p2
+def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
+    """Checks if three points are collinear."""
+    # Calculate vectors
+    v1 = (p1[0] - p3[0], p1[1] - p3[1])
+    v2 = (p2[0] - p3[0], p2[1] - p3[1])
     
-    dx = x2 - x1
-    dy = y2 - y1
+    # Cross product should be 0 for collinearity
+    cross_prod = v1[0] * v2[1] - v1[1] * v2[0]
+    return cross_prod == 0
+
+def get_positions_of_frequency(grid: List[str], freq: str) -> List[Tuple[int, int]]:
+    """Returns list of (row, col) coordinates where given frequency appears."""
+    positions = []
+    for i, row in enumerate(grid):
+        for j, cell in enumerate(row):
+            if cell == freq:
+                positions.append((i, j))
+    return positions
+
+def get_all_frequencies(grid: List[str]) -> Set[str]:
+    """Returns set of all frequencies in the grid."""
+    frequencies = set()
+    for row in grid:
+        for cell in row:
+            if cell != '.':
+                frequencies.add(cell)
+    return frequencies
+
+def get_antinodes_for_frequency(positions: List[Tuple[int, int]], rows: int, cols: int) -> Set[Tuple[int, int]]:
+    """Returns all antinode positions for a set of positions with same frequency."""
+    antinodes = set()
     
-    if dx == 0:
-        return {(x1, y) for y in range(min(y1, y2), max(y1, y2) + 1)}
-    
-    if dy == 0:
-        return {(x, y1) for x in range(min(x1, x2), max(x1, x2) + 1)}
-
-    common_divisor = gcd(abs(dx), abs(dy))
-    dx //= common_divisor
-    dy //= common_divisor
-
-    points = set()
-    for i in range(common_divisor + 1):
-        points.add((x1 + i * dx, y1 + i * dy))
-
-    return points
-
-
-def get_grid_dimensions(grid: str) -> Tuple[int, int]:
-    """Returns width and height of the grid."""
-    lines = grid.strip().split('\n')
-    return len(lines[0]), len(lines)
-
-
-def get_antennas_by_freq(grid: str) -> dict:
-    """Returns a dictionary of antenna frequencies mapping to their coordinates."""
-    antennas = defaultdict(list)
-    lines = grid.strip().split('\n')
-    
-    for y, line in enumerate(lines):
-        for x, char in enumerate(line):
-            if char != '.':
-                antennas[char].append((x, y))
-                
-    return antennas
-
-
-def count_antinodes_harmonic(grid: str) -> int:
-    """
-    Calculates the number of unique antinode locations considering resonant harmonics.
-    An antinode occurs at any grid position exactly in line with at least two antennas 
-    of the same frequency, regardless of distance.
-    """
-    width, height = get_grid_dimensions(grid)
-    antinodes: Set[Tuple[int, int]] = set()
-    antennas_by_freq = get_antennas_by_freq(grid)
-    
-    # For each frequency and its antennas
-    for freq, positions in antennas_by_freq.items():
-        if len(positions) < 2:
-            continue
+    # For each position in the grid
+    for i in range(rows):
+        for j in range(cols):
+            point = (i, j)
+            # Count how many antennas this point is collinear with
+            collinear_count = 0
+            collinear_antennas = set()
             
-        # Check all pairs of antennas of the same frequency
-        for i, pos1 in enumerate(positions):
-            for j, pos2 in enumerate(positions[i+1:], i+1):
-                # Get all points on the line between these two antennas
-                line_points = points_on_line(pos1, pos2)
-                
-                # Only keep points within grid bounds
-                valid_points = {(x, y) for x, y in line_points 
-                              if 0 <= x < width and 0 <= y < height}
-                
-                antinodes.update(valid_points)
-                
+            # For each antenna pair
+            for p1 in positions:
+                for p2 in positions:
+                    if p1 != p2 and is_collinear(p1, p2, point):
+                        collinear_antennas.add(p1)
+                        collinear_antennas.add(p2)
+            
+            # If point is collinear with at least 2 antennas, it's an antinode
+            if len(collinear_antennas) >= 2:
+                antinodes.add(point)
+    
+    return antinodes
+
+def count_antinodes_harmonic(grid_str: str) -> int:
+    """Count total antinodes based on harmonic rules."""
+    # Convert input string to grid
+    grid = grid_str.strip().split('\n')
+    rows, cols = len(grid), len(grid[0])
+    
+    # Find all unique antinode positions
+    antinodes = set()
+    
+    # For each frequency
+    for freq in get_all_frequencies(grid):
+        positions = get_positions_of_frequency(grid, freq)
+        if len(positions) >= 2:  # Only consider frequencies with at least 2 antennas
+            antinodes.update(get_antinodes_for_frequency(positions, rows, cols))
+            
     return len(antinodes)
 
-
 def solution() -> int:
-    """Read input from stdin and return the solution."""
-    import sys
+    """Read input from stdin and return result."""
     return count_antinodes_harmonic(sys.stdin.read().strip())
