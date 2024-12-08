@@ -38,18 +38,16 @@ def find_antinodes(a1: Point, a2: Point) -> Set[Point]:
     antinode1_x = a2.x + dx / 2
     antinode1_y = a2.y + dy / 2
     
-    antinode2_x = a1.x - dx /2
-    antinode2_y = a1.y - dy /2
+    antinode2_x = a1.x - dx / 2
+    antinode2_y = a1.y - dy / 2
 
     # Check if a1 is twice as far from antinode1 as a2
-    if abs((antinode1_x - a1.x) / (antinode1_x-a2.x) ) == 2 and abs((antinode1_y - a1.y) / (antinode1_y - a2.y)) ==2:
-      antinodes.add(Point(antinode1_x, antinode1_y))
+    if (antinode1_x - a1.x) / (antinode1_x - a2.x) == 2 and (antinode1_y - a1.y) / (antinode1_y - a2.y) == 2:
+        antinodes.add(Point(antinode1_x, antinode1_y))
 
     #Check if a2 is twice as far from antinode2 as a1
-    if abs((antinode2_x - a2.x) / (antinode2_x-a1.x)) == 2 and abs((antinode2_y - a2.y) / (antinode2_y - a1.y)) == 2:
+    if (antinode2_x - a2.x) / (antinode2_x - a1.x) == 2 and (antinode2_y - a2.y) / (antinode2_y - a1.y) == 2:
       antinodes.add(Point(antinode2_x, antinode2_y))
-
-
     return antinodes
 
 
