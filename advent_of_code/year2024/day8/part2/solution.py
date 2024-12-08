@@ -7,17 +7,17 @@ def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
     """Extract coordinates for each frequency from grid string."""
     coords: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
     rows = grid_str.strip().split('\n')
-    
+
     for y, row in enumerate(rows):
         for x, char in enumerate(row):
             if char != '.':
                 coords[char].append((x, y))
-    
+
     return coords
 
 
 def get_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, height: int) -> List[Tuple[int, int]]:
-    """Get all grid points that lie on the line between p1 and p2 within bounds."""
+    """Get all grid points that lie on the line between p1 and p2 within bounds. Uses Bresenham's line algorithm."""
     points = []
     x1, y1 = p1
     x2, y2 = p2
@@ -39,13 +39,11 @@ def get_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, hei
     sx = 1 if x2 > x1 else -1
     sy = 1 if y2 > y1 else -1
     err = dx - dy
-
     x, y = x1, y1
-    while True:
+
+    while x != x2 or y != y2:  # Correct termination condition
         if 0 <= x < width and 0 <= y < height:
             points.append((x, y))
-        if x == x2 and y == y2:
-            break
         e2 = 2 * err
         if e2 > -dy:
             err -= dy
@@ -53,6 +51,8 @@ def get_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, hei
         if e2 < dx:
             err += dx
             y += sy
+    if 0 <= x < width and 0 <= y < height: 
+        points.append((x,y))
     return points
 
 
