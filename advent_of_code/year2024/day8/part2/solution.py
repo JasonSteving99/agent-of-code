@@ -53,21 +53,22 @@ def find_collinear_points(points: List[Tuple[int, int, str]]) -> Set[Tuple[int, 
     
     # Process each frequency group
     for freq_points in freq_groups.values():
-        if len(freq_points) < 3:  # Need at least 3 points for collinearity to create antinode
+        if len(freq_points) < 3:
             continue
-            
+        
         for x, y in freq_points:
-            is_antinode = False
             for x1, y1 in freq_points:
+                if (x,y) == (x1, y1):
+                    continue
                 for x2, y2 in freq_points:
-                    if (x, y) != (x1, y1) and (x,y) != (x2, y2) and (x1, y1) != (x2, y2) \
-                        and (x, y) in get_line_points(x1, y1, x2, y2):
-                            is_antinode = True
-                            break
-                if is_antinode:
-                    break
-            if is_antinode:
-                antinodes.add((x, y))
+                    if (x, y) == (x2, y2) or (x1, y1) == (x2, y2):
+                        continue
+
+                    if (x, y) in get_line_points(x1, y1, x2, y2):
+                        antinodes.add((x,y))
+                        break  # Point is collinear, no need to check other points
+                if (x,y) in antinodes:
+                    break # No need to check further for other pairs with current (x, y)
 
     return antinodes
 
