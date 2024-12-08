@@ -1,20 +1,21 @@
 """
-This test suite verifies the count_antinodes function which:
-1. Takes a string input representing a grid where '0' represents frequency-0 antennas
-   and 'A' represents frequency-A antennas
-2. The grid is represented as a string with newlines separating rows
-3. Calculates the total number of unique antinode locations within the grid
-4. Returns an integer representing the total count of unique antinodes
+Tests for count_antinodes function that counts unique antinode locations on a grid map.
 
-The test verifies that given a 12x12 grid with four frequency-0 antennas and 
-three frequency-A antennas, the function correctly identifies 14 unique antinode locations.
+An antinode is a point in line with two antennas of the same frequency, where one antenna
+is twice as far from the antinode as the other. The tests verify calculation of antinodes
+for given antenna configurations.
+
+The grid map is represented as a string with newline-separated rows. Each character can be:
+- '.' representing empty space
+- '0','A', etc. representing antennas of different frequencies
 """
 
 from solution import count_antinodes
 
-def test_grid_with_multiple_frequencies():
-    # Arrange
-    grid = (
+
+def test_count_antinodes_with_mixed_frequencies():
+    # Test case with both '0' and 'A' frequency antennas
+    input_grid = (
         "............\n"
         "........0...\n"
         ".....0......\n"
@@ -28,12 +29,11 @@ def test_grid_with_multiple_frequencies():
         "............\n"
         "............"
     )
-    expected_antinode_count = 14
+    expected_antinodes = 14
     
-    # Act
-    actual_count = count_antinodes(grid)
+    result = count_antinodes(input_grid)
     
-    # Assert
-    assert actual_count == expected_antinode_count, \
-        f"Grid with 4 frequency-0 antennas and 3 frequency-A antennas should have {expected_antinode_count} " \
-        f"unique antinode locations, but got {actual_count}. Grid:\n{grid}"
+    assert result == expected_antinodes, (
+        f"Expected {expected_antinodes} antinodes for the given grid with '0' and 'A' "
+        f"frequency antennas, but got {result}. Input grid:\n{input_grid}"
+    )
