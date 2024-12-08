@@ -22,25 +22,24 @@ def get_all_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int],
     points = set()
     x1, y1 = p1
     x2, y2 = p2
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x2 > x1 else -1
+    sy = 1 if y2 > y1 else -1
+    err = (dx if dx > dy else -dy) // 2
 
-    if x1 == x2:  # Vertical line
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            if 0 <= x1 < max_x and 0 <= y < max_y:
-                points.add((x1, y))
-    elif y1 == y2:  # Horizontal line
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            if 0 <= x < max_x and 0 <= y1 < max_y:
-                points.add((x, y1))
-    else:
-        # Diagonal Line
-        dx = x2 - x1
-        dy = y2 - y1
-        steps = max(abs(dx), abs(dy))
-        for i in range(steps + 1):
-            x = x1 + (dx * i) // steps
-            y = y1 + (dy * i) // steps
-            if 0 <= x < max_x and 0 <= y < max_y:
-                points.add((x,y))
+    while True:
+        if 0 <= x1 < max_x and 0 <= y1 < max_y:
+            points.add((x1, y1))
+        if x1 == x2 and y1 == y2:
+            break
+        e2 = err
+        if e2 > -dx:
+            err -= dy
+            x1 += sx
+        if e2 < dy:
+            err += dx
+            y1 += sy
     return points
 
 
