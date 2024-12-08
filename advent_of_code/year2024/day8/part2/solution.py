@@ -22,16 +22,25 @@ def get_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, hei
     x1, y1 = p1
     x2, y2 = p2
 
-    if (x1,y1) == (x2, y2):
+    if x1 == x2:
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            if 0 <= y < height:
+                points.append((x1, y))
+        return points
+
+    if y1 == y2:
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            if 0 <= x < width:
+                points.append((x, y1))
         return points
 
     dx = abs(x2 - x1)
     dy = abs(y2 - y1)
     sx = 1 if x2 > x1 else -1
     sy = 1 if y2 > y1 else -1
-    err = dx - dy    
-    x, y = x1, y1
+    err = dx - dy
 
+    x, y = x1, y1
     while True:
         if 0 <= x < width and 0 <= y < height:
             points.append((x, y))
@@ -44,7 +53,6 @@ def get_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, hei
         if e2 < dx:
             err += dx
             y += sy
-
     return points
 
 
