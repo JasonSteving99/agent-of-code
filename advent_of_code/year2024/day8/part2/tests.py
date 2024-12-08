@@ -1,21 +1,26 @@
 """
-Tests for count_part2_antinodes function that calculates resonant harmonics antinodes in a grid.
+Test module for count_part2_antinodes function.
 
-The tests verify that:
-1. The function correctly counts unique antinode locations for a grid with 'T' characters
-2. The function correctly counts unique antinode locations for a grid with mixed '0' and 'A' characters
+The function accepts a string representing a grid of antennas and calculates resonant harmonics.
+Each line in the input string represents a row in the grid, with:
+- Letters (uppercase or lowercase) representing antenna frequencies
+- '.' representing empty spaces
+- '#' representing obstacles
+- Numbers ('0') also representing frequencies
 
-The function should:
-- Take a string input representing a grid (rows separated by newlines)
-- Count unique antinode positions where any two matching characters are inline (horizontally, vertically, or diagonally)
-- Include the positions of the antennas themselves in the count
-- Return the total count as an integer
+The function should count unique antinode locations that occur when:
+- Two matching characters are aligned horizontally or vertically
+- The path between them is unobstructed
+- Including the positions of the antennas themselves
+
+The resulting count includes all unique positions where antinodes occur.
 """
 
 from solution import count_part2_antinodes
 
-def test_grid_with_t_characters():
-    grid = (
+
+def test_simple_grid_with_t_antennas():
+    input_grid = (
         "T....#....\n"
         "...T......\n"
         ".T....#...\n"
@@ -27,14 +32,18 @@ def test_grid_with_t_characters():
         "....#.....\n"
         ".........."
     )
-    result = count_part2_antinodes(grid)
-    assert result == 9, (
-        f"Expected 9 antinodes for grid with T characters, but got {result}.\n"
-        f"Input grid:\n{grid}"
+    expected_antinodes = 9
+    
+    result = count_part2_antinodes(input_grid)
+    
+    assert result == expected_antinodes, (
+        f"For grid with T antennas:\n{input_grid}\n"
+        f"Expected {expected_antinodes} antinodes but got {result}"
     )
 
-def test_grid_with_mixed_characters():
-    grid = (
+
+def test_complex_grid_with_mixed_frequencies():
+    input_grid = (
         "##....#....#\n"
         ".#.#....0...\n"
         "..#.#0....#.\n"
@@ -48,8 +57,11 @@ def test_grid_with_mixed_characters():
         ".#........#.\n"
         "...#......##"
     )
-    result = count_part2_antinodes(grid)
-    assert result == 34, (
-        f"Expected 34 antinodes for grid with mixed 0 and A characters, but got {result}.\n"
-        f"Input grid:\n{grid}"
+    expected_antinodes = 34
+    
+    result = count_part2_antinodes(input_grid)
+    
+    assert result == expected_antinodes, (
+        f"For complex grid with mixed frequencies (0 and A):\n{input_grid}\n"
+        f"Expected {expected_antinodes} antinodes but got {result}"
     )
