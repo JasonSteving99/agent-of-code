@@ -33,25 +33,18 @@ def find_collinear_points(antenna_positions: List[Tuple[int, int]], rows: int, c
     """Find all points that are collinear with at least two antennas."""
     antinodes: Set[Tuple[int, int]] = set()
 
-    # If there's only one antenna of this frequency, no antinodes are created
     if len(antenna_positions) < 2:
         return antinodes
-        
-    # Add antenna positions themselves as antinodes since they lie on lines with other antennas
-    antinodes.update(antenna_positions)
-
-    # Check every point in the grid
+    
     for i in range(rows):
         for j in range(cols):
             point = (i, j)
-            if point in antinodes:
-                continue
-                
+
             # Check if this point is collinear with any pair of antennas
             for ant1, ant2 in combinations(antenna_positions, 2):
                 if is_collinear(ant1, ant2, point):
                     antinodes.add(point)
-                    break
+                    break  # Point is collinear, no need to check other pairs
 
     return antinodes
 
