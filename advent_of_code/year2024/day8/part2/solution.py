@@ -39,13 +39,14 @@ def get_points_on_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, hei
 
     dx = x2 - x1
     dy = y2 - y1
-    
-    for i in range(max(abs(dx), abs(dy)) + 1):
-        x = x1 + (i * dx) // max(abs(dx), abs(dy))
-        y = y1 + (i * dy) // max(abs(dx), abs(dy))
-        if 0 <= x < width and 0 <= y < height:            
-            points.append((x,y))
-            
+    steps = max(abs(dx), abs(dy))
+
+    for i in range(steps + 1):
+        x = x1 + (i * dx) // steps
+        y = y1 + (i * dy) // steps
+        if 0 <= x < width and 0 <= y < height:
+            points.append((x, y))
+
     return points
 
 
