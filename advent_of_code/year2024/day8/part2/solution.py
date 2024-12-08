@@ -17,7 +17,7 @@ def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
     return coords
 
 
-def bresenham_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, int]]:
+def bresenham_line(p1: Tuple[int, int], p2: Tuple[int, int], width: int, height: int) -> Set[Tuple[int, int]]:
     """Generate points on the line segment between two points using Bresenham's algorithm."""
     x1, y1 = p1
     x2, y2 = p2
@@ -29,7 +29,8 @@ def bresenham_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, i
     err = dx - dy
 
     while True:
-        points.add((x1, y1))
+        if 0 <= x1 < width and 0 <= y1 < height:
+            points.add((x1, y1))
         if x1 == x2 and y1 == y2:
             break
         e2 = 2 * err
@@ -44,11 +45,11 @@ def bresenham_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, i
 
 
 def get_collinear_points(points: List[Tuple[int, int]], width: int, height: int) -> Set[Tuple[int, int]]:
-    """Get all collinear points between pairs of antennas."""
+    """Get all collinear points between pairs of antennas within grid bounds."""
     antinodes: Set[Tuple[int, int]] = set()
     for i in range(len(points)):
         for j in range(i + 1, len(points)):
-            antinodes.update(bresenham_line(points[i], points[j]))
+            antinodes.update(bresenham_line(points[i], points[j], width, height))
     return antinodes
 
 
