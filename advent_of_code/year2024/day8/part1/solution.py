@@ -31,18 +31,18 @@ def are_collinear(p1: Tuple[int, int], p2: Tuple[int, int],
     area = p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1])
     return abs(area) < 1e-10
 
-def find_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[int, int]]:
+def find_antinode(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[float, float]]:
     """Find antinodes for two antennas of same frequency."""
     dx = p2[0] - p1[0]
     dy = p2[1] - p1[1]
-    
+
     if dx == 0 and dy == 0:
         return []
 
     antinodes = []
     for ratio in [1/3, 3]:
-        antinode_x = int(p1[0] + dx * ratio)
-        antinode_y = int(p1[1] + dy * ratio)
+        antinode_x = p1[0] + dx * ratio
+        antinode_y = p1[1] + dy * ratio
         antinodes.append((antinode_x, antinode_y))
 
     return antinodes
@@ -56,7 +56,7 @@ def count_antinodes(grid: str) -> int:
     """Count unique antinode locations within grid bounds."""
     width, height = get_grid_bounds(grid)
     antennas = get_antennas(grid)
-    antinodes: Set[Tuple[int, int]] = set()
+    antinodes: Set[Tuple[float, float]] = set()
     
     # Find antinodes for each pair of same-frequency antennas
     for freq, positions in antennas.items():
@@ -70,7 +70,7 @@ def count_antinodes(grid: str) -> int:
                         if are_collinear(p1, p2, antinode) and \
                            is_twice_distance(antinode, p1, p2):
                             antinodes.add(antinode)
-    
+                            
     return len(antinodes)
 
 def solution() -> int:
