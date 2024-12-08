@@ -17,8 +17,7 @@ def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
     return coords
 
 
-def is_collinear(point1: Tuple[int, int], point2: Tuple[int, int], 
-                 point3: Tuple[int, int]) -> bool:
+def is_collinear(point1: Tuple[int, int], point2: Tuple[int, int], point3: Tuple[int, int]) -> bool:
     """Check if three points are collinear using the area method."""
     x1, y1 = point1
     x2, y2 = point2
@@ -26,9 +25,8 @@ def is_collinear(point1: Tuple[int, int], point2: Tuple[int, int],
     return (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) == 0
 
 
-def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int], 
-                      width: int, height: int) -> Set[Tuple[int, int]]:
-    """Get all grid points that lie on the line between two points."""
+def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int], width: int, height: int) -> Set[Tuple[int, int]]:
+    """Get all grid points that lie on the line segment between two points."""
     x1, y1 = point1
     x2, y2 = point2
     points = set()
@@ -40,13 +38,14 @@ def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int],
         for x in range(min(x1, x2), max(x1, x2) + 1):
             points.add((x, y1))
     else:
-        for x in range(width):
+        for x in range(min(x1, x2), max(x1, x2) + 1):
             y_num = (y2 - y1) * (x - x1)
             y_den = (x2 - x1)
             if y_num % y_den == 0:
                 y = y1 + (y_num // y_den)
-                if 0 <= y < height and is_collinear(point1, point2, (x,y)):
+                if 0 <= y < height and is_collinear(point1, point2, (x, y)):
                     points.add((x, y))
+
     return points
 
 
