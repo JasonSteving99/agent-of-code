@@ -39,12 +39,7 @@ def get_inline_points(p1: Point, p2: Point, width: int, height: int) -> Set[Poin
     dx = p2.x - p1.x
     dy = p2.y - p1.y
 
-    if dx == 0:
-        steps = abs(dy) + 1
-    elif dy == 0:
-        steps = abs(dx) + 1
-    else:
-        steps = abs(dx) + 1
+    steps = max(abs(dx), abs(dy)) + 1
 
     for i in range(steps):
         x = round(p1.x + (dx * i / (steps -1)))
