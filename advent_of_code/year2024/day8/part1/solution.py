@@ -7,8 +7,8 @@ from typing import Dict, List, Set, Tuple
 @dataclass(frozen=True)
 class Point:
     """Represents a point in 2D space."""
-    x: int
-    y: int
+    x: float
+    y: float
 
 
 def parse_grid(input_str: str) -> Dict[str, List[Point]]:
@@ -33,19 +33,14 @@ def find_antinodes(a1: Point, a2: Point) -> Set[Point]:
     # Vector from a1 to a2
     dx = a2.x - a1.x
     dy = a2.y - a1.y
-    
+
     # Calculate antinode points
-    # For antinode1: a1 is twice as far from antinode as a2
-    # For antinode2: a2 is twice as far from antinode as a1
-    
-    # First antinode: extend a2->a1 by half
-    antinode1_x = round(a2.x + dx / 2)
-    antinode1_y = round(a2.y + dy / 2)
+    antinode1_x = a2.x + dx / 2
+    antinode1_y = a2.y + dy / 2
     antinodes.add(Point(antinode1_x, antinode1_y))
-    
-    # Second antinode: extend a1->a2 by half
-    antinode2_x = round(a1.x - dx / 2)
-    antinode2_y = round(a1.y - dy / 2)
+
+    antinode2_x = a1.x - dx / 2
+    antinode2_y = a1.y - dy / 2
     antinodes.add(Point(antinode2_x, antinode2_y))
     
     return antinodes
@@ -61,25 +56,20 @@ def count_antinodes(grid: str) -> int:
     lines = grid.strip().split('\n')
     height = len(lines)
     width = len(lines[0])
-    
-    # Parse the grid into a dictionary of frequencies and antenna locations
+
     antennas = parse_grid(grid)
     
-    # Find all antinodes
-    all_antinodes: Set[Point] = set()
-    
-    # For each frequency
+    all_antinodes: Set[Tuple[float, float]] = set()
+
     for frequency, antenna_points in antennas.items():
-        # For each pair of antennas with the same frequency
         n = len(antenna_points)
         for i in range(n):
             for j in range(i + 1, n):
                 antinodes = find_antinodes(antenna_points[i], antenna_points[j])
-                # Only add antinodes that are within bounds
                 for antinode in antinodes:
                     if is_in_bounds(antinode, width, height):
-                        all_antinodes.add(antinode)
-    
+                        all_antinodes.add((antinode.x, antinode.y))
+
     return len(all_antinodes)
 
 
