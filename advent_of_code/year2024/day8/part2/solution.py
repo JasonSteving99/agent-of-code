@@ -19,18 +19,32 @@ def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
 
 def get_collinear_points(points: List[Tuple[int, int]], width: int, height: int) -> Set[Tuple[int, int]]:
     """Get all collinear points between pairs of antennas within grid bounds."""
+    if len(points) < 2:
+        return set()
+    
     antinodes: Set[Tuple[int, int]] = set()
     for i in range(len(points)):
         for j in range(i + 1, len(points)):
             x1, y1 = points[i]
             x2, y2 = points[j]
-            if x1 == x2:
+            
+            # Calculate all points on the line segment between (x1, y1) and (x2, y2)
+            dx = abs(x2 - x1)
+            dy = abs(y2 - y1)
+            
+            if dx == 0:
                 for y in range(min(y1, y2), max(y1, y2) + 1):
-                    antinodes.add((x1, y))
-            elif y1 == y2:
+                    if 0 <= x1 < width and 0 <= y < height:
+                        antinodes.add((x1, y))
+            elif dy == 0:
                 for x in range(min(x1, x2), max(x1, x2) + 1):
-                    antinodes.add((x, y1))
-
+                    if 0 <= x < width and 0 <= y1 < height:
+                        antinodes.add((x, y1))
+            else:  # Handle diagonal lines
+                for x in range(min(x1, x2), max(x1, x2) + 1):
+                    y = y1 + (y2 - y1) * (x - x1) // (x2 - x1)  # Integer division ensures correct y-values for collinear points
+                    if 0 <= x < width and 0 <= y < height:
+                        antinodes.add((x, y))
     return antinodes
 
 
