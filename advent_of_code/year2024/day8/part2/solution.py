@@ -19,15 +19,11 @@ def get_coordinates(grid_str: str) -> Dict[str, List[Tuple[int, int]]]:
 
 def is_collinear(point1: Tuple[int, int], point2: Tuple[int, int], 
                  point3: Tuple[int, int]) -> bool:
-    """Check if three points are collinear."""
+    """Check if three points are collinear using the area method."""
     x1, y1 = point1
     x2, y2 = point2
     x3, y3 = point3
-    
-    # Calculate the area of the triangle formed by the three points
-    # If area is 0, points are collinear
-    area = (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2
-    return abs(area) == 0
+    return (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) == 0
 
 
 def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int], 
@@ -35,18 +31,22 @@ def get_points_on_line(point1: Tuple[int, int], point2: Tuple[int, int],
     """Get all grid points that lie on the line between two points."""
     x1, y1 = point1
     x2, y2 = point2
-    points = {(x1, y1), (x2, y2)}
-    
-    # For each point in the grid bounds
-    for x in range(width):
-        for y in range(height):
-            if (x, y) != point1 and (x, y) != point2:
-                if is_collinear(point1, point2, (x, y)):
-                    # Check if point lies between the two endpoints
-                    if (min(x1, x2) <= x <= max(x1, x2) and 
-                        min(y1, y2) <= y <= max(y1, y2)):
-                        points.add((x, y))
-    
+    points = set()
+
+    if x1 == x2:
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            points.add((x1, y))
+    elif y1 == y2:
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            points.add((x, y1))
+    else:
+        for x in range(width):
+            y_num = (y2 - y1) * (x - x1)
+            y_den = (x2 - x1)
+            if y_num % y_den == 0:
+                y = y1 + (y_num // y_den)
+                if 0 <= y < height and is_collinear(point1, point2, (x,y)):
+                    points.add((x, y))
     return points
 
 
@@ -59,16 +59,10 @@ def count_antinodes_harmonic(grid: str) -> int:
 
     freq_coords = get_coordinates(grid)
 
-    # For each frequency
     for freq, coords in freq_coords.items():
-        # If there's more than one antenna of this frequency
         if len(coords) >= 2:
-            # Add all antenna positions as antinodes (since they're collinear with others)
             antinodes.update(coords)
-            
-            # For each pair of antennas
             for point1, point2 in combinations(coords, 2):
-                # Get all points that lie on the line between these antennas
                 line_points = get_points_on_line(point1, point2, width, height)
                 antinodes.update(line_points)
 
