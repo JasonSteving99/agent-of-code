@@ -5,37 +5,28 @@ from typing import List, Set, Tuple
 
 
 def points_on_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, int]]:
-    """Returns all points that lie on a line between two points."""
+    """Returns all points that lie on a line between two points using Bresenham's line algorithm."""
     x1, y1 = p1
     x2, y2 = p2
-    points = {(x1, y1), (x2, y2)}
-    
-    dx = x2 - x1
-    dy = y2 - y1
-    
-    # Vertical line
-    if dx == 0:
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            points.add((x1, y))
-        return points
-        
-    # Horizontal line
-    if dy == 0:
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            points.add((x, y1))
-        return points
-        
-    # Diagonal line
-    steps = abs(dx) if abs(dx) > abs(dy) else abs(dy)
-    x_inc = dx / steps
-    y_inc = dy / steps
-    
-    x, y = x1, y1
-    for _ in range(steps + 1):
-        points.add((round(x), round(y)))
-        x += x_inc
-        y += y_inc
-        
+    points = set()
+
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+    err = dx - dy
+
+    while True:
+        points.add((x1, y1))
+        if x1 == x2 and y1 == y2:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x1 += sx
+        if e2 < dx:
+            err += dx
+            y1 += sy
     return points
 
 
