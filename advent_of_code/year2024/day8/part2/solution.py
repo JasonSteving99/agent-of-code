@@ -4,13 +4,9 @@ import sys
 
 def is_collinear(p1: Tuple[int, int], p2: Tuple[int, int], p3: Tuple[int, int]) -> bool:
     """Checks if three points are collinear horizontally, vertically, or diagonally."""
-    if p1 == p2 or p2 == p3 or p1 == p3:
+    if (p1[0] == p2[0] == p3[0]) or (p1[1] == p2[1] == p3[1]):
         return True
-    if p1[0] == p2[0] == p3[0] or p1[1] == p2[1] == p3[1]:
-        return True
-
-    return abs((p2[1] - p1[1]) * (p3[0] - p1[0])) == abs((p3[1] - p1[1]) * (p2[0] - p1[0]))
-
+    return abs((p2[1] - p1[1]) * (p3[0] - p2[0])) == abs((p3[1] - p2[1]) * (p2[0] - p1[0]))
 
 def get_positions_of_frequency(grid: List[str], freq: str) -> List[Tuple[int, int]]:
     """Returns list of (row, col) coordinates where given frequency appears."""
@@ -27,12 +23,14 @@ def get_antinodes_for_frequency(positions: List[Tuple[int, int]], rows: int, col
     antinodes: Set[Tuple[int, int]] = set()
     for r in range(rows):
         for c in range(cols):
-            count = 0
-            for pos in positions:
-                if is_collinear(positions[0], (r, c), pos):
-                    count += 1
-            if count >= 2:
-                antinodes.add((r, c))
+            for i in range(len(positions)):
+                for j in range(i + 1, len(positions)):
+                    if is_collinear(positions[i], positions[j], (r, c)):
+                        antinodes.add((r, c))
+                        break  # Inner loop can break early
+                else:
+                    continue  # Only executed if the inner loop did NOT break
+                break  # Outer loop can break early
     return antinodes
 
 
