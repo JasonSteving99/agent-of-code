@@ -27,10 +27,9 @@ def get_antinodes_for_frequency(positions: List[Tuple[int, int]], rows: int, col
                 for j in range(i + 1, len(positions)):
                     if is_collinear(positions[i], positions[j], (r, c)):
                         antinodes.add((r, c))
-                        break  # Inner loop can break early
-                else:
-                    continue  # Only executed if the inner loop did NOT break
-                break  # Outer loop can break early
+                        break
+                if (r,c) in antinodes:
+                    break
     return antinodes
 
 
