@@ -4,35 +4,29 @@ from collections import defaultdict
 from typing import List, Set, Tuple
 
 
-def gcd(a: int, b: int) -> int:
-    """Calculate the greatest common divisor."""
-    while b:
-        a, b = b, a % b
-    return a
-
-
 def points_on_line(p1: Tuple[int, int], p2: Tuple[int, int]) -> Set[Tuple[int, int]]:
     """Returns all integer points on the line segment between two points."""
     x1, y1 = p1
     x2, y2 = p2
-    
-    dx = x2 - x1
-    dy = y2 - y1
-    
-    if dx == 0:
-        return {(x1, y) for y in range(min(y1, y2), max(y1, y2) + 1)}
-    
-    if dy == 0:
-        return {(x, y1) for x in range(min(x1, x2), max(x1, x2) + 1)}
-        
-    common_divisor = gcd(abs(dx), abs(dy))
-    dx //= common_divisor
-    dy //= common_divisor
-
     points = set()
-    for i in range(common_divisor + 1):
-        points.add((x1 + i * dx, y1 + i * dy))
 
+    min_x, max_x = min(x1, x2), max(x1, x2)
+    min_y, max_y = min(y1, y2), max(y1, y2)
+    
+    if x1 == x2:
+        for y in range(min_y, max_y + 1):
+            points.add((x1,y))
+        return points
+
+    if y1 == y2:
+        for x in range(min_x, max_x + 1):
+            points.add((x,y1))
+        return points
+        
+    for x in range(min_x, max_x + 1):
+        for y in range(min_y, max_y + 1):
+            if (y - y1) * (x2 - x1) == (y2 - y1) * (x - x1):
+                 points.add((x, y))
     return points
 
 
