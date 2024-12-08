@@ -24,11 +24,11 @@ def count_antinodes(input_str: str) -> int:
                 dr = r2 - r1
                 dc = c2 - c1
 
-                # Calculate potential antinode positions
-                ar1 = int(round(r1 - dr / 2))
-                ac1 = int(round(c1 - dc / 2))
-                ar2 = int(round(r2 + dr / 2))
-                ac2 = int(round(c2 + dc / 2))
+                # Calculate potential antinode positions using integer division
+                ar1 = r1 - dr // 2
+                ac1 = c1 - dc // 2
+                ar2 = r2 + dr // 2
+                ac2 = c2 + dc // 2
 
                 if 0 <= ar1 < rows and 0 <= ac1 < cols:
                     antinodes.add((ar1, ac1))
