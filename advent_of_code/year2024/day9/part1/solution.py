@@ -23,15 +23,17 @@ def create_block_representation(parsed_disk_map: List[Tuple[int, int]]) -> List[
 
 def compact_disk(blocks: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     """Compact disk by moving files to leftmost possible position."""
-    compacted_blocks = blocks.copy()
     total_blocks = sum(length for _, length in blocks)
     result = []
     current_pos = 0
+    block_index = 0
 
-    while current_pos < total_blocks and compacted_blocks:
-        file_id, length = compacted_blocks.pop(0)
+    while current_pos < total_blocks and block_index < len(blocks):
+        file_id, length = blocks[block_index]
         result.append((file_id, length))
         current_pos += length
+        block_index += 1
+
     return result
 
 def calculate_checksum(blocks: List[Tuple[int, int]]) -> int:
