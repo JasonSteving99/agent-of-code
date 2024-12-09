@@ -120,6 +120,7 @@ class GetGeneratedImplementationArgs(BaseModel):
     extracted_problem_part: ExtractedProblemPart
     examples_context: ExamplesContext
     solve_part_2: bool
+    part_1_generated_implementation: GenerateImplementationOutput | None = None
     debugging_prompt: DebuggingPrompt | None = None
 
 
@@ -131,6 +132,7 @@ async def get_generated_implementation(
         problem_html=args.extracted_problem_part.problem_html,
         examples_context=args.examples_context,
         solve_part_2=args.solve_part_2,
+        part_1_generated_implementation=args.part_1_generated_implementation,
         debugging_prompt=args.debugging_prompt,
     )
 

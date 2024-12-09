@@ -77,7 +77,7 @@ class SolveAoCProblemWorkflow:
         )
 
         # Start by solving part 1.
-        part_1_solution = await self._solve_part(
+        part_1_solution, part_1_implementation = await self._solve_part(
             solve_aoc_part_1_problem_req,
             problem_part,
             solutions_dir=path_join(args.solutions_dir, "part1"),
@@ -94,11 +94,12 @@ class SolveAoCProblemWorkflow:
         problem_part = await self._scrape_problem_part(
             problem_req=solve_aoc_part_2_problem_req, solutions_dir=args.solutions_dir
         )
-        part_2_solution = await self._solve_part(
+        part_2_solution, _ = await self._solve_part(
             solve_aoc_part_2_problem_req,
             problem_part,
             solutions_dir=path_join(args.solutions_dir, "part2"),
             dry_run=args.dry_run,
+            part_1_generated_implementation=part_1_implementation,
         )
 
         # Return the solutions we were able to get.
@@ -130,29 +131,30 @@ class SolveAoCProblemWorkflow:
         problem_part: ExtractedProblemPart,
         solutions_dir: str,
         dry_run: bool,
-    ) -> GeneratedSolutionRes:
+        part_1_generated_implementation: GenerateImplementationOutput | None = None,
+    ) -> tuple[GeneratedSolutionRes, GenerateImplementationOutput]:
         # Some of the prompts get modified to extract solutions to part 2.
         solve_part_2 = solve_aoc_problem_req.part == 2
 
-        extracted_examples = await workflow.execute_activity(
-            extract_examples,
-            ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
-            start_to_close_timeout=timedelta(seconds=60),
-            retry_policy=RetryPolicy(maximum_attempts=5),
-        )
-
-        examples_context = await workflow.execute_activity(
-            get_examples_context,
-            GetExamplesContextArgs(
-                extracted_problem_part=problem_part,
-                extracted_examples=extracted_examples,
-                solve_part_2=solve_part_2,
-            ),
-            start_to_close_timeout=timedelta(seconds=60),
-            retry_policy=RetryPolicy(maximum_attempts=5),
-        )
-
         for i in range(_MAX_PROBLEM_PART_ATTEMPTS):
+            extracted_examples = await workflow.execute_activity(
+                extract_examples,
+                ExtractExamplesArgs(extracted_problem_part=problem_part, solve_part_2=solve_part_2),
+                start_to_close_timeout=timedelta(seconds=60),
+                retry_policy=RetryPolicy(maximum_attempts=5),
+            )
+
+            examples_context = await workflow.execute_activity(
+                get_examples_context,
+                GetExamplesContextArgs(
+                    extracted_problem_part=problem_part,
+                    extracted_examples=extracted_examples,
+                    solve_part_2=solve_part_2,
+                ),
+                start_to_close_timeout=timedelta(seconds=60),
+                retry_policy=RetryPolicy(maximum_attempts=5),
+            )
+
             # Since I don't think I should show the unit tests to the LLM when asking it to generate
             # the implementation, I can just go ahead and generate the initial implementation
             # concurrently.
@@ -171,6 +173,7 @@ class SolveAoCProblemWorkflow:
                         extracted_problem_part=problem_part,
                         examples_context=examples_context,
                         solve_part_2=solve_part_2,
+                        part_1_generated_implementation=part_1_generated_implementation,
                     ),
                     start_to_close_timeout=timedelta(seconds=60),
                     retry_policy=RetryPolicy(maximum_attempts=5),
@@ -253,7 +256,7 @@ class SolveAoCProblemWorkflow:
                 case _:
                     raise ValueError("Unexpected result type!")
 
-        return problem_solution_result
+        return problem_solution_result, implementation
 
 
 async def iteratively_make_unit_tests_pass(

@@ -32,7 +32,10 @@ class GenerateImplementationOutput(PromptHistory, BaseModel):
     generated_implementation: GeneratedImplementation
 
 
-def _get_initial_attempt_system_prompt_text(solve_part_2: bool) -> str:
+def _get_initial_attempt_system_prompt_text(
+    solve_part_2: bool,
+    part_1_generated_implementation: GenerateImplementationOutput | None,
+) -> str:
     GENERATED_CODE_RULES = """
 You MUST respond with a single complete Python 3.12 program with full type annotations. 
 IMPORTANT: ONLY use imports from Python's stdlib. DO NOT use any third party libraries whatsoever in your implementation.
@@ -53,16 +56,19 @@ Your goal is to provide a succinct and correct solution to the given coding prob
 
 Remember to ignore all HTML tags and carefully attempt to solve the problem.
 
-{"""
+{GENERATED_CODE_RULES}
+{f"""
  !!!!MOST IMPORTANT!!!!: 
     - You are tasked with solving PART 2 of a multi-part problem that BUILDS ON TOP OF PART 1.
     - The problem parts 1 and 2 are denoted by the following HTML comments: "<!-- Part 1 -->", and "<!-- Part 2 -->".
     - You MUST FOCUS on part 2.
     - Keep in mind that part 2 is a modification/variation on part 1 so pay attention to how part 2 specifies modifications on part 1.
     - Part 2 specifies completely new example inputs and outputs - GENERATE A SOLUTION FOR PART 2 ONLY! 
-
- """ if solve_part_2 else ""}
-{GENERATED_CODE_RULES}
+{f"""
+HERE IS A WORKING PYTHON PROGRAM THAT SOLVES PART 1 (you may make use of the logic within this program to solve part 2, but keep in mind that part 2 is a modification/variation on part 1 so pay attention to how part 2's solution will need to differ from the solution to part 1):
+{part_1_generated_implementation.generated_implementation.generated_implementation_file_content}""" 
+if part_1_generated_implementation else ""}
+""" if solve_part_2 else ""}
 """  # noqa: E501
     return INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT
 
@@ -71,6 +77,7 @@ async def generate_implementation(
     problem_html: str,
     examples_context: ExamplesContext,
     solve_part_2: bool,
+    part_1_generated_implementation: GenerateImplementationOutput | None = None,
     debugging_prompt: DebuggingPrompt | None = None,
 ) -> GenerateImplementationOutput:
     generate_implementation_prompt = _get_generate_implementation_prompt(
@@ -81,7 +88,8 @@ async def generate_implementation(
     # The initial prompt will use the more capable Clause Sonnet 3.5 model, but subsequent debugging
     # requests will use Gemini 1.5 Pro.
     INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT = _get_initial_attempt_system_prompt_text(
-        solve_part_2=solve_part_2
+        solve_part_2=solve_part_2,
+        part_1_generated_implementation=part_1_generated_implementation,
     )
     if debugging_prompt:
         generated_implementation = await gemini_prompt(
