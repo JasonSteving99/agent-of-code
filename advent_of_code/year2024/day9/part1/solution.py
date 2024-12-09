@@ -6,13 +6,13 @@ from typing import List, Tuple
 
 def parse_disk_map(disk_map: str) -> List[Tuple[int, int]]:
     """Parse disk map into a list of (file_length, free_space) tuples."""
-    segments = [int(c) for c in disk_map]
-    result = []
-    for i in range(0, len(segments), 2):
-        file_length = segments[i]
-        free_space = segments[i + 1] if i + 1 < len(segments) else 0
-        result.append((file_length, free_space))
-    return result
+    file_lengths = [int(x) for x in disk_map[::2]]
+    free_spaces = [int(x) for x in disk_map[1::2]]
+
+    if len(file_lengths) > len(free_spaces):
+        free_spaces.append(0)
+
+    return list(zip(file_lengths, free_spaces))
 
 def create_block_representation(parsed_disk_map: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     """Create a list of (file_id, length) tuples from parsed disk map."""
@@ -32,19 +32,16 @@ def compact_disk(blocks: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         file_id, length = compacted_blocks.pop(0)
         result.append((file_id, length))
         current_pos += length
-
     return result
 
 def calculate_checksum(blocks: List[Tuple[int, int]]) -> int:
     """Calculate filesystem checksum based on file positions and IDs."""
     checksum = 0
     current_pos = 0
-
     for file_id, length in blocks:
         for pos in range(current_pos, current_pos + length):
             checksum += pos * file_id
         current_pos += length
-
     return checksum
 
 def calculate_disk_checksum(disk_map: str) -> int:
