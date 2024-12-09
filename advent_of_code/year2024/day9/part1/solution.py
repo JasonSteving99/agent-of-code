@@ -4,15 +4,20 @@ Takes a disk map and returns checksum after defragmentation.
 """
 from typing import List, Tuple
 
-def parse_disk_map(disk_map: str) -> List[int]:
-    """Parse disk map into a list of file lengths."""
-    return [int(disk_map[i]) for i in range(0, len(disk_map), 2)]
+def parse_disk_map(disk_map: str) -> List[Tuple[int, int]]:
+    """Parse disk map into a list of (file_length, free_space) tuples."""
+    result = []
+    for i in range(0, len(disk_map), 2):
+        file_length = int(disk_map[i])
+        free_space = int(disk_map[i + 1]) if i + 1 < len(disk_map) else 0
+        result.append((file_length, free_space))
+    return result
 
-def create_block_representation(files: List[int]) -> List[Tuple[int, int]]:
-    """Create a list of (file_id, length) tuples from file lengths."""
+def create_block_representation(parsed_disk_map: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    """Create a list of (file_id, length) tuples from parsed disk map."""
     blocks: List[Tuple[int, int]] = []
-    for i, file_len in enumerate(files):
-        blocks.append((i, file_len))
+    for i, (file_length, _) in enumerate(parsed_disk_map):
+        blocks.append((i, file_length))
     return blocks
 
 def compact_disk(blocks: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
@@ -51,8 +56,8 @@ def calculate_disk_checksum(disk_map: str) -> int:
     Returns:
         The filesystem checksum after compaction
     """
-    files = parse_disk_map(disk_map)
-    blocks = create_block_representation(files)
+    parsed_disk_map = parse_disk_map(disk_map)
+    blocks = create_block_representation(parsed_disk_map)
     compacted_blocks = compact_disk(blocks)
     return calculate_checksum(compacted_blocks)
 
