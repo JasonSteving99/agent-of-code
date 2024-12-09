@@ -26,13 +26,13 @@ def test_calculate_disk_checksum_with_valid_long_input():
 
 
 def test_calculate_disk_checksum_with_short_input_returning_null():
-    """Test calculate_disk_checksum with a shorter input that should return None."""
+    """Test calculate_disk_checksum with a shorter input that should not return None."""
     # Given a shorter disk map string
     disk_map = "12345"
     
     # When calculating the checksum
     result = calculate_disk_checksum(disk_map)
     
-    # Then we expect None as the result
-    assert result is None, \
-        f"calculate_disk_checksum('{disk_map}') returned {result}, expected None"
+    # Then we expect 60 as the result
+    assert result == 60, \
+        f"calculate_disk_checksum('{disk_map}') returned {result}, expected 60"
