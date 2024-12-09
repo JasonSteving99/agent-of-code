@@ -1,28 +1,38 @@
 """
-These tests cover the disk defragmentation and checksum calculation functionality.
-The tests verify:
-1. Processing of a complex disk map with multiple files and free spaces
-2. Handling of a simple disk map case that cannot be defragmented
+This test suite covers the calculate_disk_checksum function which processes a disk map string
+and returns a checksum value. The function should:
+1. Take a string input representing disk sectors
+2. Process and compact the disk map according to some rules
+3. Return either an integer checksum for valid cases, or None for cases that don't produce a final checksum
+
+The exact compacting and checksum calculation rules will be implemented in the solution,
+these tests verify the expected input/output behavior based on provided examples.
 """
 
 from solution import calculate_disk_checksum
 
 
-def test_complex_disk_map_with_checksum():
+def test_calculate_disk_checksum_with_valid_long_input():
+    """Test calculate_disk_checksum with a longer input that produces a valid checksum."""
+    # Given a longer disk map string
     disk_map = "2333133121414131402"
-    expected_checksum = 1928
+    
+    # When calculating the checksum
     result = calculate_disk_checksum(disk_map)
-    assert result == expected_checksum, (
-        f"Failed to calculate correct checksum for disk map '{disk_map}'\n"
-        f"Expected: {expected_checksum}, but got: {result}"
-    )
+    
+    # Then we expect the specific checksum value
+    assert result == 1928, \
+        f"calculate_disk_checksum('{disk_map}') returned {result}, expected 1928"
 
 
-def test_simple_disk_map_no_checksum():
+def test_calculate_disk_checksum_with_short_input_returning_null():
+    """Test calculate_disk_checksum with a shorter input that should return None."""
+    # Given a shorter disk map string
     disk_map = "12345"
-    expected_result = None
+    
+    # When calculating the checksum
     result = calculate_disk_checksum(disk_map)
-    assert result == expected_result, (
-        f"Failed to handle simple disk map '{disk_map}' correctly\n"
-        f"Expected: {expected_result}, but got: {result}"
-    )
+    
+    # Then we expect None as the result
+    assert result is None, \
+        f"calculate_disk_checksum('{disk_map}') returned {result}, expected None"

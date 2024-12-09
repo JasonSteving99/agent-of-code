@@ -1,67 +1,68 @@
-"""
-Solution for Day 9: Disk Fragmenter.
-Takes a disk map and returns checksum after defragmentation.
-"""
+"""Solution for Disk Fragmenter problem."""
 from typing import List, Tuple
+import sys
 
-def parse_disk_map(disk_map: str) -> List[Tuple[int, int]]:
-    """Parse disk map into a list of (file_length, free_space) tuples."""
-    file_lengths = [int(x) for x in disk_map[::2]]
-    free_spaces = [int(x) for x in disk_map[1::2]]
 
-    if len(file_lengths) > len(free_spaces):
-        free_spaces.append(0)
+def parse_disk_map(disk_map: str) -> Tuple[List[int], List[int]]:
+    """Parse disk map into file and space sizes."""
+    file_sizes = [int(disk_map[i]) for i in range(0, len(disk_map), 2)]
+    space_sizes = [int(disk_map[i]) for i in range(1, len(disk_map), 2)]
+    return file_sizes, space_sizes
 
-    return list(zip(file_lengths, free_spaces))
 
-def create_block_representation(parsed_disk_map: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
-    """Create a list of (file_id, length) tuples from parsed disk map."""
-    blocks: List[Tuple[int, int]] = []
-    for i, (file_length, _) in enumerate(parsed_disk_map):
-        blocks.append((i, file_length))
+def create_block_representation(file_sizes: List[int], space_sizes: List[int]) -> List[int]:
+    """Create block representation where each element represents file ID or -1 for space."""
+    blocks: List[int] = []
+    for file_id, (file_size, space_size) in enumerate(zip(file_sizes, space_sizes + [0])):
+        blocks.extend([file_id] * file_size)
+        blocks.extend([-1] * space_size)
     return blocks
 
-def compact_disk(blocks: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
-    """Compact disk by moving files to leftmost possible position."""
-    total_blocks = sum(length for _, length in blocks)
-    result = []
-    current_pos = 0
-    block_index = 0
 
-    while current_pos < total_blocks and block_index < len(blocks):
-        file_id, length = blocks[block_index]
-        result.append((file_id, length))
-        current_pos += length
-        block_index += 1
+def compact_disk(blocks: List[int]) -> List[int]:
+    """Compact the disk by moving files to the left."""
+    while True:
+        # Find leftmost free space
+        left_space = -1
+        for i, block in enumerate(blocks):
+            if block == -1:
+                left_space = i
+                break
+        if left_space == -1:
+            break
 
-    return result
+        # Find rightmost file block
+        right_file = -1
+        right_file_id = -1
+        for i in range(len(blocks) - 1, -1, -1):
+            if blocks[i] != -1:
+                right_file = i
+                right_file_id = blocks[i]
+                break
+        if right_file == -1 or right_file < left_space:
+            break
 
-def calculate_checksum(blocks: List[Tuple[int, int]]) -> int:
-    """Calculate filesystem checksum based on file positions and IDs."""
-    checksum = 0
-    current_pos = 0
-    for file_id, length in blocks:
-        for pos in range(current_pos, current_pos + length):
-            checksum += pos * file_id
-        current_pos += length
-    return checksum
+        # Move file block
+        blocks[left_space] = right_file_id
+        blocks[right_file] = -1
+
+    return blocks
+
+
+def calculate_checksum(blocks: List[int]) -> int:
+    """Calculate filesystem checksum."""
+    return sum(pos * file_id for pos, file_id in enumerate(blocks) if file_id != -1)
+
 
 def calculate_disk_checksum(disk_map: str) -> int:
-    """
-    Calculate the checksum of a disk after compacting all files.
-
-    Args:
-        disk_map: A string representing the disk map
-
-    Returns:
-        The filesystem checksum after compaction
-    """
-    parsed_disk_map = parse_disk_map(disk_map)
-    blocks = create_block_representation(parsed_disk_map)
+    """Calculate the disk checksum after compacting."""
+    file_sizes, space_sizes = parse_disk_map(disk_map)
+    blocks = create_block_representation(file_sizes, space_sizes)
     compacted_blocks = compact_disk(blocks)
     return calculate_checksum(compacted_blocks)
 
+
 def solution() -> int:
-    """Read input from stdin and return the solution."""
-    disk_map = input().strip()
+    """Read disk map from stdin and return the checksum."""
+    disk_map = sys.stdin.readline().strip()
     return calculate_disk_checksum(disk_map)
