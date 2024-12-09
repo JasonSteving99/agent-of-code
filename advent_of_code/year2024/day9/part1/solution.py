@@ -6,10 +6,11 @@ from typing import List, Tuple
 
 def parse_disk_map(disk_map: str) -> List[Tuple[int, int]]:
     """Parse disk map into a list of (file_length, free_space) tuples."""
+    segments = [int(c) for c in disk_map]
     result = []
-    for i in range(0, len(disk_map), 2):
-        file_length = int(disk_map[i])
-        free_space = int(disk_map[i + 1]) if i + 1 < len(disk_map) else 0
+    for i in range(0, len(segments), 2):
+        file_length = segments[i]
+        free_space = segments[i + 1] if i + 1 < len(segments) else 0
         result.append((file_length, free_space))
     return result
 
