@@ -4,7 +4,7 @@ import sys
 
 def parse_map(input_str: str) -> List[List[int]]:
     """Parse the input string into a 2D grid of integers."""
-    return [[int(c) for c in line] for line in input_str.strip().split('\n')]
+    return [[int(c) if c.isdigit() else -1 for c in line] for line in input_str.strip().split('\n')]
 
 
 def find_trailheads(grid: List[List[int]]) -> List[Tuple[int, int]]:
@@ -21,7 +21,7 @@ def get_neighbors(pos: Tuple[int, int], grid: List[List[int]]) -> List[Tuple[int
     
     for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # right, down, left, up
         new_r, new_c = r + dr, c + dc
-        if 0 <= new_r < rows and 0 <= new_c < cols:
+        if 0 <= new_r < rows and 0 <= new_c < cols and grid[new_r][new_c] != -1:
             neighbors.append((new_r, new_c))
     
     return neighbors
@@ -47,6 +47,7 @@ def count_reachable_peaks(start: Tuple[int, int], grid: List[List[int]]) -> int:
             
         new_path = path | {pos}
         for next_pos in get_neighbors(pos, grid):
+
             nr, nc = next_pos
             if grid[nr][nc] == current_height + 1:  # Only consider positions with height + 1
                 if (pos, next_pos) not in visited:
