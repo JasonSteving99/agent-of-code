@@ -7,7 +7,7 @@ from agent import settings
 from agent.llm.gemini.configure_genai import configure_genai
 from agent.temporal import activities
 from agent.temporal.client import get_temporal_client
-from agent.temporal.workflow import SolveAoCProblemWorkflow
+from agent.temporal.workflow import GenerateCelebratoryImageWorkflow, SolveAoCProblemWorkflow
 
 
 @click.command()
@@ -23,7 +23,7 @@ async def main() -> None:
         await get_temporal_client(),
         # TODO(steving) Generalize this to enable running locally or against prod Temporal Cloud.
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
-        workflows=[SolveAoCProblemWorkflow],
+        workflows=[SolveAoCProblemWorkflow, GenerateCelebratoryImageWorkflow],
         activities=[
             activities.extract_problem_part,
             activities.extract_examples,
@@ -36,6 +36,9 @@ async def main() -> None:
             activities.debug_unit_test_failures,
             activities.plan_impl_refactoring,
             activities.submit_solution,
+            activities.extract_story_summary,
+            activities.meta_get_image_generation_prompt,
+            activities.generate_celebratory_image,
         ],
     )
 

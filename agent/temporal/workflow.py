@@ -25,6 +25,8 @@ with workflow.unsafe.imports_passed_through():
         ExtractExamplesArgs,
         ExtractProblemPartArgs,
         ExtractedProblemPart,
+        FileToCommit,
+        GenerateCelebratoryImageArgs,
         GeneratedSolutionRes,
         GetExamplesContextArgs,
         GetGeneratedImplementationArgs,
@@ -37,6 +39,9 @@ with workflow.unsafe.imports_passed_through():
         extract_examples,
         extract_problem_part,
         get_examples_context,
+        extract_story_summary,
+        meta_get_image_generation_prompt,
+        generate_celebratory_image,
         get_generated_implementation,
         get_generated_unit_tests,
         plan_impl_refactoring,
@@ -62,9 +67,15 @@ class SolveAoCProblemWorkflowArgs(BaseModel):
 
 
 class SolveAoCProblemWorkflowResult(BaseModel):
+    class CelebratoryImageGenerationContext(BaseModel):
+        problem_req: AoCProblem
+        problem_part: ExtractedProblemPart
+
     part_1_solution: GeneratedSolutionRes
     # Only populated if part 1 was solved successfully.
     part_2_solution: GeneratedSolutionRes | None
+    # Only populated if part 2 was solved successfully.
+    celebratory_image_generation_context: CelebratoryImageGenerationContext | None = None
 
 
 @workflow.defn
@@ -104,7 +115,12 @@ class SolveAoCProblemWorkflow:
 
         # Return the solutions we were able to get.
         return SolveAoCProblemWorkflowResult(
-            part_1_solution=part_1_solution, part_2_solution=part_2_solution
+            part_1_solution=part_1_solution,
+            part_2_solution=part_2_solution,
+            celebratory_image_generation_context=SolveAoCProblemWorkflowResult.CelebratoryImageGenerationContext(
+                problem_req=solve_aoc_part_2_problem_req,
+                problem_part=problem_part,
+            ),
         )
 
     async def _scrape_problem_part(
@@ -188,9 +204,17 @@ class SolveAoCProblemWorkflow:
                 commit_changes,
                 CommitChangesArgs(
                     aoc_problem=solve_aoc_problem_req,
+                    files=[
+                        FileToCommit(
+                            filename="tests.py",
+                            content=unit_tests.generated_unit_tests.generated_unit_test_file_content,
+                        ),
+                        FileToCommit(
+                            filename="solution.py",
+                            content=implementation.generated_implementation.generated_implementation_file_content,
+                        ),
+                    ],
                     solutions_dir=solutions_dir,
-                    unit_tests=unit_tests.generated_unit_tests,
-                    implementation=implementation.generated_implementation,
                     commit_message="Initial Attempt",
                     dry_run=dry_run,
                 ),
@@ -367,9 +391,17 @@ async def iteratively_make_unit_tests_pass(
                     commit_changes,
                     CommitChangesArgs(
                         aoc_problem=solve_aoc_problem_req,
+                        files=[
+                            FileToCommit(
+                                filename="tests.py",
+                                content=unit_tests.generated_unit_tests.generated_unit_test_file_content,
+                            ),
+                            FileToCommit(
+                                filename="solution.py",
+                                content=implementation.generated_implementation.generated_implementation_file_content,
+                            ),
+                        ],
                         solutions_dir=solutions_dir,
-                        unit_tests=unit_tests.generated_unit_tests,
-                        implementation=implementation.generated_implementation,
                         commit_message=f"""Unit Test Failure Fixes (#{attempt})
 
 ### Addressing the following unit test failures:
@@ -411,3 +443,78 @@ async def _run_unit_tests(solve_aoc_problem_req: AoCProblem) -> TestResults:
         start_to_close_timeout=timedelta(minutes=4),
         retry_policy=RetryPolicy(maximum_attempts=2),
     )
+
+
+class GenerateCelebratoryImageWorkflowArgs(BaseModel):
+    problem_req: AoCProblem
+    problem_part: ExtractedProblemPart
+    solutions_dir: str
+    dry_run: bool
+
+
+# Gonna do AI art generation as a fully separate workflow literally just so that I can keep the
+# timing of the actual AI agent problem solving isolated from AI art generation since I'm trying to
+# get a representative look at what global leaderboard ranking I *could've* gotten if I'd been
+# willing to be a rule-breaker (which I'm not).
+@workflow.defn
+class GenerateCelebratoryImageWorkflow:
+    @workflow.run
+    async def generate_problem_story_image(
+        self, args: GenerateCelebratoryImageWorkflowArgs
+    ) -> None:
+        """Generates a problem story image using DALL-E."""
+        problem_story_summary = await workflow.execute_activity(
+            extract_story_summary,
+            args.problem_part.problem_html,
+            start_to_close_timeout=timedelta(seconds=20),
+            retry_policy=RetryPolicy(maximum_attempts=3),
+        )
+        image_generation_prompt = await workflow.execute_activity(
+            meta_get_image_generation_prompt,
+            problem_story_summary,
+            start_to_close_timeout=timedelta(seconds=20),
+            retry_policy=RetryPolicy(maximum_attempts=3),
+        )
+        await workflow.execute_activity(
+            generate_celebratory_image,
+            GenerateCelebratoryImageArgs(
+                image_generation_prompt=image_generation_prompt,
+                solutions_dir=args.solutions_dir,
+            ),
+            start_to_close_timeout=timedelta(seconds=90),
+            retry_policy=RetryPolicy(maximum_attempts=3),
+        )
+
+        # Make sure to commit the actual image to git.
+        await workflow.execute_activity(
+            commit_changes,
+            CommitChangesArgs(
+                aoc_problem=args.problem_req,
+                files=[
+                    # We already wrote the image file itself to the local file system in the prior
+                    # step. But let's write a markdown file to nicely render the image and
+                    # generation context.
+                    FileToCommit(
+                        filename="generated_aoc_story_image_prompt_context.md",
+                        content=f"""### The image was generated using DALL-E and saved to `generated_aoc_story_image.png`.
+<img src="https://github.com/JasonSteving99/agent-of-code/blob/main/advent_of_code/year{args.problem_req.year}/day{args.problem_req.day}/generated_aoc_story_image.png?raw=true" width="1024" height="1024">
+                    
+### Extracted the following story summary from today's AoC problem HTML:
+```json
+{problem_story_summary.model_dump_json(indent=4)}
+```
+
+### The following meta image generation prompt was generated from the above story summary:
+```text
+{image_generation_prompt}
+```
+""",  # noqa: E501
+                    ),
+                ],
+                solutions_dir=args.solutions_dir,
+                commit_message="Celebratory AoC AI Art!",
+                dry_run=args.dry_run,
+            ),
+            start_to_close_timeout=timedelta(seconds=60),
+            retry_policy=RetryPolicy(maximum_attempts=5),
+        )

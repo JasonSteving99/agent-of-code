@@ -4,7 +4,12 @@ import asyncclick as click
 
 from agent import settings
 from agent.temporal.client import get_temporal_client
-from agent.temporal.workflow import SolveAoCProblemWorkflow, SolveAoCProblemWorkflowArgs
+from agent.temporal.workflow import (
+    GenerateCelebratoryImageWorkflow,
+    GenerateCelebratoryImageWorkflowArgs,
+    SolveAoCProblemWorkflow,
+    SolveAoCProblemWorkflowArgs,
+)
 
 
 @click.command()
@@ -39,6 +44,20 @@ async def main(
         id=f"solve-aoc-problem-{year}-{day}",
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
     )
+
+    # Generate a celebratory image to remember the problem by!
+    if result.celebratory_image_generation_context:
+        await client.execute_workflow(
+            GenerateCelebratoryImageWorkflow.generate_problem_story_image,
+            GenerateCelebratoryImageWorkflowArgs(
+                problem_req=result.celebratory_image_generation_context.problem_req,
+                problem_part=result.celebratory_image_generation_context.problem_part,
+                solutions_dir=aoc_solutions_dir,
+                dry_run=dry_run,
+            ),
+            id=f"generate-celebratory-image-{year}-{day}",
+            task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
+        )
 
     click.echo(f"Final problem result: {result}")
 

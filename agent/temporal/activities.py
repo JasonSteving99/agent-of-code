@@ -21,6 +21,11 @@ from agent.adventofcode.debug.debug_errors import theorize_solution, get_refacto
 from agent.adventofcode.debug.DebuggingPrompt import DebuggingPrompt
 from agent.adventofcode.debug.TheorizedSolution import TheorizedSolution
 from agent.adventofcode.execute_generated_code import TestResults
+from agent.adventofcode.generate_aoc_story_images import (
+    ProblemStorySummary,
+    extract_problem_story_summary,
+    format_image_generation_prompt,
+)
 from agent.adventofcode.generate_code.generate_implementation import (
     GenerateImplementationOutput,
 )
@@ -34,6 +39,7 @@ from agent.adventofcode.generate_code.GeneratedImplementation import (
 from agent.adventofcode.generate_code.GeneratedUnitTests import GeneratedUnitTests
 from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 from agent.adventofcode.submit_solution import submit
+from agent.llm.openai.generate_image import download_image, generate_image_to_url
 
 
 class ExtractProblemPartArgs(BaseModel):
@@ -139,9 +145,8 @@ async def get_generated_implementation(
 
 class CommitChangesArgs(BaseModel):
     aoc_problem: AoCProblem
+    files: list[FileToCommit]
     solutions_dir: str
-    unit_tests: GeneratedUnitTests
-    implementation: GeneratedImplementation
     commit_message: str
     dry_run: bool
 
@@ -152,15 +157,7 @@ async def commit_changes(
 ) -> None:
     return write_and_commit_changes(
         basedir=args.solutions_dir,
-        files=[
-            FileToCommit(
-                filename="tests.py", content=args.unit_tests.generated_unit_test_file_content
-            ),
-            FileToCommit(
-                filename="solution.py",
-                content=args.implementation.generated_implementation_file_content,
-            ),
-        ],
+        files=args.files,
         aoc_problem=args.aoc_problem,
         commit_message=args.commit_message,
         dry_run=args.dry_run,
@@ -254,4 +251,27 @@ async def submit_solution(args: SubmitSolutionArgs) -> bool:
         part=args.aoc_problem.part,
         answer=args.solution,
         base_dir=args.base_dir,
+    )
+
+
+@activity.defn
+async def extract_story_summary(problem_html: str) -> ProblemStorySummary:
+    return await extract_problem_story_summary(problem_html)
+
+
+@activity.defn
+async def meta_get_image_generation_prompt(problem_story_summary: ProblemStorySummary) -> str:
+    return await format_image_generation_prompt(problem_story_summary)
+
+
+class GenerateCelebratoryImageArgs(BaseModel):
+    image_generation_prompt: str
+    solutions_dir: str
+
+
+@activity.defn
+async def generate_celebratory_image(args: GenerateCelebratoryImageArgs) -> None:
+    await download_image(
+        await generate_image_to_url(args.image_generation_prompt),
+        os.path.join(args.solutions_dir, "generated_aoc_story_image.png"),
     )
