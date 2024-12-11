@@ -25,20 +25,20 @@ def blink(stones_str: str) -> str:
 def simulate_pebbles(initial_stones: str, num_blinks: int) -> str:
     """
     Simulate the evolution of stones for the given number of blinks and return 
-    the number of stones as a string.
+    the space separated string of stones.
     """
     stones = initial_stones.strip()
 
     for _ in range(num_blinks):
         stones = blink(stones)
 
-    return str(len(stones.split()))
+    return stones
 
 def solution() -> int:
     """Read input from stdin and return the number of stones after 75 blinks."""
     initial_stones = sys.stdin.read().strip()
     result = simulate_pebbles(initial_stones, 75)
-    return int(result)
+    return int(len(result.split()))  # Compute num of stones, convert to int, and return
 
 if __name__ == "__main__":
     print(solution())
