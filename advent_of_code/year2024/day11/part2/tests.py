@@ -12,7 +12,7 @@ from solution import simulate_stone_evolution_part_2
 def test_five_stones_sequence():
     """Test stone evolution with a sequence of 5 stones with varying energy levels."""
     initial_stones = "0 1 10 99 999"
-    expected = "7"
+    expected = 7
     
     result = simulate_stone_evolution_part_2(initial_stones)
     
@@ -25,7 +25,7 @@ def test_five_stones_sequence():
 def test_two_stones_sequence():
     """Test stone evolution with a sequence of 2 stones."""
     initial_stones = "125 17"
-    expected = "55312"
+    expected = 55312
     
     result = simulate_stone_evolution_part_2(initial_stones)
     
