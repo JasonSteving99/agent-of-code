@@ -1,53 +1,39 @@
-"""Solution for Plutonian Pebbles puzzle."""
 from typing import List
+import sys
 
-
-def transform_number(num: int) -> List[int]:
-    """Transform a single number according to the rules."""
-    # Rule 1: If number is 0, return 1
-    if num == 0:
-        return [1]
+def blink(stones_str: str) -> str:
+    """Transform a space-separated string of stone numbers according to the rules."""
+    stones = list(map(str, stones_str.split()))
+    new_stones: List[str] = []
     
-    # Convert number to string to check digits
-    num_str = str(num)
+    for stone in stones:
+        # Rule 1: If stone is 0, replace with 1
+        if stone == '0':
+            new_stones.append('1')
+        # Rule 2: If number has even number of digits, split in half
+        elif len(stone) % 2 == 0:
+            half = len(stone) // 2
+            left = stone[:half].lstrip('0') or '0'  # Handle leading zeros but keep single '0'
+            right = stone[half:].lstrip('0') or '0'
+            new_stones.extend([left, right])
+        # Rule 3: Multiply by 2024
+        else:
+            new_stones.append(str(int(stone) * 2024))
     
-    # Rule 2: If number has even number of digits, split it
-    if len(num_str) % 2 == 0:
-        mid = len(num_str) // 2
-        left = int(num_str[:mid])
-        right = int(num_str[mid:])
-        return [left, right]
-    
-    # Rule 3: Multiply by 2024
-    return [num * 2024]
-
-
-def blink(current_state: str) -> str:
-    """Transform a space-separated string of integers according to blinking rules."""
-    if not current_state:
-        return ""
-    
-    # Split input into integers
-    numbers = [int(x) for x in current_state.split()]
-    
-    # Transform each number and collect results
-    new_numbers: List[int] = []
-    for num in numbers:
-        new_numbers.extend(transform_number(num))
-    
-    # Convert back to space-separated string
-    return " ".join(str(x) for x in new_numbers)
-
+    return ' '.join(new_stones)
 
 def solution() -> int:
-    """Read input and blink 25 times."""
-    # Read initial state from stdin
-    initial_state = input().strip()
+    """Read input from stdin and return the number of stones after 25 blinks."""
+    # Read initial stone arrangement from stdin
+    initial_stones = sys.stdin.read().strip()
     
-    # Blink 25 times
-    current_state = initial_state
+    # Apply 25 blinks
+    stones = initial_stones
     for _ in range(25):
-        current_state = blink(current_state)
+        stones = blink(stones)
     
-    # Return number of stones (number of space-separated values)
-    return len(current_state.split())
+    # Count the number of stones (number of space-separated values)
+    return len(stones.split())
+
+if __name__ == "__main__":
+    print(solution())
