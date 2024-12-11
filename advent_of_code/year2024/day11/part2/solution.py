@@ -13,7 +13,7 @@ def blink(stones_str: str) -> str:
         # Rule 2: If number has even number of digits, split in half
         elif len(stone) % 2 == 0:
             half = len(stone) // 2
-            left = stone[:half].lstrip('0') or '0'
+            left = stone[:half].lstrip('0') or '0'  # Handle leading zeros but keep single '0'
             right = stone[half:].lstrip('0') or '0'
             new_stones.extend([left, right])
         # Rule 3: Multiply by 2024
@@ -22,23 +22,32 @@ def blink(stones_str: str) -> str:
     
     return ' '.join(new_stones)
 
-def simulate_pebbles(initial_stones: str, num_blinks: int) -> str:
+def simulate_stone_evolution_part_2(initial_stones: str) -> str:
     """
-    Simulate the evolution of stones for the given number of blinks and return 
-    the space-separated string of stones.
-    """
-    stones = initial_stones.strip()
+    Simulates the evolution of stones for 75 blinks and returns the number of stones.
     
-    for _ in range(num_blinks):
+    Args:
+        initial_stones: Space-separated string of initial stone numbers.
+        
+    Returns:
+        String representation of the final number of stones.
+    """
+    stones = initial_stones
+    
+    # Apply 75 blinks (instead of 25 from Part 1)
+    for _ in range(75):
         stones = blink(stones)
     
-    return stones
+    # Return the number of stones as a string
+    return str(len(stones.split()))
 
 def solution() -> int:
     """Read input from stdin and return the number of stones after 75 blinks."""
+    # Read initial stone arrangement from stdin
     initial_stones = sys.stdin.read().strip()
-    result = simulate_pebbles(initial_stones, 75)
-    return int(len(result.split()))
+    
+    # Apply 75 blinks and convert result to integer
+    return int(simulate_stone_evolution_part_2(initial_stones))
 
 if __name__ == "__main__":
     print(solution())

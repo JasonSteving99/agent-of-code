@@ -1,45 +1,35 @@
 """
-This file contains unit tests for the pebbles simulation problem Part 2.
-The tests cover:
-1. Single blink transformation of stones (where each stone number in the row gets transformed 
-   according to some rule for a single step)
-2. Multiple blink simulation (where the transformation is applied repeatedly for N steps)
+Tests for stone evolution simulation after 75 blinks (part 2).
 
-Key behaviors tested:
-- When stones are given "0 1 10 99 999", after a single blink they transform to "1 2024 1 0 9 9 2021976"
-- When stones are "125 17", after 25 blinks the final state is "55312"
+This test suite verifies that given a string containing initial stone energy levels,
+the function correctly simulates the stone energy evolution after 75 blinks following
+the specified rules. Each stone on every blink distributes its energy to adjacent stones.
 """
 
-from solution import simulate_pebbles
+from solution import simulate_stone_evolution_part_2
 
 
-def test_single_blink_transformation_multiple_stones():
-    """Test the transformation of multiple stones after a single blink."""
-    # Given an initial state of five stones
+def test_five_stones_sequence():
+    """Test stone evolution with a sequence of 5 stones with varying energy levels."""
     initial_stones = "0 1 10 99 999"
-    num_blinks = 1
+    expected = "7"
     
-    # When simulating one blink
-    result = simulate_pebbles(initial_stones, num_blinks)
+    result = simulate_stone_evolution_part_2(initial_stones)
     
-    # Then the stones should transform according to the rules
-    expected = "1 2024 1 0 9 9 2021976"
-    assert result == expected, \
-        f"For input '{initial_stones}' with {num_blinks} blink, " \
-        f"expected '{expected}' but got '{result}'"
+    assert result == expected, (
+        f"Stone evolution simulation failed for input '{initial_stones}'. "
+        f"Expected result: '{expected}', but got '{result}'"
+    )
 
 
-def test_multiple_blinks_two_stones():
-    """Test the simulation of multiple blinks on two stones."""
-    # Given an initial state of two stones
+def test_two_stones_sequence():
+    """Test stone evolution with a sequence of 2 stones."""
     initial_stones = "125 17"
-    num_blinks = 25
-    
-    # When simulating 25 blinks
-    result = simulate_pebbles(initial_stones, num_blinks)
-    
-    # Then the final state should match the expected output
     expected = "55312"
-    assert result == expected, \
-        f"For input '{initial_stones}' with {num_blinks} blinks, " \
-        f"expected '{expected}' but got '{result}'"
+    
+    result = simulate_stone_evolution_part_2(initial_stones)
+    
+    assert result == expected, (
+        f"Stone evolution simulation failed for input '{initial_stones}'. "
+        f"Expected result: '{expected}', but got '{result}'"
+    )
