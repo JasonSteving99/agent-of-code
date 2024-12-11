@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from agent.adventofcode.scrape_problems import ProblemPart, scrape_aoc
 from agent.llm.gemini.configure_genai import configure_genai
 from agent.llm.gemini.models import GeminiModel
-from agent.llm.gemini.prompt import prompt
+from agent.llm.gemini.prompt import ModelMessage, UserMessage, prompt
 
 
 class AoCProblemExtractedExamples(BaseModel):
@@ -49,7 +49,20 @@ IMPORTANT! You MUST return examples with a SINGLE input mapping to its SINGLE co
     )
 
     if len(extracted_examples.examples) == 0:
-        raise ValueError(f"No examples extracted: {extracted_examples}")
+        extracted_examples = await prompt(
+            GeminiModel.GEMINI_1_5_PRO,
+            system_prompt=system_prompt_text,
+            prompt=[
+                UserMessage(msg=problem_html),
+                ModelMessage(msg=extracted_examples.model_dump()),
+                UserMessage(
+                    msg="You MUST extract examples! The examples for Part 2 may have been stated in Part 1, make sure you extract ALL applicable examples. If no examples are explicitly given for Part 2 specifically, just return the examples for Part 1."  # noqa: E501
+                ),
+            ],
+            response_type=AoCProblemExtractedExamples,
+        )
+        if len(extracted_examples.examples) == 0:
+            raise ValueError(f"No examples extracted: {extracted_examples}")
 
     return extracted_examples
 
