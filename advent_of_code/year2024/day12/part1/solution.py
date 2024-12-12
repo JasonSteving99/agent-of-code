@@ -42,12 +42,6 @@ def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[str]) -> int:
         for nx, ny in get_neighbours(x, y, max_x, max_y):
             if (nx, ny) not in region:
                 perimeter += 1
-        # Add edges that touch the boundary
-        if x == 0: perimeter += 1
-        if x == max_x - 1: perimeter += 1
-        if y == 0: perimeter += 1
-        if y == max_y - 1: perimeter += 1
-            
     return perimeter
 
 
