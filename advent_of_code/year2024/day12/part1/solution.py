@@ -5,10 +5,9 @@ import sys
 
 def find_regions(grid: List[List[str]]) -> List[Set[Tuple[int, int]]]:
     rows, cols = len(grid), len(grid[0])
-    visited = set()
     regions = []
 
-    def bfs(start_r: int, start_c: int, plant: str) -> Set[Tuple[int, int]]:
+    def bfs(start_r: int, start_c: int, plant: str, visited: Set[Tuple[int, int]]) -> Set[Tuple[int, int]]:
         region = set()
         queue = deque([(start_r, start_c)])
 
@@ -31,8 +30,9 @@ def find_regions(grid: List[List[str]]) -> List[Set[Tuple[int, int]]]:
 
     for r in range(rows):
         for c in range(cols):
+            visited = set()  # Initialize visited set here
             if (r, c) not in visited:
-                regions.append(bfs(r, c, grid[r][c]))
+                regions.append(bfs(r, c, grid[r][c], visited))
 
     return regions
 
