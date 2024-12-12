@@ -62,32 +62,36 @@ def count_region_sides(region: List[Tuple[int, int]], grid: List[List[str]]) -> 
     horizontal_sides = 0
 
     # Count continuous vertical sides
-    vertical_edges_list = sorted(list(vertical_edges))
-    if vertical_edges_list:
-      start = vertical_edges_list[0][0]
-      end = start
-      for i in range(1, len(vertical_edges_list)):
-        if vertical_edges_list[i][1] == vertical_edges_list[i-1][1] and vertical_edges_list[i][0] == end + 1:
-          end = vertical_edges_list[i][0]
-        else:
-          vertical_sides += 1
-          start = vertical_edges_list[i][0]
-          end = start
-      vertical_sides+=1
+    vertical_edges_by_column = {}
+    for r, c in vertical_edges:
+        if c not in vertical_edges_by_column:
+            vertical_edges_by_column[c] = []
+        vertical_edges_by_column[c].append(r)
+    
+    for c in vertical_edges_by_column:
+      rows = sorted(vertical_edges_by_column[c])
+      if rows:
+        vertical_sides += 1
+        for i in range(1, len(rows)):
+          if rows[i] != rows[i-1] + 1:
+            vertical_sides += 1
+
     
     #Count continuous horizontal sides
-    horizontal_edges_list = sorted(list(horizontal_edges))
-    if horizontal_edges_list:
-      start = horizontal_edges_list[0][1]
-      end = start
-      for i in range(1, len(horizontal_edges_list)):
-        if horizontal_edges_list[i][0] == horizontal_edges_list[i-1][0] and horizontal_edges_list[i][1] == end + 1:
-          end = horizontal_edges_list[i][1]
-        else:
-          horizontal_sides += 1
-          start = horizontal_edges_list[i][1]
-          end = start
-      horizontal_sides += 1
+    horizontal_edges_by_row = {}
+    for r, c in horizontal_edges:
+      if r not in horizontal_edges_by_row:
+        horizontal_edges_by_row[r] = []
+      horizontal_edges_by_row[r].append(c)
+    
+    for r in horizontal_edges_by_row:
+      cols = sorted(horizontal_edges_by_row[r])
+      if cols:
+        horizontal_sides += 1
+        for i in range(1, len(cols)):
+          if cols[i] != cols[i-1] + 1:
+            horizontal_sides += 1
+
     
     return vertical_sides + horizontal_sides
 
