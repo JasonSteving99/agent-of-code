@@ -31,10 +31,7 @@ async def theorize_solution(
     generated_impl_src: GeneratedImplementation,
     error_msg: str,
 ) -> TheorizedSolution:
-    theorized_solution = await prompt(
-        GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
-        prompt=f"""
+    theorize_solution_prompt = f"""
 ### Problem HTML:
 {problem_html}
 
@@ -58,18 +55,29 @@ IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just pri
 
 ### Unit Tests Error Message:
 {error_msg}
-""",
-        response_type=TheorizedSolution,
-    )
+"""
 
     # Ensure that the theorized solution generates at least one actionable code change.
-    if not (
-        theorized_solution.optional_theorized_unit_test_fix
-        or theorized_solution.optional_theorized_implementation_fix
-    ):
-        raise ValueError(
-            f"Invalid TheorizedSolution should come up with at least one actionable code change.\n{theorized_solution}"  # noqa: E501
+    attempts = 0
+    MAX_RETRIES = 3
+    while True:
+        attempts += 1
+        theorized_solution = await prompt(
+            GeminiModel.GEMINI_1_5_PRO,
+            system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
+            prompt=theorize_solution_prompt,
+            response_type=TheorizedSolution,
         )
+
+        if (
+            theorized_solution.optional_theorized_unit_test_fix
+            or theorized_solution.optional_theorized_implementation_fix
+        ):
+            break
+        elif attempts > MAX_RETRIES:
+            raise ValueError(
+                f"Invalid TheorizedSolution should come up with at least one actionable code change.\n{theorized_solution}"  # noqa: E501
+            )
 
     return theorized_solution
 

@@ -1,73 +1,77 @@
-"""
-Solution for Garden Groups problem
-"""
-from typing import Set, Dict, List, Tuple
+"""Solution for Garden Groups puzzle."""
 from collections import deque
+from dataclasses import dataclass
+from typing import Dict, List, Set, Tuple
 
+@dataclass
+class Region:
+    """Represents a region of connected garden plots."""
+    symbol: str
+    coords: Set[Tuple[int, int]]
+    area: int = 0
+    perimeter: int = 0
 
-def get_region_area_perimeter(
-    garden_map_lines: List[str], 
-    start_pos: Tuple[int, int], 
-    visited: Set[Tuple[int, int]], 
-    plant_type: str,
-    rows: int
-) -> Tuple[int, int]:
-    """Calculate area and perimeter of a region starting from given position."""
-    area = 0
-    perimeter = 0
-    queue = deque([start_pos])
-    region_points = set()
-    
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+def get_adjacent_coords(coord: Tuple[int, int], max_rows: int, max_cols: int) -> List[Tuple[int, int]]:
+    """Get valid adjacent coordinates (up, down, left, right)."""
+    row, col = coord
+    adjacent = []
+    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        new_row, new_col = row + dr, col + dc
+        if 0 <= new_row < max_rows and 0 <= new_col < max_cols:
+            adjacent.append((new_row, new_col))
+    return adjacent
+
+def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tuple[int, int]]) -> Region:
+    """Find a complete region starting from given coordinates using BFS."""
+    symbol = grid[start[0]][start[1]]
+    region = Region(symbol=symbol, coords=set())
+    queue = deque([start])
     
     while queue:
-        r, c = queue.popleft()
-        if (r, c) in region_points:
+        current = queue.popleft()
+        if current in visited:
             continue
-
-        region_points.add((r, c))
-        visited.add((r, c))
-        area += 1
-
-        # Check all four sides for perimeter calculation and neighboring plots
-        for dr, dc in directions:
-            nr, nc = r + dr, c + dc
-
-            # Count edge as perimeter if out of bounds or different plant type
-            if nr < 0 or nr >= rows or nc < 0 or nc >= len(garden_map_lines[nr]) or (
-                nr >=0 and nr < rows and nc >= 0 and nc < len(garden_map_lines[nr]) and garden_map_lines[nr][nc] != plant_type):
+            
+        visited.add(current)
+        region.coords.add(current)
+        region.area += 1
+        
+        # Check adjacent cells
+        for adj in get_adjacent_coords(current, len(grid), len(grid[0])):
+            if grid[adj[0]][adj[1]] == symbol and adj not in visited:
+                queue.append(adj)
+    
+    # Calculate perimeter
+    perimeter = 0
+    for coord in region.coords:
+        for adj in get_adjacent_coords(coord, len(grid), len(grid[0])):
+            if adj not in region.coords:
                 perimeter += 1
-            elif (nr, nc) not in region_points and (
-                nr >= 0 and nr < rows and nc >= 0 and nc < len(garden_map_lines[nr])):
-                queue.append((nr, nc))
+    
+    region.perimeter = perimeter
+    return region
 
-    return area, perimeter
-
-
-def calculate_total_fence_price(garden_map_str: str) -> str:
-    """Calculate the total price of fencing all regions in the garden map."""
-    # Convert string input to 2D list
-    garden_map_lines = garden_map_str.strip().splitlines()
-    rows = len(garden_map_lines)
-
-    total_price = 0
-    visited = set()
-
-    # Iterate through each position in the garden
-    for r in range(rows):
-        cols = len(garden_map_lines[r])
-        for c in range(cols):
-            if (r, c) not in visited:
-                area, perimeter = get_region_area_perimeter(
-                    garden_map_lines, (r, c), visited, garden_map_lines[r][c], rows
-                )
-                region_price = area * perimeter
-                total_price += region_price
-
+def calculate_total_fence_price(garden_map: str) -> str:
+    """Calculate the total price for fencing all regions in the garden map."""
+    # Convert input string to 2D grid
+    grid = [list(line) for line in garden_map.strip().split('\n')]
+    rows, cols = len(grid), len(grid[0])
+    
+    # Find all regions
+    visited: Set[Tuple[int, int]] = set()
+    regions: List[Region] = []
+    
+    for row in range(rows):
+        for col in range(cols):
+            if (row, col) not in visited:
+                region = find_region(grid, (row, col), visited)
+                regions.append(region)
+    
+    # Calculate total price
+    total_price = sum(region.area * region.perimeter for region in regions)
     return str(total_price)
 
-
 def solution() -> str:
-    """Read input from stdin and return the solution."""
+    """Read input from stdin and solve the problem."""
     import sys
     return calculate_total_fence_price(sys.stdin.read())

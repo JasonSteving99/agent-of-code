@@ -91,21 +91,33 @@ async def generate_implementation(
         solve_part_2=solve_part_2,
         part_1_generated_implementation=part_1_generated_implementation,
     )
-    if debugging_prompt:
-        generated_implementation = await gemini_prompt(
-            GeminiModel.GEMINI_1_5_PRO,
-            system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-            prompt=generate_implementation_prompt,
-            response_type=GeneratedImplementation,
-        )
-    else:
-        assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
-        generated_implementation = await anthropic_prompt(
-            model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
-            system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-            prompt=generate_implementation_prompt[0].msg,
-            response_type=GeneratedImplementation,
-        )
+
+    attempts = 0
+    MAX_RETRIES = 3
+    while True:
+        attempts += 1
+        if debugging_prompt:
+            generated_implementation = await gemini_prompt(
+                GeminiModel.GEMINI_1_5_PRO,
+                system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+                prompt=generate_implementation_prompt,
+                response_type=GeneratedImplementation,
+            )
+        else:
+            assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
+            generated_implementation = await anthropic_prompt(
+                model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
+                system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+                prompt=generate_implementation_prompt[0].msg,
+                response_type=GeneratedImplementation,
+            )
+
+        if _implementation_is_updated(generated_implementation, debugging_prompt):
+            break
+        elif attempts > MAX_RETRIES:
+            raise ValueError(
+                f"Failed to get LLM to generate a NEW implementation after {MAX_RETRIES} retries."
+            )
 
     return GenerateImplementationOutput(
         prompt_history=[
@@ -113,6 +125,29 @@ async def generate_implementation(
             ModelMessage(msg=generated_implementation.model_dump()),
         ],
         generated_implementation=generated_implementation,
+    )
+
+
+def _implementation_is_updated(
+    generated_impl: GeneratedImplementation, debugging_prompt: DebuggingPrompt | None
+) -> bool:
+    # Check if the generated implementation is updated by comparing it with the previous
+    # implementation in the debugging prompt. This is essential to ensure that we actually
+    # have something to commit to GitHub and then rerun tests on.
+    if debugging_prompt is None:
+        return True
+
+    prev_impl = GeneratedImplementation.model_validate(
+        # The last ModelMessage in the prompt history is the previous implementation.
+        next(
+            part
+            for part in reversed(debugging_prompt.prior_msg_history)
+            if isinstance(part, ModelMessage)
+        ).msg
+    )
+    return (
+        generated_impl.generated_implementation_file_content
+        != prev_impl.generated_implementation_file_content
     )
 
 

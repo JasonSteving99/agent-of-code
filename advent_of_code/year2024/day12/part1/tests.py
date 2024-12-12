@@ -1,17 +1,16 @@
 """
-Unit tests for calculating total fence price for garden plots.
+Tests for calculate_total_fence_price function that computes the total price of fencing required for garden plots.
 
-Tests cover:
-- Basic case with distinct regions
-- Case with a region containing a hole/inner region
-- Complex case with multiple regions of varying sizes and shapes
+The function takes a multiline string representing a map of garden plots where:
+- Different letters represent different plant types
+- Adjacent plots with same plant type form a region
+- Fence price for each region = area * perimeter
+- Total price is sum of all region fence prices
 
-The tested function should:
-1. Parse a multiline string representing a garden plot map
-2. Identify connected regions of same-character plots
-3. Calculate area and perimeter for each region
-4. Calculate price as area * perimeter for each region
-5. Sum all region prices and return the total
+Tests verify:
+1. Basic case with distinct non-overlapping regions
+2. Case with nested regions
+3. Complex case with multiple interweaving regions
 """
 
 from solution import calculate_total_fence_price
@@ -20,40 +19,28 @@ import pytest
 
 def test_basic_distinct_regions():
     garden_map = "AAAA\nBBCD\nBBCC\nEEEC"
-    expected = "140"
     result = calculate_total_fence_price(garden_map)
-    assert result == expected, (
-        f"Failed for basic garden map:\n{garden_map}\n"
-        f"Expected price: {expected}, but got: {result}"
-    )
+    assert result == "140", f"Failed for basic distinct regions map:\n{garden_map}\nExpected: 140, Got: {result}"
 
 
-def test_region_with_inner_hole():
+def test_nested_regions():
     garden_map = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
-    expected = "772"
     result = calculate_total_fence_price(garden_map)
-    assert result == expected, (
-        f"Failed for garden map with holes:\n{garden_map}\n"
-        f"Expected price: {expected}, but got: {result}"
-    )
+    assert result == "772", f"Failed for nested regions map:\n{garden_map}\nExpected: 772, Got: {result}"
 
 
-def test_complex_large_garden():
+def test_complex_interweaving_regions():
     garden_map = (
         "RRRRIICCFF\n"
-        "RRRRIICCF\n"
-        "VVRRRCCFFF\n"
-        "VVRCCJFFF\n"
+        "RRRRIICCCF\n"
+        "VVRRRCCCFF\n"
+        "VVRCCCCFFF\n"
         "VVVVCJJCFE\n"
-        "VVIVCJJEE\n"
+        "VVIVCJJJEE\n"
         "VVIIICJJEE\n"
-        "MIIIIIIJJEE\n"
-        "MIIIISIJEE\n"
-        "MMMISSJEE"
+        "MIIIIIIJEE\n"
+        "MIISIJJEEE\n"
+        "MMMISSJJEE"
     )
-    expected = "1930"
     result = calculate_total_fence_price(garden_map)
-    assert result == expected, (
-        f"Failed for complex garden map:\n{garden_map}\n"
-        f"Expected price: {expected}, but got: {result}"
-    )
+    assert result == "1930", f"Failed for complex regions map:\n{garden_map}\nExpected: 1930, Got: {result}"
