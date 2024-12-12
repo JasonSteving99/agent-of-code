@@ -26,8 +26,8 @@ def get_region_data(grid: List[str], start_row: int, start_col: int, visited: Se
                     perimeter += 1
                 elif (nr, nc) not in visited:  # Same type, add to queue
                     queue.append((nr, nc))
-            else:  # Out of bounds, add perimeter
-                perimeter += 1
+            elif (row, col) not in visited:  # Out of bounds, add perimeter
+                perimeter +=1
 
     return area, perimeter
 
