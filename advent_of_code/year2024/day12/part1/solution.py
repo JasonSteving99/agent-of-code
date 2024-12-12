@@ -19,11 +19,11 @@ def find_region(grid: List[str], start_x: int, start_y: int, visited: Set[Tuple[
     region = set()
     stack = [(start_x, start_y)]
     plant_type = grid[start_y][start_x]
-    
+
     while stack:
         x, y = stack.pop()
         if (x, y) not in visited:
-            if grid[y][x] == plant_type:
+            if grid[y][x] == plant_type:  # Ensure only same plant type is processed
                 region.add((x, y))
                 visited.add((x, y))
                 for nx, ny in get_neighbours(x, y, max_x, max_y):
@@ -51,7 +51,6 @@ def calculate_region_price(region: Set[Tuple[int, int]], grid: List[str]) -> int
     return area * perimeter
 
 
-
 def calculate_total_fence_price(input_map: str) -> str:
     """Calculate total price of fencing all regions."""
     grid = input_map.strip().split('\n')
@@ -74,5 +73,6 @@ def calculate_total_fence_price(input_map: str) -> str:
 def solution() -> str:
     """Read input from stdin and solve."""
     import sys
+
     input_map = "".join(sys.stdin.readlines())
     return calculate_total_fence_price(input_map)
