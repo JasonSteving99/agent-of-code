@@ -37,21 +37,12 @@ def find_regions(grid: List[List[str]]) -> List[Set[Tuple[int, int]]]:
     return regions
 
 
-def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[List[str]], regions: List[Set[Tuple[int, int]]]) -> int:
+def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[List[str]]) -> int:
     perimeter = 0
-
     for r, c in region:
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nr, nc = r + dr, c + dc
-            if 0 <= nr < len(grid) and 0 <= nc < len(grid[0]):
-                is_neighbor_in_diff_region = False
-                for other_region in regions:
-                    if other_region != region and (nr, nc) in other_region and grid[r][c] == grid[nr][nc]:
-                        is_neighbor_in_diff_region = True
-                        break
-                if not is_neighbor_in_diff_region:
-                    perimeter += 1
-            else:
+            if not (0 <= nr < len(grid) and 0 <= nc < len(grid[0]) and grid[nr][nc] == grid[r][c]):
                 perimeter += 1
     return perimeter
 
@@ -63,7 +54,7 @@ def calculate_total_fence_price(input_map: str) -> str:
 
     for region in regions:
         area = len(region)
-        perimeter = calculate_perimeter(region, grid, regions)
+        perimeter = calculate_perimeter(region, grid)
         price = area * perimeter
         total_price += price
 
