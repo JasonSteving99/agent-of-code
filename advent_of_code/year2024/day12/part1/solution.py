@@ -49,7 +49,7 @@ def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[List[str]]) -> 
             # Count edge if out of bounds or different type
             if (new_r < 0 or new_r >= rows or 
                 new_c < 0 or new_c >= cols or 
-                grid[new_r][new_c] != region_type):
+                (new_r, new_c) not in region):
                 perimeter += 1
     
     return perimeter
