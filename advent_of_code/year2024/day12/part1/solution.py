@@ -40,7 +40,7 @@ def calculate_total_fence_price(input_map: str) -> str:
         for r, c in region:
             for nr, nc in [(r+1, c), (r-1, c), (r, c+1), (r, c-1)]:
                 if (nr < 0 or nr >= rows or nc < 0 or nc >= cols or
-                    grid[nr][nc] != plant):
+                    (0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] != plant)):
                     perimeter += 1
         
         return len(region), perimeter
@@ -51,22 +51,16 @@ def calculate_total_fence_price(input_map: str) -> str:
             if (r, c) not in visited:
                 plant = grid[r][c]
                 area, perimeter = get_region_stats(r, c, plant)
-                
-                # Mark all cells in this region as visited
-                queue = deque([(r, c)])
+                total_price += area * perimeter
+
+                # Mark visited cells for the current region
+                q = deque([(r, c)])
                 visited.add((r, c))
-                while queue:
-                    curr_r, curr_c = queue.popleft()
-                    for nr, nc in [(curr_r+1, curr_c), (curr_r-1, curr_c), 
-                                 (curr_r, curr_c+1), (curr_r, curr_c-1)]:
-                        if (0 <= nr < rows and 0 <= nc < cols and 
-                            grid[nr][nc] == plant and 
-                            (nr, nc) not in visited):
-                            queue.append((nr, nc))
+                while q:
+                    cr, cc = q.popleft()
+                    for nr, nc in [(cr - 1, cc), (cr + 1, cc), (cr, cc - 1), (cr, cc + 1)]:
+                        if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == plant and (nr, nc) not in visited:
                             visited.add((nr, nc))
-                
-                # Calculate price for this region
-                price = area * perimeter
-                total_price += price
+                            q.append((nr, nc))
 
     return str(total_price)
