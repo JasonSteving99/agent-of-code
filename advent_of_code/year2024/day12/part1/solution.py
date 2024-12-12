@@ -21,14 +21,12 @@ def calculate_total_fence_price(garden_map: str) -> str:
     def process_region(start_r: int, start_c: int, plant: str) -> Tuple[Set[Tuple[int, int]], int]:
         stack = [(start_r, start_c)]
         region_coords = set()
-        region_visited = set() # Track visited cells within the region
         perimeter = 0
 
         while stack:
             r, c = stack.pop()
-            if (r, c) in region_visited:
+            if (r, c) in region_coords:
                 continue
-            region_visited.add((r, c))
             region_coords.add((r, c))
 
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -38,10 +36,9 @@ def calculate_total_fence_price(garden_map: str) -> str:
                     perimeter += 1
                 elif grid[nr][nc] != plant:
                     perimeter += 1
-                elif (nr, nc) not in region_visited:  # Explore only unvisited same-type neighbors
+                elif (nr, nc) not in visited: #Check if cell hasn't been visited yet
                     stack.append((nr, nc))
-                elif (nr, nc) in visited and (nr, nc) not in region_visited:
-                    perimeter +=1
+                    
         return region_coords, perimeter
 
     # Process each unvisited plot
