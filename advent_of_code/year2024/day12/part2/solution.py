@@ -54,9 +54,9 @@ def count_sides(region: List[Tuple[int, int]], grid: List[List[str]]) -> int:
                 (nr, nc) not in region_set):
                 # Normalize the edge representation to ensure uniqueness
                 if dr == 0:  # Vertical edge
-                    edge = ((r, min(c, nc)), (r, max(c, nc)))
+                  edge = ((r, min(c, nc)), (r, max(c, nc)))
                 else:  # Horizontal edge
-                    edge = ((min(r, nr), c), (max(r, nr), c))
+                  edge = ((min(r, nr), c), (max(r, nr), c))
                 edges.add(edge)
     
     return len(edges)
