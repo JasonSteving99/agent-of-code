@@ -42,25 +42,54 @@ def count_region_sides(region: List[Tuple[int, int]], grid: List[List[str]]) -> 
     height = len(grid)
     width = len(grid[0])
     region_set = set(region)
-    
-    # Track edges between cells
-    edges = set()
-    
+    vertical_edges = set()
+    horizontal_edges = set()
+
     for r, c in region:
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nr, nc = r + dr, c + dc
-            # If neighbor is outside grid or not in region, it's a boundary
-            if (nr < 0 or nr >= height or nc < 0 or nc >= width or 
-                (nr, nc) not in region_set):
-                # Create a unique identifier for this edge
-                if dr == 0:  # Vertical edge
-                    edge = ((r, min(c, nc)), (r + 1, min(c, nc)))
-                else:  # Horizontal edge
-                    edge = ((min(r, nr), c), (min(r, nr), c + 1))
-                
-                edges.add(edge)
+        # Check for vertical edges
+        if c + 1 < width and (r, c + 1) not in region_set or c + 1 == width:
+            vertical_edges.add((r, c + 1))
+        if c > 0 and (r, c - 1) not in region_set or c == 0:
+            vertical_edges.add((r, c))
+        
+        # Check for horizontal edges
+        if r + 1 < height and (r + 1, c) not in region_set or r + 1 == height:
+            horizontal_edges.add((r + 1, c))
+        if r > 0 and (r - 1, c) not in region_set or r == 0:
+            horizontal_edges.add((r, c))
     
-    return len(edges)
+    vertical_sides = 0
+    horizontal_sides = 0
+
+    # Count continuous vertical sides
+    vertical_edges_list = sorted(list(vertical_edges))
+    if vertical_edges_list:
+      start = vertical_edges_list[0][0]
+      end = start
+      for i in range(1, len(vertical_edges_list)):
+        if vertical_edges_list[i][1] == vertical_edges_list[i-1][1] and vertical_edges_list[i][0] == end + 1:
+          end = vertical_edges_list[i][0]
+        else:
+          vertical_sides += 1
+          start = vertical_edges_list[i][0]
+          end = start
+      vertical_sides+=1
+    
+    #Count continuous horizontal sides
+    horizontal_edges_list = sorted(list(horizontal_edges))
+    if horizontal_edges_list:
+      start = horizontal_edges_list[0][1]
+      end = start
+      for i in range(1, len(horizontal_edges_list)):
+        if horizontal_edges_list[i][0] == horizontal_edges_list[i-1][0] and horizontal_edges_list[i][1] == end + 1:
+          end = horizontal_edges_list[i][1]
+        else:
+          horizontal_sides += 1
+          start = horizontal_edges_list[i][1]
+          end = start
+      horizontal_sides += 1
+    
+    return vertical_sides + horizontal_sides
 
 def calculate_total_price_with_bulk_discount(input_str: str) -> int:
     # Convert input string to grid
