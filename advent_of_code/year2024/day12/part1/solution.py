@@ -31,17 +31,10 @@ def calculate_total_fence_price(garden_map: str) -> str:
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nr, nc = r + dr, c + dc
                 
-                if is_valid(nr, nc):
-                    if grid[nr][nc] == plant:
-                        if (nr, nc) not in region_coords:
-                            queue.append((nr, nc))
-                            region_coords.add((nr, nc))
-                    else:
-                        # Found a boundary
-                        perimeter += 1
-                else:
-                    # Edge of grid is part of perimeter
-                    perimeter += 1
+                if not is_valid(nr, nc):
+                    perimeter += 1  # Edge of the grid
+                elif grid[nr][nc] != plant:
+                    perimeter += 1  # Different plant or unvisited
                     
         return len(region_coords), perimeter
 
@@ -51,21 +44,18 @@ def calculate_total_fence_price(garden_map: str) -> str:
             if (r, c) not in visited:
                 plant = grid[r][c]
                 area, perimeter = process_region(r, c, plant)
-                
-                # Mark all plots in this region as visited
-                queue = deque([(r, c)])
+
+                # Mark all connected plots of the same type as visited 
+                q = deque([(r, c)])
                 visited.add((r, c))
-                
-                while queue:
-                    curr_r, curr_c = queue.popleft()
-                    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                        nr, nc = curr_r + dr, curr_c + dc
-                        if is_valid(nr, nc) and grid[nr][nc] == plant and (nr, nc) not in visited:
-                            queue.append((nr, nc))
+                while q:
+                    cr, cc = q.popleft()
+                    for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                        nr, nc = cr + dr, cc + dc
+                        if (is_valid(nr, nc) and (nr, nc) not in visited and grid[nr][nc] == plant):
                             visited.add((nr, nc))
-                
-                # Calculate price for this region
-                price = area * perimeter
-                total_price += price
+                            q.append((nr, nc))
+                            
+                total_price += area * perimeter
 
     return str(total_price)
