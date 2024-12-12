@@ -27,9 +27,8 @@ def calculate_perimeter(region_coords: List[Tuple[int, int]], grid: List[List[st
     for x, y in region_coords:
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            # If neighbor is outside grid or not part of the same region, add to perimeter
-            if (not (0 <= nx < len(grid) and 0 <= ny < len(grid[0]))) or \
-               ((nx, ny) not in region_set):
+            # If neighbor is outside grid or not part of region, add to perimeter
+            if (not (0 <= nx < len(grid) and 0 <= ny < len(grid[0]))) or ((0 <= nx < len(grid) and 0 <= ny < len(grid[0])) and (nx, ny) not in region_set):
                 perimeter += 1
                 
     return perimeter
