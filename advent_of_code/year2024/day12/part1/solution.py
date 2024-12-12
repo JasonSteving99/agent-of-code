@@ -18,7 +18,7 @@ def fill_region(grid: List[List[str]], x: int, y: int, visited: Set[Tuple[int, i
     return coords
 
 
-def calculate_perimeter(region_coords: List[Tuple[int, int]], grid: List[List[str]]) -> int:
+def calculate_perimeter(region_coords: List[Tuple[int, int]], grid: List[List[str]], all_coords_same_type: Set[Tuple[int, int]]) -> int:
     """Calculate perimeter of a region by checking adjacent cells."""
     perimeter = 0
     region_set = set(region_coords)
@@ -27,9 +27,9 @@ def calculate_perimeter(region_coords: List[Tuple[int, int]], grid: List[List[st
     for x, y in region_coords:
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            # If neighbor is outside grid or not part of region, add to perimeter
+            # If neighbor is outside grid or not part of region or is not part of same plant type, add to perimeter
             if (not (0 <= nx < len(grid) and 0 <= ny < len(grid[0]))) or \
-               ((nx, ny) not in region_set):
+               ((nx, ny) not in all_coords_same_type):
                 perimeter += 1
                 
     return perimeter
@@ -44,15 +44,25 @@ def process_garden_plot(garden_plot: str) -> int:
         
     visited: Set[Tuple[int, int]] = set()
     total_price = 0
+    all_coords_of_plant: Dict[str, Set[Tuple[int, int]]] = {}
     
     # Iterate through each cell in the grid
     for i, j in itertools.product(range(len(grid)), range(len(grid[0]))):
+       if (i,j) not in visited:
+           plant_type = grid[i][j]
+           region_coords = fill_region(grid, i, j, visited, plant_type)
+           if plant_type not in all_coords_of_plant:
+              all_coords_of_plant[plant_type] = set()
+           all_coords_of_plant[plant_type].update(region_coords)
+    visited.clear()
+    for i, j in itertools.product(range(len(grid)), range(len(grid[0]))):
         if (i, j) not in visited:
             # Find all coordinates in current region
-            region_coords = fill_region(grid, i, j, visited, grid[i][j])
+            plant_type = grid[i][j]
+            region_coords = fill_region(grid, i, j, visited, plant_type)
             if region_coords:
                 area = len(region_coords)
-                perimeter = calculate_perimeter(region_coords, grid)
+                perimeter = calculate_perimeter(region_coords, grid, all_coords_of_plant[plant_type])
                 # Calculate price for this region
                 region_price = area * perimeter
                 total_price += region_price
