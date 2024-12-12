@@ -1,85 +1,86 @@
-from typing import List, Set, Dict, Tuple
+from typing import List, Set, Tuple
 from collections import deque
+import sys
 
-def get_regions(grid: List[List[str]]) -> Dict[Tuple[int, int], List[Tuple[int, int]]]:
-    height = len(grid)
-    width = len(grid[0])
+
+def find_regions(grid: List[List[str]]) -> List[Set[Tuple[int, int]]]:
+    """Find all connected regions of same-type plants in the grid."""
+    rows, cols = len(grid), len(grid[0])
     visited = set()
-    regions = {}
+    regions = []
     
-    def get_neighbors(r: int, c: int) -> List[Tuple[int, int]]:
-        neighbors = []
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nr, nc = r + dr, c + dc
-            if (0 <= nr < height and 0 <= nc < width and 
-                grid[nr][nc] == grid[r][c]):
-                neighbors.append((nr, nc))
-        return neighbors
+    def bfs(start_r: int, start_c: int, plant: str) -> Set[Tuple[int, int]]:
+        region = set()
+        queue = deque([(start_r, start_c)])
+        
+        while queue:
+            r, c = queue.popleft()
+            if (r, c) in visited:
+                continue
+                
+            visited.add((r, c))
+            region.add((r, c))
+            
+            # Check all 4 adjacent cells
+            for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+                new_r, new_c = r + dr, c + dc
+                if (0 <= new_r < rows and 0 <= new_c < cols and
+                    grid[new_r][new_c] == plant and
+                    (new_r, new_c) not in visited):
+                    queue.append((new_r, new_c))
+        
+        return region
     
-    for r in range(height):
-        for c in range(width):
+    # Find all regions using BFS
+    for r in range(rows):
+        for c in range(cols):
             if (r, c) not in visited:
-                plant = grid[r][c]
-                region = []
-                queue = deque([(r, c)])
-                visited.add((r, c))
-                
-                while queue:
-                    curr_r, curr_c = queue.popleft()
-                    region.append((curr_r, curr_c))
-                    
-                    for nr, nc in get_neighbors(curr_r, curr_c):
-                        if (nr, nc) not in visited:
-                            visited.add((nr, nc))
-                            queue.append((nr, nc))
-                
-                for pos in region:
-                    regions[pos] = region
-                    
+                regions.append(bfs(r, c, grid[r][c]))
+    
     return regions
 
-def calculate_perimeter(region: List[Tuple[int, int]], grid: List[List[str]]) -> int:
-    height = len(grid)
-    width = len(grid[0])
+
+def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[List[str]]) -> int:
+    """Calculate the perimeter of a region."""
     perimeter = 0
-    region_set = set(region)
+    plant_type = grid[next(iter(region))[0]][next(iter(region))[1]]
     
     for r, c in region:
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nr, nc = r + dr, c + dc
-            if (nr < 0 or nr >= height or nc < 0 or nc >= width or 
-                (nr, nc) not in region_set):
+        # Check all 4 sides
+        for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            new_r, new_c = r + dr, c + dc
+            # If adjacent cell is outside grid or different plant type, add to perimeter
+            if (new_r < 0 or new_r >= len(grid) or
+                new_c < 0 or new_c >= len(grid[0]) or
+                grid[new_r][new_c] != plant_type):
                 perimeter += 1
-                
+    
     return perimeter
 
-def calculate_total_fence_cost(input_str: str) -> str:
+
+def calculate_total_fence_price(input_map: str) -> str:
     # Convert input string to grid
-    grid = [list(line) for line in input_str.strip().split('\n')]
+    grid = [list(row) for row in input_map.strip().split('\n')]
     
-    # Get all regions
-    regions = get_regions(grid)
+    # Find all regions
+    regions = find_regions(grid)
     
-    # Calculate total cost
-    total_cost = 0
-    processed_regions = set()
+    # Calculate total price
+    total_price = 0
+    for region in regions:
+        area = len(region)  # Area is number of plots in region
+        perimeter = calculate_perimeter(region, grid)
+        price = area * perimeter
+        total_price += price
     
-    for pos in regions:
-        region = regions[pos]
-        # Convert to tuple for hashing
-        region_tuple = tuple(sorted(region))
-        
-        if region_tuple not in processed_regions:
-            area = len(region)
-            perimeter = calculate_perimeter(region, grid)
-            cost = area * perimeter
-            total_cost += cost
-            processed_regions.add(region_tuple)
-    
-    return str(total_cost)
+    return str(total_price)
+
 
 def solution() -> str:
-    # Read input from stdin
-    import sys
+    """Read from stdin and solve the problem."""
     input_data = sys.stdin.read().strip()
-    return calculate_total_fence_cost(input_data)
+    return calculate_total_fence_price(input_data)
+
+
+if __name__ == "__main__":
+    print(solution())
