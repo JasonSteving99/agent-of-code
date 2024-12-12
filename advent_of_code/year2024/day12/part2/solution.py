@@ -42,24 +42,23 @@ def count_region_sides(region: List[Tuple[int, int]], grid: List[List[str]]) -> 
     height = len(grid)
     width = len(grid[0])
     region_set = set(region)
-    
-    # Track edges between cells
-    edges = set()
+    sides = 0
     
     for r, c in region:
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nr, nc = r + dr, c + dc
-            # If neighbor is outside grid or not in region, it's a boundary
-            if (nr < 0 or nr >= height or nc < 0 or nc >= width or 
-                (nr, nc) not in region_set):
-                # Create a unique identifier for this edge
-                if dr == 0:  # Vertical edge
-                    edge = ((r, min(c, nc)), (r, max(c, nc)), 'v')
-                else:  # Horizontal edge
-                    edge = ((min(r, nr), c), (max(r, nr), c), 'h')
-                edges.add(edge)
+        # Check up
+        if r == 0 or (r - 1, c) not in region_set:
+            sides += 1
+        # Check down
+        if r == height - 1 or (r + 1, c) not in region_set:
+            sides += 1
+        # Check left
+        if c == 0 or (r, c - 1) not in region_set:
+            sides += 1
+        # Check right
+        if c == width - 1 or (r, c + 1) not in region_set:
+            sides += 1
     
-    return len(edges)
+    return sides
 
 def calculate_total_price_with_bulk_discount(input_str: str) -> int:
     # Convert input string to grid
