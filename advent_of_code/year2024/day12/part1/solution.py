@@ -42,8 +42,7 @@ def calculate_total_fence_price(map_str: str) -> str:
                 plant_type = garden_map[r][c]
                 area, perimeter, visited = get_region_stats(r, c, plant_type)
                 total_price += area * perimeter
-                visited_cells.update(visited)
-
+                visited_cells.update(visited)    
     return str(total_price)
 
 
