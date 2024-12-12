@@ -1,61 +1,54 @@
 """
-Tests for the calculate_total_fencing_price function which computes the total fencing price for plant regions.
+Tests for the calculate_total_fence_price function.
 
-Each region's cost is calculated as (area × perimeter).
-The total cost is the sum of all region costs.
+The function takes a garden map as a string input where:
+- Each letter represents a region in the garden
+- Same letters indicate they belong to the same region
+- Each region's price is calculated as: area * perimeter
+- Final output is the sum of all region prices
 
-Test cases cover:
-1. Basic map with simple regions and different letters
-2. Map with internal regions ("O" surrounding "X" pattern)
-3. Large complex map with multiple region types and varied connectivity
+The tests verify the calculation for different garden layouts:
+- Simple 4x4 garden with basic regions
+- 5x5 garden with symmetric O/X pattern
+- 10x10 garden with complex multiple regions
 """
 
-from solution import calculate_total_fencing_price
-import pytest
+from solution import calculate_total_fence_price
 
 
-def test_basic_map_with_simple_regions():
-    input_map = "AAAA\nBBCD\nBBCC\nEEEC"
-    expected_output = "140"
-    
-    result = calculate_total_fencing_price(input_map)
-    
-    assert result == expected_output, (
-        f"Failed for simple map:\n{input_map}\n"
-        f"Expected output: {expected_output}, but got: {result}"
+def test_simple_4x4_garden():
+    garden_map = "AAAA\nBBCD\nBBCC\nEEEC"
+    result = calculate_total_fence_price(garden_map)
+    assert result == "140", (
+        f"Failed for simple 4x4 garden layout:\n{garden_map}\n"
+        f"Expected price: 140, but got: {result}"
     )
 
 
-def test_map_with_internal_regions():
-    input_map = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
-    expected_output = "772"
-    
-    result = calculate_total_fencing_price(input_map)
-    
-    assert result == expected_output, (
-        f"Failed for map with internal regions:\n{input_map}\n"
-        f"Expected output: {expected_output}, but got: {result}"
+def test_symmetric_5x5_garden():
+    garden_map = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
+    result = calculate_total_fence_price(garden_map)
+    assert result == "772", (
+        f"Failed for symmetric 5x5 garden layout:\n{garden_map}\n"
+        f"Expected price: 772, but got: {result}"
     )
 
 
-def test_large_complex_map():
-    input_map = (
+def test_complex_10x10_garden():
+    garden_map = (
         "RRRRIICCFF\n"
         "RRRRIICCCF\n"
-        "VVRRRCCCFF\n"
-        "VVRCCCCFFF\n"
+        "VVRRRCCFFF\n"
+        "VVRCCJFFF\n"
         "VVVVCJJCFE\n"
-        "VVIVCJJJEE\n"
-        "VVIIIIJJEE\n"
-        "MIIIIIIJEE\n"
-        "MIISIIJEEE\n"
-        "MMMISSJEEE"
+        "VVIVCJJEE\n"
+        "VVIICJJEE\n"
+        "MIIIIJJEE\n"
+        "MIISIJEEEE\n"
+        "MMMISSJEEEE"
     )
-    expected_output = "1930"
-    
-    result = calculate_total_fencing_price(input_map)
-    
-    assert result == expected_output, (
-        f"Failed for complex map:\n{input_map}\n"
-        f"Expected output: {expected_output}, but got: {result}"
+    result = calculate_total_fence_price(garden_map)
+    assert result == "1930", (
+        f"Failed for complex 10x10 garden layout:\n{garden_map}\n"
+        f"Expected price: 1930, but got: {result}"
     )
