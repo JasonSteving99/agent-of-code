@@ -41,13 +41,14 @@ def get_regions(grid: List[str]) -> List[Set[Tuple[int, int]]]:
 
 
 def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[str]) -> int:
+    rows, cols = len(grid), len(grid[0])
     perimeter = 0
     for r, c in region:
         # Check all four sides
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nr, nc = r + dr, c + dc
-            # Count as perimeter if out of bounds or different plant
-            if (nr, nc) not in region:
+            # Count as perimeter if out of bounds or not in the region
+            if not (0 <= nr < rows and 0 <= nc < cols) or (nr, nc) not in region:
                 perimeter += 1
     return perimeter
 
