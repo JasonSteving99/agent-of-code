@@ -1,4 +1,3 @@
-```python
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple
@@ -76,5 +75,3 @@ def calculate_total_fence_price(garden_map: str) -> str:
 def solution() -> str:
     """Read input from stdin and return the solution."""
     return calculate_total_fence_price(sys.stdin.read())
-
-```
