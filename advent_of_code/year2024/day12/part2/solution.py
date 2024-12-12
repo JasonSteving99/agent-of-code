@@ -42,23 +42,18 @@ def count_sides(region: List[Tuple[int, int]], grid: List[List[str]]) -> int:
     height = len(grid)
     width = len(grid[0])
     region_set = set(region)
-    
-    # Track all edges between cells
     edges = set()
     
     for r, c in region:
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nr, nc = r + dr, c + dc
-            # If adjacent cell is outside grid or not in region, it's a side
-            if (nr < 0 or nr >= height or nc < 0 or nc >= width or 
-                (nr, nc) not in region_set):
-                # Normalize the edge representation to ensure uniqueness
-                if dr == 0:  # Vertical edge
-                  edge = ((r, min(c, nc)), (r, max(c, nc)))
-                else:  # Horizontal edge
-                  edge = ((min(r, nr), c), (max(r, nr), c))
-                edges.add(edge)
-    
+      for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        nr, nc = r + dr, c + dc
+        if (nr < 0 or nr >= height or nc < 0 or nc >= width or (nr, nc) not in region_set):
+          if dr == 0: # Vertical edge
+            edge = tuple(sorted(((r,c), (r,nc))))
+          else: # Horizontal edge
+            edge = tuple(sorted(((r,c),(nr,c))))
+          edges.add(edge)
+            
     return len(edges)
 
 def calculate_total_fence_price_sides(input_str: str) -> str:
