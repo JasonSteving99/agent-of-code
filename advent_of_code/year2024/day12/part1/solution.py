@@ -34,10 +34,11 @@ def get_region_area_perimeter(
             nr, nc = r + dr, c + dc
 
             # Count edge as perimeter if out of bounds or different plant type
-            if (nr < 0 or nr >= rows or nc < 0 or nc >= len(garden_map_lines[r]) or
-                garden_map_lines[nr][nc] != plant_type):
+            if nr < 0 or nr >= rows or nc < 0 or nc >= len(garden_map_lines[nr]) or (
+                nr >=0 and nr < rows and nc >= 0 and nc < len(garden_map_lines[nr]) and garden_map_lines[nr][nc] != plant_type):
                 perimeter += 1
-            elif (nr, nc) not in region_points:
+            elif (nr, nc) not in region_points and (
+                nr >= 0 and nr < rows and nc >= 0 and nc < len(garden_map_lines[nr])):
                 queue.append((nr, nc))
 
     return area, perimeter
