@@ -1,73 +1,85 @@
-from typing import Dict, Set, Tuple, List
-import itertools
+from typing import List, Set, Dict, Tuple
+from collections import deque
 
+def get_regions(grid: List[List[str]]) -> Dict[Tuple[int, int], List[Tuple[int, int]]]:
+    height = len(grid)
+    width = len(grid[0])
+    visited = set()
+    regions = {}
+    
+    def get_neighbors(r: int, c: int) -> List[Tuple[int, int]]:
+        neighbors = []
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
+            if (0 <= nr < height and 0 <= nc < width and 
+                grid[nr][nc] == grid[r][c]):
+                neighbors.append((nr, nc))
+        return neighbors
+    
+    for r in range(height):
+        for c in range(width):
+            if (r, c) not in visited:
+                plant = grid[r][c]
+                region = []
+                queue = deque([(r, c)])
+                visited.add((r, c))
+                
+                while queue:
+                    curr_r, curr_c = queue.popleft()
+                    region.append((curr_r, curr_c))
+                    
+                    for nr, nc in get_neighbors(curr_r, curr_c):
+                        if (nr, nc) not in visited:
+                            visited.add((nr, nc))
+                            queue.append((nr, nc))
+                
+                for pos in region:
+                    regions[pos] = region
+                    
+    return regions
 
-def fill_region(grid: List[List[str]], x: int, y: int, visited: Set[Tuple[int, int]], plant: str) -> List[Tuple[int, int]]:
-    """DFS to fill a region and return all coordinates of the same plant type."""
-    if (x, y) in visited or not (0 <= x < len(grid) and 0 <= y < len(grid[0])) or grid[x][y] != plant:
-        return []
-    
-    visited.add((x, y))
-    coords = [(x, y)]
-    
-    # Check all adjacent cells (up, down, left, right)
-    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-    for dx, dy in directions:
-        coords.extend(fill_region(grid, x + dx, y + dy, visited, plant))
-    
-    return coords
-
-def calculate_perimeter(region_coords: List[Tuple[int, int]], grid: List[List[str]], plant: str) -> int:
-    """Calculate perimeter of a region by checking adjacent cells."""
+def calculate_perimeter(region: List[Tuple[int, int]], grid: List[List[str]]) -> int:
+    height = len(grid)
+    width = len(grid[0])
     perimeter = 0
-    region_set = set(region_coords)
-    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-
-    for x, y in region_coords:
-        for dx, dy in directions:
-            nx, ny = x + dx, y + dy
-            if not (0 <= nx < len(grid) and 0 <= ny < len(grid[0])) or \
-               ((0 <= nx < len(grid) and 0 <= ny < len(grid[0])) and \
-                (nx, ny) not in region_set and grid[nx][ny] != plant):
-                   perimeter += 1
-
+    region_set = set(region)
+    
+    for r, c in region:
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
+            if (nr < 0 or nr >= height or nc < 0 or nc >= width or 
+                (nr, nc) not in region_set):
+                perimeter += 1
+                
     return perimeter
 
-
-def process_garden_plot(garden_plot: str) -> int:
-    """Process garden plot and return total fence price."""
-    # Convert input string to 2D grid
-    grid = [list(line.strip()) for line in garden_plot.strip().split('\n')]
-    if not grid:
-        return 0
+def calculate_total_fence_cost(input_str: str) -> str:
+    # Convert input string to grid
+    grid = [list(line) for line in input_str.strip().split('\n')]
+    
+    # Get all regions
+    regions = get_regions(grid)
+    
+    # Calculate total cost
+    total_cost = 0
+    processed_regions = set()
+    
+    for pos in regions:
+        region = regions[pos]
+        # Convert to tuple for hashing
+        region_tuple = tuple(sorted(region))
         
-    visited: Set[Tuple[int, int]] = set()
-    total_price = 0
+        if region_tuple not in processed_regions:
+            area = len(region)
+            perimeter = calculate_perimeter(region, grid)
+            cost = area * perimeter
+            total_cost += cost
+            processed_regions.add(region_tuple)
     
-    # Iterate through each cell in the grid
-    for i, j in itertools.product(range(len(grid)), range(len(grid[0]))):
-        if (i, j) not in visited:
-            # Find all coordinates in current region
-            plant_type = grid[i][j]
-            region_coords = fill_region(grid, i, j, visited, plant_type)
-            if region_coords:
-                area = len(region_coords)
-                perimeter = calculate_perimeter(region_coords, grid, plant_type)
-                # Calculate price for this region
-                region_price = area * perimeter
-                total_price += region_price
-    
-    return total_price
-
-
-def calculate_total_fence_price(input_str: str) -> str:
-    """Calculate the total price of fencing all regions on the map."""
-    total_price = process_garden_plot(input_str)
-    return str(total_price)
-
+    return str(total_cost)
 
 def solution() -> str:
-    """Read from stdin and return the solution."""
+    # Read input from stdin
     import sys
-    input_data = sys.stdin.read()
-    return calculate_total_fence_price(input_data)
+    input_data = sys.stdin.read().strip()
+    return calculate_total_fence_cost(input_data)
