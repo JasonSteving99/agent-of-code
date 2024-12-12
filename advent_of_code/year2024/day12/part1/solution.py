@@ -16,7 +16,6 @@ def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, 
     perimeter = 0
     area = 1
     
-    # Check all 4 sides
     for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
         new_row, new_col = row + dr, col + dc
         
@@ -24,12 +23,10 @@ def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, 
             new_row >= len(garden_map) or new_col >= len(garden_map[0]) or
             garden_map[new_row][new_col] != letter):
             perimeter += 1
-        
-    # Recursively explore adjacent cells
+
     for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
         new_row, new_col = row + dr, col + dc
-        sub_perimeter, sub_area = get_perimeter_and_area(garden_map, visited, new_row, new_col, letter)
-        perimeter += sub_perimeter
+        _, sub_area = get_perimeter_and_area(garden_map, visited, new_row, new_col, letter)
         area += sub_area
         
     return perimeter, area
@@ -37,17 +34,15 @@ def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, 
 
 def calculate_total_fence_price(input_map: str) -> str:
     """Calculate total price of fencing for all regions in the garden map."""
-    # Convert input string to 2D list
     garden_map = [list(line) for line in input_map.strip().split('\n')]
-    
+
     if not garden_map:
         return "0"
-        
+    
     visited = set()
     total_price = 0
     rows, cols = len(garden_map), len(garden_map[0])
     
-    # Process each unvisited cell
     for row in range(rows):
         for col in range(cols):
             if (row, col) not in visited:
