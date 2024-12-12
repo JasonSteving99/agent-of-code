@@ -3,6 +3,13 @@ from collections import deque
 from typing import List, Set, Tuple
 
 
+def is_shared_edge(grid: List[str], r: int, c: int, dr: int, dc: int, plant_type: str) -> bool:
+    """Check if edge is shared with same type."""
+    rows, cols = len(grid), len(grid[0])
+    nr, nc = r + dr, c + dc
+    return 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == plant_type
+
+
 def get_region_data(grid: List[str], start_row: int, start_col: int, visited: Set[Tuple[int, int]]) -> tuple[int, int]:
     """Find area and perimeter of a region starting at given coordinates using BFS."""
     rows, cols = len(grid), len(grid[0])
@@ -20,34 +27,12 @@ def get_region_data(grid: List[str], start_row: int, start_col: int, visited: Se
         area += 1
 
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # Check adjacent cells
-            nr, nc = row + dr, col + dc
-
-            if 0 <= nr < rows and 0 <= nc < cols:
-                if grid[nr][nc] != plant_type:
-                    perimeter += 1
-                elif (nr, nc) not in visited:
-                    queue.append((nr, nc))
-            else:
+            if not is_shared_edge(grid, row, col, dr, dc, plant_type):
                 perimeter += 1
 
-    # Correct perimeter for shared corners and edges
-    for r, c in visited.copy():
-        for dr, dc in [(0, 1), (1, 0)]:  # Check perpendicular neighbor pairs
-            nr1, nc1 = r + dr, c + dc
-            nr2, nc2 = r - dr, c - dc  # Opposite neighbor
-
-            out_of_bounds1 = not (0 <= nr1 < rows and 0 <= nc1 < cols)
-            diff_type1 = (0 <= nr1 < rows and 0 <= nc1 < cols) and (grid[nr1][nc1] != plant_type)
-            out_of_bounds2 = not (0 <= nr2 < rows and 0 <= nc2 < cols)
-            diff_type2 = (0 <= nr2 < rows and 0 <= nc2 < cols) and (grid[nr2][nc2] != plant_type)
-
-            if (out_of_bounds1 or diff_type1):
-              perimeter +=0
-            if (out_of_bounds2 or diff_type2):
-                perimeter += 0
-
-            if (out_of_bounds1 or diff_type1) and (out_of_bounds2 or diff_type2):
-                perimeter -= 1
+            nr, nc = row + dr, col + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == plant_type and (nr, nc) not in visited:
+                queue.append((nr, nc))
 
     return area, perimeter
 
