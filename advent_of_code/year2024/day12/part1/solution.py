@@ -21,13 +21,33 @@ def get_region_data(grid: List[str], start_row: int, start_col: int, visited: Se
 
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # Check adjacent cells
             nr, nc = row + dr, col + dc
-            if 0 <= nr < rows and 0 <= nc < cols:  # Check within bounds
-                if grid[nr][nc] != plant_type:  # Different type, add perimeter
+
+            if 0 <= nr < rows and 0 <= nc < cols:
+                if grid[nr][nc] != plant_type:
                     perimeter += 1
-                elif (nr, nc) not in visited:  # Same type, add to queue
+                elif (nr, nc) not in visited:
                     queue.append((nr, nc))
-            elif (nr, nc) not in visited:  # Out of bounds, add perimeter
+            else:
                 perimeter += 1
+
+    # Correct perimeter for shared corners and edges
+    for r, c in visited.copy():
+        for dr, dc in [(0, 1), (1, 0)]:  # Check perpendicular neighbor pairs
+            nr1, nc1 = r + dr, c + dc
+            nr2, nc2 = r - dr, c - dc  # Opposite neighbor
+
+            out_of_bounds1 = not (0 <= nr1 < rows and 0 <= nc1 < cols)
+            diff_type1 = (0 <= nr1 < rows and 0 <= nc1 < cols) and (grid[nr1][nc1] != plant_type)
+            out_of_bounds2 = not (0 <= nr2 < rows and 0 <= nc2 < cols)
+            diff_type2 = (0 <= nr2 < rows and 0 <= nc2 < cols) and (grid[nr2][nc2] != plant_type)
+
+            if (out_of_bounds1 or diff_type1):
+              perimeter +=0
+            if (out_of_bounds2 or diff_type2):
+                perimeter += 0
+
+            if (out_of_bounds1 or diff_type1) and (out_of_bounds2 or diff_type2):
+                perimeter -= 1
 
     return area, perimeter
 
