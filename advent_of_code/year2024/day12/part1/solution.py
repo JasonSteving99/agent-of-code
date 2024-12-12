@@ -38,7 +38,7 @@ def calculate_total_fence_price(input_map: str) -> str:
         # Calculate perimeter
         perimeter = 0
         for r, c in region:
-            for nr, nc in [(r+1, c), (r-1, c), (r, c+1), (r, c-1)]:
+            for nr, nc in [(r+1, c), (r-1, c), (r, c+1), (r, c-1), (r+1, c+1), (r+1, c-1), (r-1, c+1), (r-1, c-1)]:
                 if not (0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == plant):
                     perimeter += 1
         
@@ -51,6 +51,7 @@ def calculate_total_fence_price(input_map: str) -> str:
                 plant = grid[r][c]
                 area, perimeter, region = get_region_stats(r, c, plant)
                 total_price += area * perimeter
+
                 for cell in region:
                     visited.add(cell)
 
