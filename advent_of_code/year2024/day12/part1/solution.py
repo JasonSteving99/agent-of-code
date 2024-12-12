@@ -23,7 +23,7 @@ def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, 
             garden_map[new_row][new_col] != letter):
             perimeter += 1
         else:
-            if (new_row, new_col) not in visited:
+            if (new_row, new_col) not in visited:  # Only recurse if not visited
                 _, sub_area = get_perimeter_and_area(garden_map, visited, new_row, new_col, letter)
                 area += sub_area
 
