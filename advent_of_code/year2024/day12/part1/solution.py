@@ -36,12 +36,10 @@ def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tupl
         region.coords.add(current)
         region.area += 1
 
-        # Check adjacent cells
         for adj in get_adjacent_coords(current, len(grid), len(grid[0])):
             if grid[adj[0]][adj[1]] == symbol and adj not in visited:
                 queue.append(adj)
 
-    # Calculate perimeter
     rows, cols = len(grid), len(grid[0])
     perimeter = 0
     for r, c in region.coords:
@@ -55,11 +53,9 @@ def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tupl
 
 def calculate_total_fence_price(garden_map: str) -> str:
     """Calculate the total price for fencing all regions in the garden map."""
-    # Convert input string to 2D grid
     grid = [list(line) for line in garden_map.strip().split('\n')]
     rows, cols = len(grid), len(grid[0])
 
-    # Find all regions
     visited: Set[Tuple[int, int]] = set()
     regions: List[Region] = []
 
@@ -69,12 +65,10 @@ def calculate_total_fence_price(garden_map: str) -> str:
                 region = find_region(grid, (row, col), visited, regions)
                 regions.append(region)
 
-    # Calculate total price
     total_price = sum(region.area * region.perimeter for region in regions)
     return str(total_price)
 
 def solution() -> str:
     """Read input from stdin and solve the problem."""
     import sys
-
     return calculate_total_fence_price(sys.stdin.read())
