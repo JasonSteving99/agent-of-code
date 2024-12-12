@@ -35,16 +35,12 @@ def find_region(start_x: int, start_y: int, grid: List[List[str]], visited: Set[
 
         neighbors = get_neighbors(x, y, grid, rows, cols)
         sides = 4
-        has_same_type_neighbor = False  # Flag to check for shared edges
 
         for nx, ny in neighbors:
             if grid[nx][ny] == plant_type:
-                has_same_type_neighbor = True  # Set the flag if same type
+                sides -= 1
                 if (nx, ny) not in region_coords:
                     queue.append((nx, ny))
-
-        if has_same_type_neighbor:  # Decrement only once for shared edges
-            sides -= 1
 
         perimeter += sides
 
