@@ -42,12 +42,12 @@ def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tupl
                 queue.append(adj)
     
     # Calculate perimeter
+    rows, cols = len(grid), len(grid[0])
     perimeter = 0
     for coord in region.coords:
         for adj in get_adjacent_coords(coord, len(grid), len(grid[0])):
-            if adj not in region.coords:
-                perimeter += 1
-    
+            if not (0 <= adj[0] < rows and 0 <= adj[1] < cols and grid[adj[0]][adj[1]] == symbol):
+                perimeter += 1    
     region.perimeter = perimeter
     return region
 
