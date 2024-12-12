@@ -10,23 +10,22 @@ def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, 
     if (row < 0 or col < 0 or row >= len(garden_map) or col >= len(garden_map[0]) or 
         (row, col) in visited or garden_map[row][col] != letter):
         return 0, 0
-    
+
     visited.add((row, col))
     perimeter = 0
     area = 1
-    
+
     for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
         new_row, new_col = row + dr, col + dc
-        
+
         if (new_row < 0 or new_col < 0 or 
             new_row >= len(garden_map) or new_col >= len(garden_map[0]) or
             garden_map[new_row][new_col] != letter):
             perimeter += 1
-
-    for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-        new_row, new_col = row + dr, col + dc
-        _, sub_area = get_perimeter_and_area(garden_map, visited, new_row, new_col, letter)
-        area += sub_area
+        else:
+            if (new_row, new_col) not in visited:
+                _, sub_area = get_perimeter_and_area(garden_map, visited, new_row, new_col, letter)
+                area += sub_area
 
     return perimeter, area
 
@@ -46,8 +45,9 @@ def calculate_total_fence_price(input_map: str) -> str:
         for col in range(cols):
             if (row, col) not in visited:
                 letter = garden_map[row][col]
-                perimeter, area = get_perimeter_and_area(garden_map, visited, row, col, letter) 
+                perimeter, area = get_perimeter_and_area(garden_map, visited, row, col, letter)
                 total_price += area * perimeter
+
     return str(total_price)
 
 
