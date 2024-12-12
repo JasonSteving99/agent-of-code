@@ -24,13 +24,13 @@ def calculate_total_fence_price(map_str: str) -> str:
 
             for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols:  # Check bounds first
-                    if garden_map[nr][nc] != plant:
-                        perimeter += 1
-                    elif (nr, nc) not in visited:
-                        q.append((nr, nc))
-                else:
+
+                if not (0 <= nr < rows and 0 <= nc < cols):
                     perimeter += 1
+                elif (nr, nc) not in visited and garden_map[nr][nc] != plant:
+                    perimeter += 1
+                elif 0 <= nr < rows and 0 <= nc < cols and garden_map[nr][nc] == plant and (nr,nc) not in visited:
+                    q.append((nr, nc))
 
         return area, perimeter, visited
 
@@ -42,7 +42,7 @@ def calculate_total_fence_price(map_str: str) -> str:
                 plant_type = garden_map[r][c]
                 area, perimeter, visited = get_region_stats(r, c, plant_type)
                 total_price += area * perimeter
-                visited_cells.update(visited)    
+                visited_cells.update(visited)
     return str(total_price)
 
 
