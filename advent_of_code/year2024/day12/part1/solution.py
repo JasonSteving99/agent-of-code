@@ -41,11 +41,13 @@ def find_region(
         # Count perimeter by checking all four sides
         edges = 4
         for nr, nc in neighbors:
-            if garden[nr][nc] == char:
+            if (nr, nc) in region:
                 edges -= 1
+            elif 0 <= nr < rows and 0 <= nc < cols and garden[nr][nc] == char:
                 if (nr, nc) not in region:
-                    to_visit.append((nr, nc))
-                    region.add((nr, nc))
+                   to_visit.append((nr, nc))
+                   region.add((nr, nc))
+
         perimeter += edges
 
     visited.update(region)
