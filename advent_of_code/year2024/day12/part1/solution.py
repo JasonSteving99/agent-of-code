@@ -1,71 +1,78 @@
 from typing import List, Set, Tuple
+from collections import deque
 import sys
 
-def get_neighbors(x: int, y: int, grid: List[List[str]], rows: int, cols: int) -> List[Tuple[int, int]]:
-    """Get valid neighboring coordinates, including diagonals."""
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]
-    neighbors = []
-    for dx, dy in directions:
-        new_x, new_y = x + dx, y + dy
-        if 0 <= new_x < rows and 0 <= new_y < cols:
-            neighbors.append((new_x, new_y))
-    return neighbors
 
-def find_region(start_x: int, start_y: int, grid: List[List[str]], visited: Set[Tuple[int, int]]) -> Tuple[int, int]:
-    """Find region starting from given coordinates and return area and perimeter."""
-    if (start_x, start_y) in visited:
-        return 0, 0
-
+def get_regions(grid: List[str]) -> List[Set[Tuple[int, int]]]:
     rows, cols = len(grid), len(grid[0])
-    plant_type = grid[start_x][start_y]
-
-    queue = [(start_x, start_y)]
-    area = 0
-    perimeter = 0
-    region_coords = set()
-
-    while queue:
-        x, y = queue.pop(0)
-        if (x, y) in region_coords:
-            continue
-
-        region_coords.add((x, y))
-        visited.add((x, y))
-        area += 1
-
-        neighbors = get_neighbors(x, y, grid, rows, cols)
-        sides = 4  # Initialize sides to 4 for each cell
-
-        for nx, ny in neighbors:
-            if 0 <= nx < rows and 0 <= ny < cols:  # Check bounds
-                if grid[nx][ny] == plant_type:
-                    sides -=1
-                    if (nx, ny) not in region_coords:
-                        queue.append((nx, ny))
-
-
-        perimeter += sides
-
-    return area, perimeter
-
-def calculate_total_fence_price(garden_map: str) -> int:
-    """Calculate total fence price for all regions in the garden."""
-    grid = [list(row) for row in garden_map.strip().split('\n')]
-    rows, cols = len(grid), len(grid[0])
-
-    total_price = 0
     visited = set()
+    regions = []
+    
+    def get_neighbors(r: int, c: int) -> List[Tuple[int, int]]:
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        neighbors = []
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                neighbors.append((nr, nc))
+        return neighbors
 
-    for i in range(rows):
-        for j in range(cols):
-            if (i, j) not in visited:
-                area, perimeter = find_region(i, j, grid, visited)
-                region_price = area * perimeter
-                total_price += region_price
+    def bfs(start_r: int, start_c: int, plant: str) -> Set[Tuple[int, int]]:
+        region = set()
+        queue = deque([(start_r, start_c)])
+        region.add((start_r, start_c))
+        visited.add((start_r, start_c))
+        
+        while queue:
+            r, c = queue.popleft()
+            for nr, nc in get_neighbors(r, c):
+                if (nr, nc) not in visited and grid[nr][nc] == plant:
+                    queue.append((nr, nc))
+                    region.add((nr, nc))
+                    visited.add((nr, nc))
+        return region
 
-    return total_price
+    for r in range(rows):
+        for c in range(cols):
+            if (r, c) not in visited:
+                regions.append(bfs(r, c, grid[r][c]))
+    
+    return regions
 
-def solution() -> int:
-    """Read input from stdin and return the solution."""
-    garden_map = sys.stdin.read()
-    return calculate_total_fence_price(garden_map)
+
+def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[str]) -> int:
+    perimeter = 0
+    for r, c in region:
+        # Check all four sides
+        for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+            # Count as perimeter if out of bounds or different plant
+            if (nr, nc) not in region:
+                perimeter += 1
+    return perimeter
+
+
+def calculate_total_fence_price(input_map: str) -> str:
+    # Convert input string to grid
+    grid = input_map.strip().split('\n')
+    
+    # Get all regions using BFS
+    regions = get_regions(grid)
+    
+    # Calculate total price for all regions
+    total_price = 0
+    for region in regions:
+        area = len(region)
+        perimeter = calculate_perimeter(region, grid)
+        price = area * perimeter
+        total_price += price
+    
+    return str(total_price)
+
+
+def solution() -> str:
+    # Read input from stdin
+    return calculate_total_fence_price(sys.stdin.read())
+
+if __name__ == "__main__":
+    print(solution())
