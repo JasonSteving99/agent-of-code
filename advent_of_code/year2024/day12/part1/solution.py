@@ -21,25 +21,26 @@ def get_adjacent_coords(coord: Tuple[int, int], max_rows: int, max_cols: int) ->
             adjacent.append((new_row, new_col))
     return adjacent
 
-def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tuple[int, int]]) -> Region:
+def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tuple[int, int]], all_regions: List[Region]) -> Region:
     """Find a complete region starting from given coordinates using BFS."""
     symbol = grid[start[0]][start[1]]
     region = Region(symbol=symbol, coords=set())
     queue = deque([start])
-    
+
     while queue:
         current = queue.popleft()
         if current in visited:
             continue
-            
+
         visited.add(current)
         region.coords.add(current)
         region.area += 1
-        
+
         # Check adjacent cells
         for adj in get_adjacent_coords(current, len(grid), len(grid[0])):
             if grid[adj[0]][adj[1]] == symbol and adj not in visited:
                 queue.append(adj)
+
     # Calculate perimeter
     rows, cols = len(grid), len(grid[0])
     perimeter = 0
@@ -48,8 +49,8 @@ def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tupl
             nr, nc = r + dr, c + dc
             if not (0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == symbol):
                 perimeter += 1
-    region.perimeter = perimeter
 
+    region.perimeter = perimeter
     return region
 
 def calculate_total_fence_price(garden_map: str) -> str:
@@ -57,15 +58,15 @@ def calculate_total_fence_price(garden_map: str) -> str:
     # Convert input string to 2D grid
     grid = [list(line) for line in garden_map.strip().split('\n')]
     rows, cols = len(grid), len(grid[0])
-    
+
     # Find all regions
     visited: Set[Tuple[int, int]] = set()
     regions: List[Region] = []
-    
+
     for row in range(rows):
         for col in range(cols):
             if (row, col) not in visited:
-                region = find_region(grid, (row, col), visited)
+                region = find_region(grid, (row, col), visited, regions)
                 regions.append(region)
 
     # Calculate total price
@@ -75,4 +76,5 @@ def calculate_total_fence_price(garden_map: str) -> str:
 def solution() -> str:
     """Read input from stdin and solve the problem."""
     import sys
+
     return calculate_total_fence_price(sys.stdin.read())
