@@ -1,78 +1,71 @@
-"""Calculate total cost of garden fencing."""
-from typing import Dict, List, Set, Tuple
-from collections import defaultdict
+from typing import List, Tuple, Dict, Set
+from collections import deque
 
 
-def get_neighbours(x: int, y: int, max_x: int, max_y: int) -> List[Tuple[int, int]]:
-    """Return valid neighbouring coordinates."""
-    neighbours = []
-    for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-        new_x, new_y = x + dx, y + dy
-        if 0 <= new_x < max_x and 0 <= new_y < max_y:
-            neighbours.append((new_x, new_y))
-    return neighbours
-
-
-def find_region(grid: List[str], start_x: int, start_y: int, visited: Set[Tuple[int, int]]) -> Set[Tuple[int, int]]:
-    """Find all coordinates in a region using flood fill."""
-    max_y, max_x = len(grid), len(grid[0])
-    region = set()
-    stack = [(start_x, start_y)]
-    plant_type = grid[start_y][start_x]
+def calculate_total_fence_price(garden_map: str) -> str:
+    """Calculate the total price of fencing for all regions in a garden map."""
+    # Split map into rows
+    grid = [list(line) for line in garden_map.strip().split("\n")]
     
-    while stack:
-        x, y = stack.pop()
-        if (x, y) not in visited:
-            if grid[y][x] == plant_type:
-                region.add((x, y))
-                visited.add((x, y))
-                for nx, ny in get_neighbours(x, y, max_x, max_y):
-                    if (nx, ny) not in visited and grid[ny][nx] == plant_type:  # Correct conditional order
-                        stack.append((nx, ny))
-    return region
-
-
-def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[str]) -> int:
-    """Calculate the perimeter of a region."""
-    perimeter = 0
-    max_y, max_x = len(grid), len(grid[0])
-
-    for x, y in region:
-        for nx, ny in get_neighbours(x, y, max_x, max_y):
-            if (nx, ny) not in region:
-                perimeter += 1
-    return perimeter
-
-
-def calculate_region_price(region: Set[Tuple[int, int]], grid: List[str]) -> int:
-    """Calculate price for a region (area * perimeter)."""
-    area = len(region)
-    perimeter = calculate_perimeter(region, grid)
-    return area * perimeter
-
-
-def calculate_total_fence_price(input_map: str) -> str:
-    """Calculate total price of fencing all regions."""
-    grid = input_map.strip().split('\n')
-    if not grid:
-        return "0"
-
-    visited: Set[Tuple[int, int]] = set()
+    rows = len(grid)
+    cols = len(grid[0])
+    
+    # Keep track of which plots we've already processed
+    visited = set()
     total_price = 0
 
-    for y in range(len(grid)):
-        for x in range(len(grid[0])):
-            if (x, y) not in visited:
-                region = find_region(grid, x, y, visited)
-                price = calculate_region_price(region, grid)
+    # Helper function to check if coordinate is valid
+    def is_valid(r: int, c: int) -> bool:
+        return 0 <= r < rows and 0 <= c < cols
+
+    # Helper function to get region size and perimeter using BFS
+    def process_region(start_r: int, start_c: int, plant: str) -> Tuple[int, int]:
+        queue = deque([(start_r, start_c)])
+        region_coords = set([(start_r, start_c)])
+        perimeter = 0
+        
+        while queue:
+            r, c = queue.popleft()
+            
+            # Check all four directions
+            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nr, nc = r + dr, c + dc
+                
+                if is_valid(nr, nc):
+                    if grid[nr][nc] == plant:
+                        if (nr, nc) not in region_coords:
+                            queue.append((nr, nc))
+                            region_coords.add((nr, nc))
+                    else:
+                        # Found a boundary
+                        perimeter += 1
+                else:
+                    # Edge of grid is part of perimeter
+                    perimeter += 1
+                    
+        return len(region_coords), perimeter
+
+    # Process each unvisited plot
+    for r in range(rows):
+        for c in range(cols):
+            if (r, c) not in visited:
+                plant = grid[r][c]
+                area, perimeter = process_region(r, c, plant)
+                
+                # Mark all plots in this region as visited
+                queue = deque([(r, c)])
+                visited.add((r, c))
+                
+                while queue:
+                    curr_r, curr_c = queue.popleft()
+                    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        nr, nc = curr_r + dr, curr_c + dc
+                        if is_valid(nr, nc) and grid[nr][nc] == plant and (nr, nc) not in visited:
+                            queue.append((nr, nc))
+                            visited.add((nr, nc))
+                
+                # Calculate price for this region
+                price = area * perimeter
                 total_price += price
 
     return str(total_price)
-
-
-def solution() -> str:
-    """Read input from stdin and solve."""
-    import sys
-
-    input_map = "".join(sys.stdin.readlines())
-    return calculate_total_fence_price(input_map)
