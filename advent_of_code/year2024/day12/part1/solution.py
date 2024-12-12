@@ -40,23 +40,18 @@ def find_regions(grid: List[List[str]]) -> List[Set[Tuple[int, int]]]:
     return regions
 
 
-def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[List[str]]) -> int:
-    """Calculate the perimeter of a region."""
+def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[List[str]], regions: List[Set[Tuple[int, int]]]) -> int:
     perimeter = 0
-    plant_type = grid[next(iter(region))[0]][next(iter(region))[1]]
-    
-    for r, c in region:
-        # Check all 4 sides
-        for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-            new_r, new_c = r + dr, c + dc
-            # If adjacent cell is outside grid or different plant type, add to perimeter
-            if (new_r < 0 or new_r >= len(grid) or
-                new_c < 0 or new_c >= len(grid[0]) or
-                grid[new_r][new_c] != plant_type):
-                perimeter += 1
-    
-    return perimeter
 
+    for r, c in region:
+        for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < len(grid) and 0 <= nc < len(grid[0]):
+                if (nr, nc) not in region or any((nr,nc) in other_region and grid[r][c] == grid[nr][nc] for other_region in regions if other_region != region) :  # Check if the cell is in another region with the same plant type
+                    perimeter += 1
+            else:
+                perimeter += 1
+    return perimeter
 
 def calculate_total_fence_price(input_map: str) -> str:
     # Convert input string to grid
@@ -69,7 +64,7 @@ def calculate_total_fence_price(input_map: str) -> str:
     total_price = 0
     for region in regions:
         area = len(region)  # Area is number of plots in region
-        perimeter = calculate_perimeter(region, grid)
+        perimeter = calculate_perimeter(region, grid, regions)
         price = area * perimeter
         total_price += price
     
