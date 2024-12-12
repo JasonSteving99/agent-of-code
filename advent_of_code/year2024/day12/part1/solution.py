@@ -2,7 +2,6 @@
 Solution for Garden Groups problem.
 """
 from typing import List, Set, Tuple
-from collections import defaultdict
 
 
 def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, int]], 
@@ -35,10 +34,10 @@ def get_perimeter_and_area(garden_map: List[List[str]], visited: Set[Tuple[int, 
 def calculate_total_fence_price(input_map: str) -> str:
     """Calculate total price of fencing for all regions in the garden map."""
     garden_map = [list(line) for line in input_map.strip().split('\n')]
-
+    
     if not garden_map:
         return "0"
-    
+        
     visited = set()
     total_price = 0
     rows, cols = len(garden_map), len(garden_map[0])
