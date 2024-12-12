@@ -40,7 +40,6 @@ def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tupl
         for adj in get_adjacent_coords(current, len(grid), len(grid[0])):
             if grid[adj[0]][adj[1]] == symbol and adj not in visited:
                 queue.append(adj)
-
     # Calculate perimeter
     rows, cols = len(grid), len(grid[0])
     perimeter = 0
@@ -50,6 +49,7 @@ def find_region(grid: List[List[str]], start: Tuple[int, int], visited: Set[Tupl
             if not (0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == symbol):
                 perimeter += 1
     region.perimeter = perimeter
+
     return region
 
 def calculate_total_fence_price(garden_map: str) -> str:
@@ -67,7 +67,7 @@ def calculate_total_fence_price(garden_map: str) -> str:
             if (row, col) not in visited:
                 region = find_region(grid, (row, col), visited)
                 regions.append(region)
-    
+
     # Calculate total price
     total_price = sum(region.area * region.perimeter for region in regions)
     return str(total_price)
