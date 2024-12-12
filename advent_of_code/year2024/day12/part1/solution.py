@@ -2,8 +2,8 @@ from typing import List, Set, Tuple
 import sys
 
 def get_neighbors(x: int, y: int, grid: List[List[str]], rows: int, cols: int) -> List[Tuple[int, int]]:
-    """Get valid neighboring coordinates."""
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    """Get valid neighboring coordinates, including diagonals."""
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]
     neighbors = []
     for dx, dy in directions:
         new_x, new_y = x + dx, y + dy
@@ -33,15 +33,18 @@ def find_region(start_x: int, start_y: int, grid: List[List[str]], visited: Set[
         visited.add((x, y))
         area += 1
 
-        neighbors = get_neighbors(x, y, grid, rows, cols)        
-        sides = 4
+        neighbors = get_neighbors(x, y, grid, rows, cols)
+        sides = 4  # Initialize sides to 4 for each cell
+
         for nx, ny in neighbors:
-            if 0 <= nx < rows and 0 <= ny < cols:
+            if 0 <= nx < rows and 0 <= ny < cols:  # Check bounds
                 if grid[nx][ny] == plant_type:
-                    sides -= 1
-                    if (nx, ny) not in region_coords:  # Check before adding
+                    sides -=1
+                    if (nx, ny) not in region_coords:
                         queue.append((nx, ny))
-        perimeter += sides            
+
+
+        perimeter += sides
 
     return area, perimeter
 
