@@ -35,9 +35,12 @@ def calculate_total_fence_price(garden_map: str) -> str:
                 if not is_valid(nr, nc):
                     perimeter += 1
                 elif grid[nr][nc] != plant:
-                    perimeter +=1
-                elif (nr, nc) not in region_coords:
+                    perimeter += 1
+                elif (nr, nc) not in region_coords:  # Explore unvisited same-type neighbors
                     stack.append((nr, nc))
+                elif (nr, nc) in visited:       # Count shared edges with visited same-type regions
+                    perimeter += 1
+                    
         return region_coords, perimeter
 
     # Process each unvisited plot
