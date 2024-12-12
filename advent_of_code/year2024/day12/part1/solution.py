@@ -36,7 +36,7 @@ def calculate_total_fence_price(garden_map: str) -> str:
                     perimeter += 1
                 elif grid[nr][nc] != plant:
                     perimeter += 1
-                elif (nr, nc) not in region_coords:  # Check for same type neighbors
+                elif (nr, nc) not in region_coords:
                     stack.append((nr, nc))
                     
         return region_coords, perimeter
@@ -48,7 +48,7 @@ def calculate_total_fence_price(garden_map: str) -> str:
                 plant = grid[r][c]
                 region_coords, perimeter = process_region(r, c, plant)
                 area = len(region_coords)
-                visited.update(region_coords)  # Mark the entire region as visited
+                visited.update(region_coords)
                 total_price += area * perimeter
 
     return str(total_price)
