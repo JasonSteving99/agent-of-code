@@ -9,7 +9,7 @@ def calculate_total_fence_price(map_str: str) -> str:
     rows, cols = len(garden_map), len(garden_map[0])
 
     # Helper function for flood fill
-    def get_region_stats(start_r: int, start_c: int, plant: str) -> Tuple[int, int]:
+    def get_region_stats(start_r: int, start_c: int, plant: str) -> Tuple[int, int, set]:
         q = deque([(start_r, start_c)])
         visited: Set[Tuple[int, int]] = set()
         area = 0
@@ -32,22 +32,18 @@ def calculate_total_fence_price(map_str: str) -> str:
                 else:
                     perimeter += 1
 
-        return area, perimeter
+        return area, perimeter, visited
 
-    visited: Set[Tuple[int, int]] = set()
+    visited_cells: Set[Tuple[int, int]] = set()
     total_price = 0
     for r in range(rows):
         for c in range(cols):
-            if (r, c) not in visited:
+            if (r, c) not in visited_cells:
                 plant_type = garden_map[r][c]
-                area, perimeter = get_region_stats(r, c, plant_type)
-
+                area, perimeter, visited = get_region_stats(r, c, plant_type)
                 total_price += area * perimeter
+                visited_cells.update(visited)
 
-                #add all visited to the visited set in main loop
-                for row, col in visited:
-                    if garden_map[row][col] == plant_type:
-                        visited.add((row,col))
     return str(total_price)
 
 
