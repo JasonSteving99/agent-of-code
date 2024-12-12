@@ -313,7 +313,7 @@ async def iteratively_make_unit_tests_pass(
                         generated_impl_src=implementation.generated_implementation,
                         error_msg=test_failure.err_msg,
                     ),
-                    start_to_close_timeout=timedelta(seconds=60),
+                    start_to_close_timeout=timedelta(seconds=120),
                     retry_policy=RetryPolicy(maximum_attempts=3),
                 )
                 if theorized_solution.optional_theorized_implementation_fix:
@@ -361,7 +361,7 @@ async def iteratively_make_unit_tests_pass(
                                 impl_refactoring_plan=impl_refactoring_plan,
                             ),
                         ),
-                        start_to_close_timeout=timedelta(seconds=60),
+                        start_to_close_timeout=timedelta(seconds=120),
                         retry_policy=RetryPolicy(maximum_attempts=5),
                     )
                     # TODO(steving) Reconsider if this may be helpful.

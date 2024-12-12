@@ -44,10 +44,11 @@ def calculate_total_fence_price(input_str: str) -> str:
             # Count perimeter sides
             sides = 4
             for nr, nc in get_neighbors(r, c):
-                if (nr, nc) not in region:
+                if (nr, nc) in region:
+                    sides -= 1
+                else:
                     queue.append((nr, nc))
                     region.add((nr, nc))
-                sides -= 1
             perimeter += sides
             
         area = len(region)
