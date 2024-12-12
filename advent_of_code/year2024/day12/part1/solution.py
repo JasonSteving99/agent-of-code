@@ -28,7 +28,6 @@ def find_region(grid: List[str], start_x: int, start_y: int, visited: Set[Tuple[
             for nx, ny in get_neighbours(x, y, max_x, max_y):
                 if (nx, ny) not in visited and grid[ny][nx] == plant_type:
                     stack.append((nx, ny))
-            
     return region
 
 
@@ -36,7 +35,7 @@ def calculate_perimeter(region: Set[Tuple[int, int]], grid: List[str]) -> int:
     """Calculate the perimeter of a region."""
     perimeter = 0
     max_y, max_x = len(grid), len(grid[0])
-    
+
     for x, y in region:
         for nx, ny in get_neighbours(x, y, max_x, max_y):
             if (nx, ny) not in region:
@@ -51,30 +50,28 @@ def calculate_region_price(region: Set[Tuple[int, int]], grid: List[str]) -> int
     return area * perimeter
 
 
+
 def calculate_total_fence_price(input_map: str) -> str:
     """Calculate total price of fencing all regions."""
-    # Convert input to grid
     grid = input_map.strip().split('\n')
     if not grid:
         return "0"
-        
+
     visited: Set[Tuple[int, int]] = set()
     total_price = 0
-    
-    # Find all regions
+
     for y in range(len(grid)):
         for x in range(len(grid[0])):
             if (x, y) not in visited:
                 region = find_region(grid, x, y, visited)
                 price = calculate_region_price(region, grid)
                 total_price += price
-                
+
     return str(total_price)
 
 
 def solution() -> str:
     """Read input from stdin and solve."""
-    # Read input from stdin as string until EOF
     import sys
     input_map = "".join(sys.stdin.readlines())
     return calculate_total_fence_price(input_map)
