@@ -24,7 +24,7 @@ def calculate_total_fence_price(map_str: str) -> str:
 
             for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols:
+                if 0 <= nr < rows and 0 <= nc < cols:  # Check bounds first
                     if garden_map[nr][nc] != plant:
                         perimeter += 1
                     elif (nr, nc) not in visited:
