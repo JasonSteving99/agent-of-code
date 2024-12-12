@@ -9,10 +9,11 @@ def get_region_area_perimeter(
     garden_map: List[List[str]], 
     start_pos: Tuple[int, int], 
     visited: Set[Tuple[int, int]], 
-    plant_type: str
+    plant_type: str,
+    rows: int, 
+    cols: int
 ) -> Tuple[int, int]:
     """Calculate area and perimeter of a region starting from given position."""
-    rows, cols = len(garden_map), len(garden_map[0])
     area = 0
     perimeter = 0
     queue = deque([start_pos])
@@ -46,9 +47,12 @@ def get_region_area_perimeter(
 def calculate_total_fence_price(garden_map_str: str) -> str:
     """Calculate the total price of fencing all regions in the garden map."""
     # Convert string input to 2D list
-    garden_map = [list(line) for line in garden_map_str.strip().splitlines()]
-    rows, cols = len(garden_map), len(garden_map[0])
+    garden_map_lines = garden_map_str.strip().splitlines()
+    rows = len(garden_map_lines)
+    cols = len(garden_map_lines[0]) if rows else 0
+    garden_map = [list(line) for line in garden_map_lines]
     
+
     total_price = 0
     visited = set()
     
@@ -57,7 +61,7 @@ def calculate_total_fence_price(garden_map_str: str) -> str:
         for c in range(cols):
             if (r, c) not in visited:
                 area, perimeter = get_region_area_perimeter(
-                    garden_map, (r, c), visited, garden_map[r][c]
+                    garden_map, (r, c), visited, garden_map[r][c], rows, cols
                 )
                 region_price = area * perimeter
                 total_price += region_price
