@@ -1,65 +1,68 @@
 """
-Unit tests for the calculate_total_fence_price_sides function that calculates the total price
-of fencing regions in a grid. The price for each region is calculated by multiplying its area
-by the number of sides needed to enclose it.
+Unit tests for calculate_total_price_with_bulk_discount function.
 
-Key test aspects covered:
-- Simple rectangular regions
-- Regions with internal holes (O/X pattern)
-- Regions with extended shapes (E shape pattern)
-- Regions with symmetric layouts
-- Large complex regions with multiple different letter regions
+Problem Description:
+This function calculates the total price for fencing regions on a map, where:
+- Each region's price is determined by multiplying its area by its number of sides
+- Input is a multi-line string representing a grid map with letters denoting different regions
+- Same letters represent cells belonging to the same region
+- Function should return an integer representing the total cost
 """
 
-from solution import calculate_total_fence_price_sides
+from solution import calculate_total_price_with_bulk_discount
+import pytest
 
 
-def test_simple_rectangular_grid():
-    input_grid = "AAAA\nBBCD\nBBCC\nEEEC"
-    expected_output = "80"
-    result = calculate_total_fence_price_sides(input_grid)
-    assert result == expected_output, \
-        f"Failed for simple rectangular grid.\nInput:\n{input_grid}\nExpected: {expected_output}, Got: {result}"
+def test_simple_regions():
+    grid = """AAAA
+BBCD
+BBCC
+EEEC"""
+    assert calculate_total_price_with_bulk_discount(grid) == 80, \
+        f"Failed for simple grid with small regions. Input:\n{grid}\nExpected: 80"
 
 
-def test_grid_with_holes_pattern():
-    input_grid = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
-    expected_output = "436"
-    result = calculate_total_fence_price_sides(input_grid)
-    assert result == expected_output, \
-        f"Failed for grid with O/X hole pattern.\nInput:\n{input_grid}\nExpected: {expected_output}, Got: {result}"
+def test_concentric_regions():
+    grid = """OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO"""
+    assert calculate_total_price_with_bulk_discount(grid) == 436, \
+        f"Failed for grid with concentric regions. Input:\n{grid}\nExpected: 436"
 
 
-def test_grid_with_e_pattern():
-    input_grid = "EEEEE\nEXXXX\nEEEEE\nEXXXX\nEEEEE"
-    expected_output = "236"
-    result = calculate_total_fence_price_sides(input_grid)
-    assert result == expected_output, \
-        f"Failed for E-pattern grid.\nInput:\n{input_grid}\nExpected: {expected_output}, Got: {result}"
+def test_e_shaped_region():
+    grid = """EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE"""
+    assert calculate_total_price_with_bulk_discount(grid) == 236, \
+        f"Failed for E-shaped region grid. Input:\n{grid}\nExpected: 236"
 
 
-def test_symmetric_layout():
-    input_grid = "AAAAAA\nAAABBA\nAAABBA\nABBAAA\nABBAAA\nAAAAAA"
-    expected_output = "368"
-    result = calculate_total_fence_price_sides(input_grid)
-    assert result == expected_output, \
-        f"Failed for symmetric layout.\nInput:\n{input_grid}\nExpected: {expected_output}, Got: {result}"
+def test_six_by_six_grid():
+    grid = """AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA"""
+    assert calculate_total_price_with_bulk_discount(grid) == 368, \
+        f"Failed for 6x6 grid with internal boundaries. Input:\n{grid}\nExpected: 368"
 
 
-def test_large_complex_regions():
-    input_grid = (
-        "RRRRIICCFF\n"
-        "RRRRIICCCF\n"
-        "VVRRRCCFFF\n"
-        "VVRCCCCFFF\n"
-        "VVVVCJJCFE\n"
-        "VVIVCCCJEE\n"
-        "VVIIICJJEE\n"
-        "MIIIIICCEE\n"
-        "MIISIJJEEE\n"
-        "MMMISSJJEE"
-    )
-    expected_output = "1206"
-    result = calculate_total_fence_price_sides(input_grid)
-    assert result == expected_output, \
-        f"Failed for large complex regions.\nInput:\n{input_grid}\nExpected: {expected_output}, Got: {result}"
+def test_large_complex_grid():
+    grid = """RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCCFFF
+VVVVCJJCFE
+VVIVCCCJEE
+VVIIICJJEE
+MIIIIIFJEE
+MIIISIJEVE
+MMMSSJEEEE"""
+    assert calculate_total_price_with_bulk_discount(grid) == 1206, \
+        f"Failed for large complex grid with multiple regions. Input:\n{grid}\nExpected: 1206"
