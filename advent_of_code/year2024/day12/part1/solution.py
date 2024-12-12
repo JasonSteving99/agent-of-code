@@ -1,58 +1,72 @@
-from typing import Set, Tuple, Dict, List
+from typing import List, Set, Tuple
 import sys
-from collections import deque
 
+def get_neighbors(x: int, y: int, grid: List[List[str]], rows: int, cols: int) -> List[Tuple[int, int]]:
+    """Get valid neighboring coordinates."""
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    neighbors = []
+    for dx, dy in directions:
+        new_x, new_y = x + dx, y + dy
+        if 0 <= new_x < rows and 0 <= new_y < cols:
+            neighbors.append((new_x, new_y))
+    return neighbors
 
-def solution() -> str:
-    # Read input from stdin
-    input_str = sys.stdin.read().strip()
-    return calculate_total_fence_price(input_str)
-
-
-def calculate_total_fence_price(input_map: str) -> str:
-    """Calculate the total price of fencing for all garden regions."""
-    # Convert input string to 2D grid
-    grid = [list(line) for line in input_map.splitlines()]
-    rows = len(grid)
-    cols = len(grid[0])
+def find_region(start_x: int, start_y: int, grid: List[List[str]], visited: Set[Tuple[int, int]]) -> Tuple[int, int]:
+    """Find region starting from given coordinates and return area and perimeter."""
+    if (start_x, start_y) in visited:
+        return 0, 0
+        
+    rows, cols = len(grid), len(grid[0])
+    plant_type = grid[start_x][start_y]
     
-    # Track visited cells to avoid duplicates
-    visited = set()
+    # BFS
+    queue = [(start_x, start_y)]
+    area = 0
+    perimeter = 0
+    region_coords = set()
+    
+    while queue:
+        x, y = queue.pop(0)
+        if (x, y) in region_coords:
+            continue
+            
+        region_coords.add((x, y))
+        visited.add((x, y))
+        area += 1
+        
+        neighbors = get_neighbors(x, y, grid, rows, cols)
+        sides = 4  # Start with all sides being part of perimeter
+        
+        for nx, ny in neighbors:
+            if grid[nx][ny] == plant_type:
+                sides -= 1  # Remove side that connects to same plant type
+                if (nx, ny) not in region_coords:
+                    queue.append((nx, ny))
+                    
+        perimeter += sides
+        
+    return area, perimeter
+
+def calculate_total_fence_price(garden_map: str) -> int:
+    """Calculate total fence price for all regions in the garden."""
+    # Convert input string to 2D grid
+    grid = [list(row) for row in garden_map.strip().split('\n')]
+    rows, cols = len(grid), len(grid[0])
+    
     total_price = 0
+    visited = set()
+    
+    # Iterate through each cell in the grid
+    for i in range(rows):
+        for j in range(cols):
+            if (i, j) not in visited:
+                area, perimeter = find_region(i, j, grid, visited)
+                region_price = area * perimeter
+                total_price += region_price
+                
+    return total_price
 
-    # Helper function to count perimeter and area
-    def get_region_stats(start_r: int, start_c: int, plant: str) -> Tuple[int, int]:
-        region = set()
-        queue = deque([(start_r, start_c)])
-        region.add((start_r, start_c))
-        
-        while queue:
-            r, c = queue.popleft()
-            for nr, nc in [(r+1, c), (r-1, c), (r, c+1), (r, c-1)]:
-                if (0 <= nr < rows and 0 <= nc < cols and 
-                    grid[nr][nc] == plant and 
-                    (nr, nc) not in region):
-                    queue.append((nr, nc))
-                    region.add((nr, nc))
-        
-        # Calculate perimeter
-        perimeter = 0
-        for r, c in region:
-            for nr, nc in [(r+1, c), (r-1, c), (r, c+1), (r, c-1), (r+1, c+1), (r+1, c-1), (r-1, c+1), (r-1, c-1)]:
-                if not (0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == plant):
-                    perimeter += 1
-        
-        return len(region), perimeter, region
-
-    # Process each unvisited cell
-    for r in range(rows):
-        for c in range(cols):
-            if (r, c) not in visited:
-                plant = grid[r][c]
-                area, perimeter, region = get_region_stats(r, c, plant)
-                total_price += area * perimeter
-
-                for cell in region:
-                    visited.add(cell)
-
-    return str(total_price)
+def solution() -> int:
+    """Read input from stdin and return the solution."""
+    garden_map = sys.stdin.read()
+    return calculate_total_fence_price(garden_map)

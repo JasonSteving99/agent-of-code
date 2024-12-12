@@ -1,44 +1,62 @@
 """
-Tests for the garden fencing price calculator function.
+This test suite validates the calculate_total_fence_price function which:
+1. Takes a string representation of a garden layout where each character represents a type of plant
+2. Each contiguous region of same-letter plants needs to be fenced
+3. The cost for each region is calculated as the product of its area and perimeter
+4. The total cost is the sum of all region costs
 
-The test cases cover:
-1. Small garden map with 4x4 dimensions and mixed region sizes
-2. 5x5 garden map with alternating pattern of two types of plots
-3. Large 10x10 garden map with multiple irregular shaped regions
-
-Tests verify that the function correctly:
-- Identifies distinct regions formed by adjacent same-letter plots
-- Calculates area (number of plots) and perimeter (exposed sides) for each region
-- Multiplies area by perimeter for each region's fence price
-- Sums up all region prices to get total fence price
+The tests verify that the function correctly processes gardens of different sizes and plant region configurations:
+- Small 4x4 garden with simple regions
+- 5x5 garden with alternating pattern
+- Large 10x10 garden with complex regions
 """
 
 from solution import calculate_total_fence_price
 import pytest
 
-def test_small_garden_mixed_regions():
-    garden_map = "AAAA\nBBCD\nBBCC\nEEEC"
-    expected_price = "140"
-    actual_price = calculate_total_fence_price(garden_map)
-    assert actual_price == expected_price, f"For garden map:\n{garden_map}\nExpected price: {expected_price}, but got: {actual_price}"
 
-def test_medium_garden_alternating_pattern():
-    garden_map = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
-    expected_price = "772"
-    actual_price = calculate_total_fence_price(garden_map)
-    assert actual_price == expected_price, f"For garden map:\n{garden_map}\nExpected price: {expected_price}, but got: {actual_price}"
+def test_small_garden_with_simple_regions():
+    garden_layout = "AAAA\nBBCD\nBBCC\nEEEC"
+    expected_price = 140
+    
+    result = calculate_total_fence_price(garden_layout)
+    
+    assert result == expected_price, (
+        f"Failed to calculate correct fence price for garden:\n{garden_layout}\n"
+        f"Expected: {expected_price}, but got: {result}"
+    )
 
-def test_large_garden_irregular_regions():
-    garden_map = ("RRRRIICCFF\n"
-                  "RRRRIICCCF\n"
-                  "VVRRRCCCFF\n"
-                  "VVRCCCCFFF\n"
-                  "VVVVCJJCFE\n"
-                  "VVIVCCJJEE\n"
-                  "VVIICJJJEE\n"
-                  "MIIIIIIJEE\n"
-                  "MIISIJJEEE\n"
-                  "MMMISSJJEE")
-    expected_price = "1930"
-    actual_price = calculate_total_fence_price(garden_map)
-    assert actual_price == expected_price, f"For garden map:\n{garden_map}\nExpected price: {expected_price}, but got: {actual_price}"
+
+def test_medium_garden_with_alternating_pattern():
+    garden_layout = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
+    expected_price = 772
+    
+    result = calculate_total_fence_price(garden_layout)
+    
+    assert result == expected_price, (
+        f"Failed to calculate correct fence price for garden:\n{garden_layout}\n"
+        f"Expected: {expected_price}, but got: {result}"
+    )
+
+
+def test_large_garden_with_complex_regions():
+    garden_layout = (
+        "RRRRIICCFF\n"
+        "RRRRIICCCF\n"
+        "VVRRRCCFFF\n"
+        "VVRCCCCFFF\n"
+        "VVVVCJJCFE\n"
+        "VVIVCCCJEE\n"
+        "VVIIICJJEE\n"
+        "MIIIIIJEEE\n"
+        "MIISIJEEEE\n"
+        "MMMISSJJEE"
+    )
+    expected_price = 1930
+    
+    result = calculate_total_fence_price(garden_layout)
+    
+    assert result == expected_price, (
+        f"Failed to calculate correct fence price for garden:\n{garden_layout}\n"
+        f"Expected: {expected_price}, but got: {result}"
+    )
