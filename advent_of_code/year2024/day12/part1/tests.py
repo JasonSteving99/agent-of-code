@@ -1,58 +1,51 @@
-"""Unit tests for the calculate_total_fence_price function.
+"""
+This test suite validates the calculate_total_fence_price function which:
+1. Takes a string input representing a garden map with letters indicating plant types
+2. Calculates total fencing price based on the area and perimeter of each continuous region
+3. Returns the sum of all region prices as a string
 
-This test suite covers the verification of fence price calculations for garden regions
-where each region's price is calculated as (area × perimeter) and the total price
-is the sum of all region prices.
-
-The tests verify the function's ability to:
-1. Process small gardens with few distinct regions
-2. Handle gardens with alternating patterns
-3. Process large gardens with multiple complex regions
-
-All test cases use the provided examples where the input is a string representation 
-of the garden (each line separated by newlines) and the output is the total price 
-as a string.
+Test cases cover:
+- Simple rectangular regions with few plant types
+- Nested regions forming concentric patterns
+- Complex configurations with multiple plant types and irregular shapes
 """
 
 from solution import calculate_total_fence_price
 
 
-def test_small_garden_basic_regions():
-    garden = "AAAA\nBBCD\nBBCC\nEEEC"
-    expected = "140"
-    result = calculate_total_fence_price(garden)
-    assert result == expected, (
-        f"Failed to calculate correct price for garden:\n{garden}\n"
-        f"Expected: {expected}, but got: {result}"
+def test_simple_rectangular_regions():
+    garden_map = "AAAA\nBBCD\nBBCC\nEEEC"
+    result = calculate_total_fence_price(garden_map)
+    assert result == "140", (
+        f"Failed for simple rectangular garden map:\n{garden_map}\n"
+        f"Expected: '140', but got: '{result}'"
     )
 
 
-def test_alternating_pattern_garden():
-    garden = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
-    expected = "772"
-    result = calculate_total_fence_price(garden)
-    assert result == expected, (
-        f"Failed to calculate correct price for garden:\n{garden}\n"
-        f"Expected: {expected}, but got: {result}"
+def test_nested_concentric_regions():
+    garden_map = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
+    result = calculate_total_fence_price(garden_map)
+    assert result == "772", (
+        f"Failed for nested concentric garden map:\n{garden_map}\n"
+        f"Expected: '772', but got: '{result}'"
     )
 
 
-def test_large_complex_garden():
-    garden = (
+def test_complex_multiple_regions():
+    garden_map = (
         "RRRRIICCFF\n"
-        "RRRRIICCCF\n"
+        "RRRRIICCFF\n"
         "VVRRRCCCFF\n"
         "VVRCCCCFFF\n"
-        "VVVVCCJCFE\n"
-        "VVIVCCCJEE\n"
+        "VVVVCJJCFE\n"
+        "VVIVCJJJEE\n"
         "VVIIICJJEE\n"
-        "MIIIIIJEEE\n"
-        "MIISIJEEEE\n"
-        "MMMISSJEEEE"
+        "MIIIIIIJEE\n"
+        "MIISSIJEEE\n"
+        "MMMSSJEEEE"
     )
-    expected = "1930"
-    result = calculate_total_fence_price(garden)
-    assert result == expected, (
-        f"Failed to calculate correct price for garden:\n{garden}\n"
-        f"Expected: {expected}, but got: {result}"
+    result = calculate_total_fence_price(garden_map)
+    assert result == "1930", (
+        f"Failed for complex garden map with multiple regions:\n{garden_map}\n"
+        f"Expected: '1930', but got: '{result}'"
     )
