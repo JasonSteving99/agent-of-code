@@ -61,7 +61,7 @@ def count_region_sides(region: List[Tuple[int, int]], grid: List[List[str]]) -> 
     
     return len(edges)
 
-def calculate_total_price_with_bulk_discount(input_str: str) -> str:
+def calculate_total_price_with_bulk_discount(input_str: str) -> int:
     # Convert input string to grid
     grid = [list(line) for line in input_str.strip().split('\n')]
     
@@ -84,9 +84,9 @@ def calculate_total_price_with_bulk_discount(input_str: str) -> str:
             total_price += price
             processed_regions.add(region_tuple)
     
-    return str(total_price)
+    return total_price
 
-def solution() -> str:
+def solution() -> int:
     # Read input from stdin
     import sys
     input_data = sys.stdin.read().strip()
