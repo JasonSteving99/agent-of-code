@@ -2,7 +2,7 @@ from typing import List, Set, Tuple
 import sys
 
 def get_neighbors(x: int, y: int, grid: List[List[str]], rows: int, cols: int) -> List[Tuple[int, int]]:
-    """Get valid neighboring coordinates."""
+    """Get valid orthogonal neighboring coordinates."""
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     neighbors = []
     for dx, dy in directions:
@@ -38,7 +38,7 @@ def find_region(start_x: int, start_y: int, grid: List[List[str]], visited: Set[
 
         for nx, ny in neighbors:
             if grid[nx][ny] == plant_type:
-                sides -= 1
+                sides -= 1  # Decrement for each orthogonal neighbor
                 if (nx, ny) not in region_coords:
                     queue.append((nx, ny))
 
