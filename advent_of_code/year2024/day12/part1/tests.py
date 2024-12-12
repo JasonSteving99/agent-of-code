@@ -1,66 +1,57 @@
 """
-Tests for the garden fencing price calculation function.
+Tests for the calculate_total_fence_price function.
 
-The tests verify the function's ability to:
-1. Calculate fencing price for small gardens (4x4)
-2. Calculate fencing price for medium gardens (5x5)
-3. Calculate fencing price for large gardens (10x10)
+The function takes a string representing a grid of plant types where:
+- Each character represents a different type of plant
+- The grid rows are separated by newlines
+- For each contiguous region of the same plant type:
+  * Calculate the area (number of cells) and perimeter (boundary cells)
+  * The price for that region is area * perimeter
+- The total price is the sum of prices for all regions
 
-Each test validates that given a garden map as a multiline string input,
-the function returns the correct total fencing price as a string.
+The function should return the total price as a string.
 """
 
 from solution import calculate_total_fence_price
+import pytest
 
 
-def test_small_garden_with_multiple_regions():
-    garden_map = "AAAA\nBBCD\nBBCC\nEEEC"
-    expected_price = "140"
-    
-    result = calculate_total_fence_price(garden_map)
-    
-    assert result == expected_price, (
-        f"Failed to calculate correct fence price for small garden.\n"
-        f"Input garden map:\n{garden_map}\n"
-        f"Expected price: {expected_price}\n"
-        f"Got: {result}"
+def test_small_grid_with_multiple_regions():
+    input_grid = "AAAA\nBBCD\nBBCC\nEEEC"
+    expected = "140"
+    result = calculate_total_fence_price(input_grid)
+    assert result == expected, (
+        f"For grid:\n{input_grid}\n"
+        f"Expected price: {expected}, but got: {result}"
     )
 
 
-def test_medium_garden_with_alternating_pattern():
-    garden_map = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
-    expected_price = "772"
-    
-    result = calculate_total_fence_price(garden_map)
-    
-    assert result == expected_price, (
-        f"Failed to calculate correct fence price for medium garden.\n"
-        f"Input garden map:\n{garden_map}\n"
-        f"Expected price: {expected_price}\n"
-        f"Got: {result}"
+def test_symmetrical_grid_with_x_pattern():
+    input_grid = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO"
+    expected = "772"
+    result = calculate_total_fence_price(input_grid)
+    assert result == expected, (
+        f"For grid:\n{input_grid}\n"
+        f"Expected price: {expected}, but got: {result}"
     )
 
 
-def test_large_garden_with_complex_regions():
-    garden_map = (
+def test_large_grid_with_complex_regions():
+    input_grid = (
         "RRRRIICCFF\n"
         "RRRRIICCCF\n"
-        "VVRRRCCFFF\n"
+        "VVRRRCCCFF\n"
         "VVRCCCCFFF\n"
         "VVVVCJJCFE\n"
-        "VVIVCCCJEE\n"
+        "VVIVCCJJEE\n"
         "VVIIICJJEE\n"
-        "MIIIIIJEEE\n"
-        "MIISIJEEEE\n"
-        "MMMISSJJEE"
+        "MIIIIISJEE\n"
+        "MIIISISSEE\n"
+        "MMMISSJSEE"
     )
-    expected_price = "1930"
-    
-    result = calculate_total_fence_price(garden_map)
-    
-    assert result == expected_price, (
-        f"Failed to calculate correct fence price for large garden.\n"
-        f"Input garden map:\n{garden_map}\n"
-        f"Expected price: {expected_price}\n"
-        f"Got: {result}"
+    expected = "1930"
+    result = calculate_total_fence_price(input_grid)
+    assert result == expected, (
+        f"For grid:\n{input_grid}\n"
+        f"Expected price: {expected}, but got: {result}"
     )
