@@ -35,10 +35,9 @@ def calculate_total_fence_price(garden_map: str) -> str:
                 if not is_valid(nr, nc):
                     perimeter += 1
                 elif grid[nr][nc] != plant:
-                    perimeter += 1
+                    perimeter +=1
                 elif (nr, nc) not in region_coords:
                     stack.append((nr, nc))
-                    
         return region_coords, perimeter
 
     # Process each unvisited plot
@@ -50,5 +49,5 @@ def calculate_total_fence_price(garden_map: str) -> str:
                 area = len(region_coords)
                 visited.update(region_coords)
                 total_price += area * perimeter
-
+                
     return str(total_price)
