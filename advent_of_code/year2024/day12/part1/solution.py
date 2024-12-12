@@ -29,15 +29,15 @@ def calculate_total_fence_price(garden_map: str) -> str:
                 continue
             region_coords.add((r, c))
 
-            neighbor_count = 0
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nr, nc = r + dr, c + dc
-                if is_valid(nr, nc) and grid[nr][nc] == plant:
-                    neighbor_count +=1
-                    if (nr, nc) not in region_coords:
-                        stack.append((nr, nc))
-            if neighbor_count < 4:
-                 perimeter += (4-neighbor_count)
+
+                if not is_valid(nr, nc):
+                    perimeter += 1
+                elif grid[nr][nc] != plant:
+                    perimeter += 1
+                elif (nr, nc) not in region_coords:  # Check for same type neighbors
+                    stack.append((nr, nc))
                     
         return region_coords, perimeter
 
