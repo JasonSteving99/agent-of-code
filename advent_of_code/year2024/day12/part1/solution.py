@@ -25,10 +25,9 @@ def find_region(grid: List[str], start_x: int, start_y: int, visited: Set[Tuple[
         if (x, y) not in visited and grid[y][x] == plant_type:
             region.add((x, y))
             visited.add((x, y))
-            stack.extend(
-                (nx, ny) for nx, ny in get_neighbours(x, y, max_x, max_y)
-                if (nx, ny) not in visited and grid[ny][nx] == plant_type
-            )
+            for nx, ny in get_neighbours(x, y, max_x, max_y):
+                if (nx, ny) not in visited and grid[ny][nx] == plant_type:
+                    stack.append((nx, ny))
             
     return region
 
