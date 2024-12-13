@@ -7,18 +7,17 @@ from math import gcd
 
 @dataclass
 class ClawMachine:
-    button_a: Tuple[int, int]  # (x, y) movement for button A
-    button_b: Tuple[int, int]  # (x, y) movement for button B
-    prize: Tuple[int, int]     # (x, y) coordinates of prize
+    button_a: Tuple[int, int]
+    button_b: Tuple[int, int]
+    prize: Tuple[int, int]
 
 
 def parse_machine(lines: List[str]) -> ClawMachine:
-    """Parse a single claw machine configuration from input lines."""
     pattern = r"Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)"
     match = re.match(pattern, "\n".join(lines))
     if not match:
         raise ValueError("Invalid input format")
-    
+
     nums = [int(x) for x in match.groups()]
     return ClawMachine(
         button_a=(nums[0], nums[1]),
@@ -28,7 +27,6 @@ def parse_machine(lines: List[str]) -> ClawMachine:
 
 
 def bezout_coefficients(a: int, b: int) -> Tuple[int, int, int]:
-    """Extended Euclidean Algorithm."""
     old_r, r = a, b
     old_s, s = 1, 0
     old_t, t = 0, 1
@@ -43,7 +41,6 @@ def bezout_coefficients(a: int, b: int) -> Tuple[int, int, int]:
 
 
 def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]:
-    """Solve the system of Diophantine equations."""
     a1, b1 = machine.button_a[0], machine.button_b[0]
     a2, b2 = machine.button_a[1], machine.button_b[1]
     target_x, target_y = machine.prize
@@ -60,20 +57,19 @@ def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]
     y1 *= target_x // gcd_x
     x2 *= target_y // gcd_y
     y2 *= target_y // gcd_y
-
-    for k2 in range(1001):
-        k1 = ((y2 - y1) * gcd_x + b1 * k2) // a1 if a1!= 0 else 0
+    
+    for k2 in range(200001):
+        k1 = ((y2 - y1) * gcd_x + b1 * k2) // a1
         a_presses = x1 + (b1 // gcd_x) * k1
-        b_presses = y1 - (a1 // gcd_x) * k1
+        b_presses = k2
 
-        if a_presses == x2 + (b2 // gcd_y) * k2 and a_presses >= 0 and b_presses >= 0:
-            return a_presses, b_presses
+        if a_presses >= 0 and b_presses >=0 and (a2 * a_presses + b2 * b_presses == target_y):
+          return a_presses, b_presses
 
     return None
 
 
 def solve_machine(machine: ClawMachine) -> Optional[int]:
-    """Solve for a single machine."""
     solution = solve_machine_diophantine(machine)
     if solution is not None:
         a_presses, b_presses = solution
@@ -82,7 +78,6 @@ def solve_machine(machine: ClawMachine) -> Optional[int]:
 
 
 def calculate_min_tokens_part2(input_str: str) -> int:
-    """Calculate minimum tokens needed for part 2."""
     machines_str = [m.strip() for m in input_str.strip().split("\n\n")]
     total_tokens = 0
     offset = 10000000000000
@@ -99,6 +94,5 @@ def calculate_min_tokens_part2(input_str: str) -> int:
 
 
 def solution() -> int:
-    """Read from stdin and return the solution."""
     input_str = sys.stdin.read()
     return calculate_min_tokens_part2(input_str)
