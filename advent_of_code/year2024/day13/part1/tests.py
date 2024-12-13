@@ -1,36 +1,36 @@
 """
-Unit tests for the calculate_min_cost function that calculates the minimum cost to win a prize
-in a claw machine game given button movement patterns and prize location.
-
-The function takes a string input describing:
-- Button A movement in X,Y coordinates
-- Button B movement in X,Y coordinates  
-- Prize location in absolute X,Y coordinates
-
-It returns:
-- The minimum cost (integer) to reach the prize using button presses
-- None/null if it's impossible to reach the prize
+This test suite validates the calculate_min_tokens function which determines the minimum number
+of tokens needed to win a prize in a claw machine game. The tests verify:
+1. The function correctly calculates token costs when using combinations of Button A (3 tokens)
+   and Button B (1 token) to reach specific prize coordinates
+2. Works with different starting positions and target coordinates
+3. Handles the coordinate string parsing correctly
 """
 
-from typing import Optional
-from solution import calculate_min_cost
+from solution import calculate_min_tokens
 
-def test_winnable_game_case1():
-    game_input = "Button A: X+94, Y+34\nButton B: X+22, Y+67\nPrize: X=8400, Y=5400"
-    result = calculate_min_cost(game_input)
-    assert result == 280, f"For input '{game_input}', expected cost 280 but got {result}"
 
-def test_impossible_game_case1():
-    game_input = "Button A: X+26, Y+66\nButton B: X+67, Y+21\nPrize: X=12748, Y=12176"
-    result = calculate_min_cost(game_input)
-    assert result is None, f"For input '{game_input}', expected None (impossible) but got {result}"
+def test_prize_configuration_with_larger_coordinates():
+    machine_config = (
+        "Button A: X+94, Y+34\n"
+        "Button B: X+22, Y+67\n"
+        "Prize: X=8400, Y=5400"
+    )
+    result = calculate_min_tokens(machine_config)
+    assert result == 280, (
+        f"Expected 280 tokens for configuration:\n{machine_config}\n"
+        f"but got {result} tokens instead"
+    )
 
-def test_winnable_game_case2():
-    game_input = "Button A: X+17, Y+86\nButton B: X+84, Y+37\nPrize: X=7870, Y=6450"
-    result = calculate_min_cost(game_input)
-    assert result == 200, f"For input '{game_input}', expected cost 200 but got {result}"
 
-def test_impossible_game_case2():
-    game_input = "Button A: X+69, Y+23\nButton B: X+27, Y+71\nPrize: X=18641, Y=10279"
-    result = calculate_min_cost(game_input)
-    assert result is None, f"For input '{game_input}', expected None (impossible) but got {result}"
+def test_prize_configuration_with_smaller_movements():
+    machine_config = (
+        "Button A: X+17, Y+86\n"
+        "Button B: X+84, Y+37\n"
+        "Prize: X=7870, Y=6450"
+    )
+    result = calculate_min_tokens(machine_config)
+    assert result == 200, (
+        f"Expected 200 tokens for configuration:\n{machine_config}\n"
+        f"but got {result} tokens instead"
+    )

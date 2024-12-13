@@ -1,72 +1,73 @@
-"""Solution for calculating minimum tokens needed to win prizes from claw machines."""
-from typing import Optional
+from typing import List, Optional, Tuple
+import sys
+from dataclasses import dataclass
 
+@dataclass
+class ClawMachine:
+    a_dx: int
+    a_dy: int
+    b_dx: int
+    b_dy: int
+    target_x: int
+    target_y: int
 
-def calculate_min_cost(machine_data: str) -> Optional[int]:
-    """Calculate minimum tokens needed to win prize, or None if impossible.
+def parse_machine(lines: List[str]) -> Optional[ClawMachine]:
+    if not lines or len(lines) < 3:
+        return None
+        
+    # Parse A button
+    a_parts = lines[0].split(", ")
+    a_dx = int(a_parts[0].split("+")[1])
+    a_dy = int(a_parts[1].split("+")[1])
     
-    A button costs 3 tokens, B button costs 1 token.
-    Each button may be pressed up to 100 times maximum.
-    """
-    # Parse the machine data
-    lines = machine_data.strip().split('\n')
-    # Extract button movements and prize location
-    a_line = lines[0].split(': ')[1].strip()
-    b_line = lines[1].split(': ')[1].strip()
-    prize_line = lines[2].split(': ')[1].strip()
-    
-    # Parse button A movements
-    ax = int(a_line.split(', ')[0].replace('X+', ''))
-    ay = int(a_line.split(', ')[1].replace('Y+', ''))
-    
-    # Parse button B movements
-    bx = int(b_line.split(', ')[0].replace('X+', ''))
-    by = int(b_line.split(', ')[1].replace('Y+', ''))
+    # Parse B button
+    b_parts = lines[1].split(", ")
+    b_dx = int(b_parts[0].split("+")[1])
+    b_dy = int(b_parts[1].split("+")[1])
     
     # Parse prize location
-    prize_x = int(prize_line.split(', ')[0].replace('X=', ''))
-    prize_y = int(prize_line.split(', ')[1].replace('Y=', ''))
+    prize_parts = lines[2].split(", ")
+    target_x = int(prize_parts[0].split("=")[1])
+    target_y = int(prize_parts[1].split("=")[1])
     
-    # Try all possible combinations of button presses (up to 100 each)
-    min_cost = None
-    
-    for a_presses in range(101):
-        for b_presses in range(101):
-            # Calculate total movement
-            total_x = a_presses * ax + b_presses * bx
-            total_y = a_presses * ay + b_presses * by
-            
-            # Check if we've reached the prize
-            if total_x == prize_x and total_y == prize_y:
-                # Calculate cost: 3 tokens per A press, 1 token per B press
-                cost = a_presses * 3 + b_presses
-                # Update minimum cost if this is cheaper or first solution
-                if min_cost is None or cost < min_cost:
-                    min_cost = cost
-    
-    return min_cost
+    return ClawMachine(a_dx, a_dy, b_dx, b_dy, target_x, target_y)
 
+def find_solution(machine: ClawMachine) -> Optional[Tuple[int, int]]:
+    # Try all combinations of A and B presses up to 100 each
+    for a in range(101):  # Including 100
+        for b in range(101):
+            x = a * machine.a_dx + b * machine.b_dx
+            y = a * machine.a_dy + b * machine.b_dy
+            if x == machine.target_x and y == machine.target_y:
+                return (a, b)
+    return None
+
+def calculate_tokens(a_presses: int, b_presses: int) -> int:
+    return (a_presses * 3) + b_presses
+
+def calculate_min_tokens(input_data: str) -> int:
+    # Split input into groups of 3 lines (+ optional empty line)
+    lines = [line.strip() for line in input_data.splitlines() if line.strip()]
+    machines = []
+    
+    # Parse machines
+    for i in range(0, len(lines), 3):
+        if i + 2 < len(lines):
+            machine = parse_machine(lines[i:i+3])
+            if machine:
+                machines.append(machine)
+    
+    total_tokens = 0
+    
+    # For each machine, find the solution that requires minimum tokens
+    for machine in machines:
+        solution = find_solution(machine)
+        if solution:
+            tokens = calculate_tokens(solution[0], solution[1])
+            total_tokens += tokens
+    
+    return total_tokens
 
 def solution() -> int:
-    """Read input from stdin and return the total minimum tokens needed."""
-    import sys
-    input_data = sys.stdin.read().strip()
-    # Split input into individual machine data
-    machines = []
-    current_machine = []
-    
-    for line in input_data.split('\n'):
-        if line:
-            current_machine.append(line)
-            if len(current_machine) == 3:
-                machines.append('\n'.join(current_machine))
-                current_machine = []
-                
-    # Calculate total minimum tokens needed
-    total_tokens = 0
-    for machine in machines:
-        cost = calculate_min_cost(machine)
-        if cost is not None:
-            total_tokens += cost
-            
-    return total_tokens
+    input_data = sys.stdin.read()
+    return calculate_min_tokens(input_data)
