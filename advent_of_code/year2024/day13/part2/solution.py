@@ -2,7 +2,7 @@ from typing import Optional, List, Tuple
 import sys
 from dataclasses import dataclass
 import re
-from math import gcd
+from math import gcd, floor
 
 
 @dataclass
@@ -51,18 +51,18 @@ def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]
     Solve the system of Diophantine equations for the machine using the extended Euclidean algorithm.
     Returns (a_presses, b_presses) or None if no solution exists.
     """
-    # For X coordinates: a₁x + b₁y = target_x
-    # For Y coordinates: a₂x + b₂y = target_y
+    # For X coordinates: a
+    # For Y coordinates: a
     a1, b1 = machine.button_a[0], machine.button_b[0]  # x-movements
     a2, b2 = machine.button_a[1], machine.button_b[1]  # y-movements
     target_x, target_y = machine.prize
 
-    # First equation: a₁x + b₁y = target_x
+    # First equation: a
     gcd_x, x1, y1 = bezout_coefficients(a1, b1)
     if target_x % gcd_x != 0:
         return None
 
-    # Second equation: a₂x + b₂y = target_y
+    # Second equation: a
     gcd_y, x2, y2 = bezout_coefficients(a2, b2)
     if target_y % gcd_y != 0:
         return None
@@ -74,18 +74,18 @@ def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]
     y2 = y2 * (target_y // gcd_y)
 
     # Find k where both solutions align (we need positive solutions)
-    k1_start = max((-x1 * gcd_x) // (b1), (-y1 * gcd_x) // (-a1))
-    k2_start = max((-x2 * gcd_y) // (b2), (-y2 * gcd_y) // (-a2))
+    k1_start = int(floor((-x1 * gcd_x) / (b1)))
+    k2_start = int(floor((-x2 * gcd_y) / (b2)))
 
-    # Try some reasonable number of k values
-    for k1 in range(k1_start, k1_start + 1000):
+    # Try some reasonable number of k values (including negative solutions)
+    for k1 in range(k1_start, k1_start + 2000):
         a_press1 = x1 + (b1 // gcd_x) * k1
         b_press1 = y1 - (a1 // gcd_x) * k1
-        
-        for k2 in range(k2_start, k2_start + 1000):
+
+        for k2 in range(k2_start, k2_start + 2000):
             a_press2 = x2 + (b2 // gcd_y) * k2
             b_press2 = y2 - (a2 // gcd_y) * k2
-            
+
             if a_press1 == a_press2 and b_press1 == b_press2 and a_press1 >= 0 and b_press1 >= 0:
                 return (a_press1, b_press1)
 
@@ -123,7 +123,7 @@ def calculate_min_tokens_part2(input_str: str) -> int:
             total_tokens += solution
     
     if not prizes_possible:
-        return 0
+        return 0  # Return 0 according to the prompt example (not the sum)
     return total_tokens
 
 
