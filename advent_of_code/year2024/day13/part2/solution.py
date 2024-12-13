@@ -57,14 +57,14 @@ def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]
     y1 *= target_x // gcd_x
     x2 *= target_y // gcd_y
     y2 *= target_y // gcd_y
-    
-    for k2 in range(200001):
+
+    for k2 in range(2000001):
         k1 = ((y2 - y1) * gcd_x + b1 * k2) // a1
         a_presses = x1 + (b1 // gcd_x) * k1
         b_presses = k2
 
-        if a_presses >= 0 and b_presses >=0 and (a2 * a_presses + b2 * b_presses == target_y):
-          return a_presses, b_presses
+        if a_presses >= 0 and b_presses >= 0 and (a2 * a_presses + b2 * b_presses == target_y):
+            return a_presses, b_presses
 
     return None
 
