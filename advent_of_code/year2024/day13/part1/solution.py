@@ -26,56 +26,24 @@ def parse_machine(lines: List[str]) -> ClawMachine:
     )
 
 
-def solve_diophantine(a: int, b: int, c: int, limit: int = 100) -> Optional[Tuple[int, int]]:
-    """
-    Solve the Diophantine equation ax + by = c where x,y >= 0 and x,y <= limit.
-    Returns a tuple of (x,y) if solution exists, None otherwise.
-    """
-    for x in range(limit + 1):
-        # If (c - ax) is not divisible by b, continue
-        if (c - a * x) % b != 0:
-            continue
-        
-        y = (c - a * x) // b
-        if 0 <= y <= limit:
-            return (x, y)
-    return None
-
-
 def solve_machine(machine: ClawMachine) -> Optional[int]:
     """
     Solve for a single machine, returning minimum tokens needed or None if unsolvable.
     A button costs 3 tokens, B button costs 1 token.
     """
-    # Need to solve: 
-    # a_count * a_x + b_count * b_x = prize_x
-    # a_count * a_y + b_count * b_y = prize_y
-    # where a_count and b_count are non-negative integers <= 100
-    
-    # Try solving for X coordinates
-    x_solution = solve_diophantine(
-        machine.button_a[0],
-        machine.button_b[0],
-        machine.prize[0]
-    )
-    if not x_solution:
-        return None
-        
-    # Try solving for Y coordinates
-    y_solution = solve_diophantine(
-        machine.button_a[1],
-        machine.button_b[1],
-        machine.prize[1]
-    )
-    if not y_solution:
-        return None
-        
-    # Check if solutions match (need same number of button presses)
-    if x_solution == y_solution:
-        a_presses, b_presses = x_solution
-        return 3 * a_presses + b_presses
-        
-    return None
+    min_tokens = None
+
+    for a_presses in range(101):
+        for b_presses in range(101):
+            x = a_presses * machine.button_a[0] + b_presses * machine.button_b[0]
+            y = a_presses * machine.button_a[1] + b_presses * machine.button_b[1]
+
+            if (x, y) == machine.prize:
+                tokens = 3 * a_presses + b_presses
+                if min_tokens is None or tokens < min_tokens:
+                    min_tokens = tokens
+
+    return min_tokens
 
 
 def claw_machine_min_tokens(input_str: str) -> Optional[int]:
