@@ -84,31 +84,32 @@ def find_solution_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
 def calculate_tokens(a_presses: int, b_presses: int) -> int:
     return (a_presses * 3) + b_presses
 
-def calculate_min_tokens_part2(input_data: str) -> int:
+def calculate_min_tokens_part2(input_data: List[str]) -> int:
+    input_str = "\n".join(input_data)
     # Split input into groups of 3 lines (+ optional empty line)
-    lines = [line.strip() for line in input_data.splitlines() if line.strip()]
+    lines = [line.strip() for line in input_str.splitlines() if line.strip()]
     machines = []
-    
+
     # Parse machines and add 10000000000000 to prize coordinates
     for i in range(0, len(lines), 3):
         if i + 2 < len(lines):
-            machine = parse_machine(lines[i:i+3])
+            machine = parse_machine(lines[i:i + 3])
             if machine:
                 machine.target_x += 10000000000000
                 machine.target_y += 10000000000000
                 machines.append(machine)
-    
+
     total_tokens = 0
-    
+
     # For each machine, find the solution that requires minimum tokens
     for machine in machines:
         solution = find_solution_part2(machine)
         if solution:
             tokens = calculate_tokens(solution[0], solution[1])
             total_tokens += tokens
-    
+
     return total_tokens
 
 def solution() -> int:
     input_data = sys.stdin.read()
-    return calculate_min_tokens_part2(input_data)
+    return calculate_min_tokens_part2(input_data.splitlines())
