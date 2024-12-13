@@ -9,6 +9,7 @@ Examples test that we can correctly parse input configurations of button movemen
 and prize locations and calculate the minimum tokens needed to reach the prizes.
 """
 
+import pytest
 from solution import calculate_min_tokens_part2
 
 
