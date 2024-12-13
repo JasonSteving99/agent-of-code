@@ -1,15 +1,14 @@
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 from dataclasses import dataclass
 import re
-from fractions import Fraction
-
+import sys
+from math import gcd
 
 @dataclass
 class ClawMachine:
     button_a: Tuple[int, int]  # (x, y) movement for button A
     button_b: Tuple[int, int]  # (x, y) movement for button B
     prize: Tuple[int, int]     # (x, y) coordinates of prize
-
 
 def parse_machine(lines: List[str]) -> ClawMachine:
     """Parse a single claw machine configuration from input lines."""
@@ -25,101 +24,95 @@ def parse_machine(lines: List[str]) -> ClawMachine:
         prize=(nums[4], nums[5])
     )
 
+def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
+    """Return gcd and coefficients of Bézout's identity."""
+    if a == 0:
+        return b, 0, 1
+    gcd, x1, y1 = extended_gcd(b % a, a)
+    x = y1 - (b // a) * x1
+    y = x1
+    return gcd, x, y
 
-def solve_diophantine(a: int, b: int, c: int) -> Optional[Tuple[Fraction, Fraction]]:
-    """
-    Solves diophantine equation ax + by = c
-    Returns (x, y) as fractions if solution exists, None otherwise
-    """
-    # Use extended Euclidean algorithm
-    def gcd_ext(a: int, b: int) -> Tuple[int, int, int]:
-        if b == 0:
-            return a, 1, 0
-        g, x, y = gcd_ext(b, a % b)
-        return g, y, x - (a // b) * y
-
-    # Ensure a and b are not both 0
-    if a == 0 and b == 0:
-        return None if c != 0 else (Fraction(0), Fraction(0))
-
-    g, x0, y0 = gcd_ext(abs(a), abs(b))
-    
-    # No solution if c is not divisible by gcd
-    if c % g != 0:
+def solve_diophantine(a: int, b: int, c: int) -> Optional[Tuple[int, int]]:
+    """Solve the Diophantine equation ax + by = c."""
+    d, x0, y0 = extended_gcd(a, b)
+    if c % d != 0:
         return None
-
-    # Adjust signs
-    if a < 0:
-        x0 = -x0
-    if b < 0:
-        y0 = -y0
-
-    x = Fraction(x0 * c, g)
-    y = Fraction(y0 * c, g)
     
-    return x, y
+    x = x0 * (c // d)
+    y = y0 * (c // d)
+    return (x, y)
 
-
-def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
-    """
-    Solve for a single machine, returning (a_presses, b_presses) if solution exists.
-    Handles part 2 with large prize coordinates.
-    """
-    # Extract movement and prize coordinates
-    ax, ay = machine.button_a
-    bx, by = machine.button_b
+def find_minimum_solution(machine: ClawMachine) -> Optional[int]:
+    """Find minimum tokens needed for a single machine using linear Diophantine equations."""
+    # For X coordinates: a1*x + b1*y = px
+    # For Y coordinates: a2*x + b2*y = py
+    a1, a2 = machine.button_a
+    b1, b2 = machine.button_b
     px, py = machine.prize
 
-    # Solve system of equations:
-    # ax * A + bx * B = px
-    # ay * A + by * B = py
+    # Solve for X coordinates
+    sol_x = solve_diophantine(a1, b1, px)
+    if sol_x is None:
+        return None
+
+    # Solve for Y coordinates
+    sol_y = solve_diophantine(a2, b2, py)
+    if sol_y is None:
+        return None
+
+    # Find the relationship between solutions
+    k1, k2 = sol_x[0], sol_x[1]  # Base solution for X
+    m1, m2 = sol_y[0], sol_y[1]  # Base solution for Y
+
+    # Find period of solutions
+    t1 = b1 // gcd(a1, b1)
+    t2 = b2 // gcd(a2, b2)
+
+    # Search for valid solution with minimum tokens
+    min_tokens = None
+    # We need to search a reasonable range around the base solutions
+    search_range = 1000  # Adjust this based on the scale of the problem
     
-    det = ax * by - ay * bx
-    if det == 0:
-        return None
-
-    # Solve using diophantine equations
-    x_solution = solve_diophantine(ax, bx, px)
-    y_solution = solve_diophantine(ay, by, py)
-
-    if x_solution is None or y_solution is None:
-        return None
-
-    a_x, b_x = x_solution
-    a_y, b_y = y_solution
-
-    # Find the intersection of solutions
-    if abs(a_x - a_y) > 0.0001 or abs(b_x - b_y) > 0.0001:
-        return None
+    for i in range(-search_range, search_range):
+        x1 = k1 + i * (b1 // gcd(a1, b1))
+        y1 = k2 - i * (a1 // gcd(a1, b1))
+        for j in range(-search_range, search_range):
+            x2 = m1 + j * (b2 // gcd(a2, b2))
+            y2 = m2 - j * (a2 // gcd(a2, b2))
+            
+            # If the solutions match and are non-negative
+            if x1 == x2 and y1 == y2 and x1 >= 0 and y1 >= 0:
+                tokens = 3 * x1 + y1
+                if min_tokens is None or tokens < min_tokens:
+                    min_tokens = tokens
     
-    # Convert to integers and verify they are non-negative
-    a_presses = round(float(a_x))
-    b_presses = round(float(b_x))
+    return min_tokens
 
-    if a_presses < 0 or b_presses < 0:
-        return None
+def solution() -> int:
+    """Read from stdin and return solution for part 2."""
+    input_lines = sys.stdin.read().strip().split('\n\n')
+    machines = []
+    
+    # Parse machines and add offset to prize coordinates
+    offset = 10000000000000
+    for machine_str in input_lines:
+        machine = parse_machine(machine_str.split('\n'))
+        # Update prize coordinates with offset
+        new_prize = (machine.prize[0] + offset, machine.prize[1] + offset)
+        machines.append(ClawMachine(machine.button_a, machine.button_b, new_prize))
 
-    # Verify the solution
-    if (a_presses * ax + b_presses * bx == px and
-        a_presses * ay + b_presses * by == py):
-        return a_presses, b_presses
-
-    return None
-
-
-def calculate_min_tokens_part2(input_str: str) -> int:
-    """Calculate the minimum tokens for part 2."""
-    machines_str = [m.strip() for m in input_str.split("\n\n")]
-    offset = 10_000_000_000_000
     total_tokens = 0
+    prizes_possible = False
+    
+    # Find solution for each machine
+    for machine in machines:
+        solution = find_minimum_solution(machine)
+        if solution is not None:
+            prizes_possible = True
+            total_tokens += solution
+    
+    return total_tokens if prizes_possible else 0
 
-    for machine_str in machines_str:
-        lines = machine_str.split("\n")
-        machine = parse_machine(lines)
-        machine.prize = (machine.prize[0] + offset, machine.prize[1] + offset)
-        result = solve_machine_part2(machine)
-        if result:
-            a_presses, b_presses = result
-            total_tokens += 3 * a_presses + b_presses
-
-    return total_tokens
+if __name__ == "__main__":
+    print(solution())
