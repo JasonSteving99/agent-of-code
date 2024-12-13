@@ -1,5 +1,4 @@
 from typing import Optional, List, Tuple
-import sys
 from dataclasses import dataclass
 import re
 from fractions import Fraction
@@ -109,10 +108,9 @@ def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
     return None
 
 
-def calculate_min_tokens_part2() -> int:
+def calculate_min_tokens_part2(input_str: str) -> int:
     """Read from stdin and return the solution for part 2."""
-    input_str = sys.stdin.read().strip()
-    
+
     # Split input into individual machines
     machines_str = [m.strip() for m in input_str.split("\n\n")]
     
