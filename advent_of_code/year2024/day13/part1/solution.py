@@ -1,73 +1,107 @@
-from typing import List, Optional, Tuple
+from typing import Optional, List, Tuple
 import sys
 from dataclasses import dataclass
+import re
+
 
 @dataclass
 class ClawMachine:
-    a_dx: int
-    a_dy: int
-    b_dx: int
-    b_dy: int
-    target_x: int
-    target_y: int
+    button_a: Tuple[int, int]  # (x, y) movement for button A
+    button_b: Tuple[int, int]  # (x, y) movement for button B
+    prize: Tuple[int, int]     # (x, y) coordinates of prize
 
-def parse_machine(lines: List[str]) -> Optional[ClawMachine]:
-    if not lines or len(lines) < 3:
-        return None
+
+def parse_machine(lines: List[str]) -> ClawMachine:
+    """Parse a single claw machine configuration from input lines."""
+    pattern = r"Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)"
+    match = re.match(pattern, "\n".join(lines))
+    if not match:
+        raise ValueError("Invalid input format")
+    
+    nums = [int(x) for x in match.groups()]
+    return ClawMachine(
+        button_a=(nums[0], nums[1]),
+        button_b=(nums[2], nums[3]),
+        prize=(nums[4], nums[5])
+    )
+
+
+def solve_diophantine(a: int, b: int, c: int, limit: int = 100) -> Optional[Tuple[int, int]]:
+    """
+    Solve the Diophantine equation ax + by = c where x,y >= 0 and x,y <= limit.
+    Returns a tuple of (x,y) if solution exists, None otherwise.
+    """
+    for x in range(limit + 1):
+        # If (c - ax) is not divisible by b, continue
+        if (c - a * x) % b != 0:
+            continue
         
-    # Parse A button
-    a_parts = lines[0].split(", ")
-    a_dx = int(a_parts[0].split("+")[1])
-    a_dy = int(a_parts[1].split("+")[1])
-    
-    # Parse B button
-    b_parts = lines[1].split(", ")
-    b_dx = int(b_parts[0].split("+")[1])
-    b_dy = int(b_parts[1].split("+")[1])
-    
-    # Parse prize location
-    prize_parts = lines[2].split(", ")
-    target_x = int(prize_parts[0].split("=")[1])
-    target_y = int(prize_parts[1].split("=")[1])
-    
-    return ClawMachine(a_dx, a_dy, b_dx, b_dy, target_x, target_y)
-
-def find_solution(machine: ClawMachine) -> Optional[Tuple[int, int]]:
-    # Try all combinations of A and B presses up to 100 each
-    for a in range(101):  # Including 100
-        for b in range(101):
-            x = a * machine.a_dx + b * machine.b_dx
-            y = a * machine.a_dy + b * machine.b_dy
-            if x == machine.target_x and y == machine.target_y:
-                return (a, b)
+        y = (c - a * x) // b
+        if 0 <= y <= limit:
+            return (x, y)
     return None
 
-def calculate_tokens(a_presses: int, b_presses: int) -> int:
-    return (a_presses * 3) + b_presses
 
-def calculate_min_tokens(input_data: str) -> int:
-    # Split input into groups of 3 lines (+ optional empty line)
-    lines = [line.strip() for line in input_data.splitlines() if line.strip()]
-    machines = []
+def solve_machine(machine: ClawMachine) -> Optional[int]:
+    """
+    Solve for a single machine, returning minimum tokens needed or None if unsolvable.
+    A button costs 3 tokens, B button costs 1 token.
+    """
+    # Need to solve: 
+    # a_count * a_x + b_count * b_x = prize_x
+    # a_count * a_y + b_count * b_y = prize_y
+    # where a_count and b_count are non-negative integers <= 100
     
-    # Parse machines
-    for i in range(0, len(lines), 3):
-        if i + 2 < len(lines):
-            machine = parse_machine(lines[i:i+3])
-            if machine:
-                machines.append(machine)
+    # Try solving for X coordinates
+    x_solution = solve_diophantine(
+        machine.button_a[0],
+        machine.button_b[0],
+        machine.prize[0]
+    )
+    if not x_solution:
+        return None
+        
+    # Try solving for Y coordinates
+    y_solution = solve_diophantine(
+        machine.button_a[1],
+        machine.button_b[1],
+        machine.prize[1]
+    )
+    if not y_solution:
+        return None
+        
+    # Check if solutions match (need same number of button presses)
+    if x_solution == y_solution:
+        a_presses, b_presses = x_solution
+        return 3 * a_presses + b_presses
+        
+    return None
+
+
+def claw_machine_min_tokens(input_str: str) -> Optional[int]:
+    """
+    Calculate minimum tokens needed to win all possible prizes.
+    Returns None if no prizes can be won.
+    """
+    # Split input into individual machines
+    machines_str = [m.strip() for m in input_str.strip().split("\n\n")]
     
+    # Parse and solve each machine
     total_tokens = 0
+    prizes_possible = False
     
-    # For each machine, find the solution that requires minimum tokens
-    for machine in machines:
-        solution = find_solution(machine)
-        if solution:
-            tokens = calculate_tokens(solution[0], solution[1])
-            total_tokens += tokens
+    for machine_str in machines_str:
+        machine = parse_machine(machine_str.split("\n"))
+        solution = solve_machine(machine)
+        
+        if solution is not None:
+            prizes_possible = True
+            total_tokens += solution
     
-    return total_tokens
+    return total_tokens if prizes_possible else None
 
-def solution() -> int:
-    input_data = sys.stdin.read()
-    return calculate_min_tokens(input_data)
+
+def solution() -> Optional[int]:
+    """Read from stdin and return the solution."""
+    input_str = sys.stdin.read()
+    return claw_machine_min_tokens(input_str)
