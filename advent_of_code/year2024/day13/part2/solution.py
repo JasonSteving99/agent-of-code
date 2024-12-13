@@ -74,7 +74,6 @@ def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
     # ax * A + bx * B = px
     # ay * A + by * B = py
     
-    # Using Cramer's rule with fractions for precision
     det = ax * by - ay * bx
     if det == 0:
         return None
@@ -92,7 +91,7 @@ def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
     # Find the intersection of solutions
     if abs(a_x - a_y) > 0.0001 or abs(b_x - b_y) > 0.0001:
         return None
-
+    
     # Convert to integers and verify they are non-negative
     a_presses = round(float(a_x))
     b_presses = round(float(b_x))
@@ -109,27 +108,18 @@ def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
 
 
 def calculate_min_tokens_part2(input_str: str) -> int:
-    """Read from stdin and return the solution for part 2."""
-
-    # Split input into individual machines
+    """Calculate the minimum tokens for part 2."""
     machines_str = [m.strip() for m in input_str.split("\n\n")]
-    
-    # Add 10^13 to prize coordinates for part 2
     offset = 10_000_000_000_000
     total_tokens = 0
-    
+
     for machine_str in machines_str:
         lines = machine_str.split("\n")
         machine = parse_machine(lines)
-        
-        # Adjust prize coordinates for part 2
         machine.prize = (machine.prize[0] + offset, machine.prize[1] + offset)
-        
-        # Try to solve the machine
         result = solve_machine_part2(machine)
-        if result is not None:
+        if result:
             a_presses, b_presses = result
-            tokens = 3 * a_presses + b_presses
-            total_tokens += tokens
-    
-    return total_tokens if total_tokens > 0 else 0
+            total_tokens += 3 * a_presses + b_presses
+
+    return total_tokens
