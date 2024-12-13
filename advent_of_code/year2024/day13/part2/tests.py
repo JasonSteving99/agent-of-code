@@ -1,61 +1,68 @@
 """
-This test suite covers the calculate_min_tokens_part2 function which determines the minimum number
-of tokens needed to win prizes in a modified claw machine game where prize coordinates have been
-offset by 10000000000000 on both X and Y axes. The problem requires finding valid combinations
-of button A and B presses that can reach these large coordinate values.
+This test suite validates the `calculate_min_tokens_part2` function which calculates
+the minimum number of tokens needed to win prizes in a claw machine game after
+a unit conversion error that adds 10000000000000 to both X and Y coordinates
+of each prize. Buttons A (3 tokens) and B (1 token) move the claw by specified
+amounts in X and Y directions.
 
-The tests verify that the function correctly processes input strings describing button movements
-and prize locations with the significantly larger coordinate values, determining if and how
-prizes can be won with the minimum number of tokens possible.
+Examples test that we can correctly parse input configurations of button movements
+and prize locations and calculate the minimum tokens needed to reach the prizes.
 """
 
 from solution import calculate_min_tokens_part2
-import pytest
 
-def test_prize_at_offset_coordinates_case1():
-    input_data = (
+
+def test_button_configuration_1():
+    input_str = (
         "Button A: X+94, Y+34\n"
         "Button B: X+22, Y+67\n"
         "Prize: X=10000000008400, Y=10000000005400"
     )
-    result = calculate_min_tokens_part2(input_data)
-    assert result == 100, (
-        f"For prize at X=10000000008400, Y=10000000005400 with "
-        f"Button A(+94,+34) and Button B(+22,+67), expected 100 tokens but got {result}"
+    result = calculate_min_tokens_part2(input_str)
+    assert result == 134, (
+        f"For button config A(+94,+34) B(+22,+67) and "
+        f"prize at (10000000008400,10000000005400), "
+        f"expected 134 tokens but got {result}"
     )
 
-def test_prize_at_offset_coordinates_case2():
-    input_data = (
+
+def test_button_configuration_2():
+    input_str = (
         "Button A: X+26, Y+66\n"
         "Button B: X+67, Y+21\n"
         "Prize: X=10000000012748, Y=10000000012176"
     )
-    result = calculate_min_tokens_part2(input_data)
-    assert result == 248, (
-        f"For prize at X=10000000012748, Y=10000000012176 with "
-        f"Button A(+26,+66) and Button B(+67,+21), expected 248 tokens but got {result}"
+    result = calculate_min_tokens_part2(input_str)
+    assert result == 214, (
+        f"For button config A(+26,+66) B(+67,+21) and "
+        f"prize at (10000000012748,10000000012176), "
+        f"expected 214 tokens but got {result}"
     )
 
-def test_prize_at_offset_coordinates_case3():
-    input_data = (
+
+def test_button_configuration_3():
+    input_str = (
         "Button A: X+17, Y+86\n"
         "Button B: X+84, Y+37\n"
         "Prize: X=10000000007870, Y=10000000006450"
     )
-    result = calculate_min_tokens_part2(input_data)
-    assert result == 110, (
-        f"For prize at X=10000000007870, Y=10000000006450 with "
-        f"Button A(+17,+86) and Button B(+84,+37), expected 110 tokens but got {result}"
+    result = calculate_min_tokens_part2(input_str)
+    assert result == 126, (
+        f"For button config A(+17,+86) B(+84,+37) and "
+        f"prize at (10000000007870,10000000006450), "
+        f"expected 126 tokens but got {result}"
     )
 
-def test_prize_at_offset_coordinates_case4():
-    input_data = (
+
+def test_button_configuration_4():
+    input_str = (
         "Button A: X+69, Y+23\n"
         "Button B: X+27, Y+71\n"
         "Prize: X=10000000018641, Y=10000000010279"
     )
-    result = calculate_min_tokens_part2(input_data)
-    assert result == 281, (
-        f"For prize at X=10000000018641, Y=10000000010279 with "
-        f"Button A(+69,+23) and Button B(+27,+71), expected 281 tokens but got {result}"
+    result = calculate_min_tokens_part2(input_str)
+    assert result == 279, (
+        f"For button config A(+69,+23) B(+27,+71) and "
+        f"prize at (10000000018641,10000000010279), "
+        f"expected 279 tokens but got {result}"
     )

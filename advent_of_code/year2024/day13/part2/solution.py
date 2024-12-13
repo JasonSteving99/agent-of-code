@@ -2,22 +2,23 @@ from typing import Optional, List, Tuple
 import sys
 from dataclasses import dataclass
 import re
-from math import gcd
+from fractions import Fraction
 
 
 @dataclass
 class ClawMachine:
-    button_a: Tuple[int, int]
-    button_b: Tuple[int, int]
-    prize: Tuple[int, int]
+    button_a: Tuple[int, int]  # (x, y) movement for button A
+    button_b: Tuple[int, int]  # (x, y) movement for button B
+    prize: Tuple[int, int]     # (x, y) coordinates of prize
 
 
 def parse_machine(lines: List[str]) -> ClawMachine:
+    """Parse a single claw machine configuration from input lines."""
     pattern = r"Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)"
     match = re.match(pattern, "\n".join(lines))
     if not match:
         raise ValueError("Invalid input format")
-
+    
     nums = [int(x) for x in match.groups()]
     return ClawMachine(
         button_a=(nums[0], nums[1]),
@@ -26,73 +27,111 @@ def parse_machine(lines: List[str]) -> ClawMachine:
     )
 
 
-def bezout_coefficients(a: int, b: int) -> Tuple[int, int, int]:
-    old_r, r = a, b
-    old_s, s = 1, 0
-    old_t, t = 0, 1
+def solve_diophantine(a: int, b: int, c: int) -> Optional[Tuple[Fraction, Fraction]]:
+    """
+    Solves diophantine equation ax + by = c
+    Returns (x, y) as fractions if solution exists, None otherwise
+    """
+    # Use extended Euclidean algorithm
+    def gcd_ext(a: int, b: int) -> Tuple[int, int, int]:
+        if b == 0:
+            return a, 1, 0
+        g, x, y = gcd_ext(b, a % b)
+        return g, y, x - (a // b) * y
 
-    while r != 0:
-        quotient = old_r // r
-        old_r, r = r, old_r - quotient * r
-        old_s, s = s, old_s - quotient * s
-        old_t, t = t, old_t - quotient * t
+    # Ensure a and b are not both 0
+    if a == 0 and b == 0:
+        return None if c != 0 else (Fraction(0), Fraction(0))
 
-    return old_r, old_s, old_t
-
-
-def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]:
-    a1, b1 = machine.button_a[0], machine.button_b[0]
-    a2, b2 = machine.button_a[1], machine.button_b[1]
-    target_x, target_y = machine.prize
-
-    gcd_x, x1, y1 = bezout_coefficients(a1, b1)
-    if target_x % gcd_x != 0:
+    g, x0, y0 = gcd_ext(abs(a), abs(b))
+    
+    # No solution if c is not divisible by gcd
+    if c % g != 0:
         return None
 
-    gcd_y, x2, y2 = bezout_coefficients(a2, b2)
-    if target_y % gcd_y != 0:
+    # Adjust signs
+    if a < 0:
+        x0 = -x0
+    if b < 0:
+        y0 = -y0
+
+    x = Fraction(x0 * c, g)
+    y = Fraction(y0 * c, g)
+    
+    return x, y
+
+
+def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
+    """
+    Solve for a single machine, returning (a_presses, b_presses) if solution exists.
+    Handles part 2 with large prize coordinates.
+    """
+    # Extract movement and prize coordinates
+    ax, ay = machine.button_a
+    bx, by = machine.button_b
+    px, py = machine.prize
+
+    # Solve system of equations:
+    # ax * A + bx * B = px
+    # ay * A + by * B = py
+    
+    # Using Cramer's rule with fractions for precision
+    det = ax * by - ay * bx
+    if det == 0:
         return None
 
-    x1 *= target_x // gcd_x
-    y1 *= target_x // gcd_x
-    x2 *= target_y // gcd_y
-    y2 *= target_y // gcd_y
+    # Solve using diophantine equations
+    x_solution = solve_diophantine(ax, bx, px)
+    y_solution = solve_diophantine(ay, by, py)
 
-    for k2 in range(2000001):
-        k1 = ((y2 - y1) * gcd_x + b1 * k2) // a1
-        a_presses = x1 + (b1 // gcd_x) * k1
-        b_presses = k2
+    if x_solution is None or y_solution is None:
+        return None
 
-        if a_presses >= 0 and b_presses >= 0 and (a2 * a_presses + b2 * b_presses == target_y):
-            return a_presses, b_presses
+    a_x, b_x = x_solution
+    a_y, b_y = y_solution
+
+    # Find the intersection of solutions
+    if abs(a_x - a_y) > 0.0001 or abs(b_x - b_y) > 0.0001:
+        return None
+
+    # Convert to integers and verify they are non-negative
+    a_presses = round(float(a_x))
+    b_presses = round(float(b_x))
+
+    if a_presses < 0 or b_presses < 0:
+        return None
+
+    # Verify the solution
+    if (a_presses * ax + b_presses * bx == px and
+        a_presses * ay + b_presses * by == py):
+        return a_presses, b_presses
 
     return None
-
-
-def solve_machine(machine: ClawMachine) -> Optional[int]:
-    solution = solve_machine_diophantine(machine)
-    if solution is not None:
-        a_presses, b_presses = solution
-        return 3 * a_presses + b_presses
-    return None
-
-
-def calculate_min_tokens_part2(input_str: str) -> int:
-    machines_str = [m.strip() for m in input_str.strip().split("\n\n")]
-    total_tokens = 0
-    offset = 10000000000000
-
-    for machine_str in machines_str:
-        lines = machine_str.split("\n")
-        machine = parse_machine(lines)
-        machine.prize = (machine.prize[0] + offset, machine.prize[1] + offset)
-        solution = solve_machine(machine)
-        if solution is not None:
-            total_tokens += solution
-
-    return total_tokens
 
 
 def solution() -> int:
-    input_str = sys.stdin.read()
-    return calculate_min_tokens_part2(input_str)
+    """Read from stdin and return the solution for part 2."""
+    input_str = sys.stdin.read().strip()
+    
+    # Split input into individual machines
+    machines_str = [m.strip() for m in input_str.split("\n\n")]
+    
+    # Add 10^13 to prize coordinates for part 2
+    offset = 10_000_000_000_000
+    total_tokens = 0
+    
+    for machine_str in machines_str:
+        lines = machine_str.split("\n")
+        machine = parse_machine(lines)
+        
+        # Adjust prize coordinates for part 2
+        machine.prize = (machine.prize[0] + offset, machine.prize[1] + offset)
+        
+        # Try to solve the machine
+        result = solve_machine_part2(machine)
+        if result is not None:
+            a_presses, b_presses = result
+            tokens = 3 * a_presses + b_presses
+            total_tokens += tokens
+    
+    return total_tokens if total_tokens > 0 else 0
