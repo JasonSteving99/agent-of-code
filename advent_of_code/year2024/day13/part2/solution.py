@@ -50,17 +50,16 @@ def solve_linear_equation(target_x: int, a_dx: int, b_dx: int, target_y: int, a_
 
     if target_x % gcd1 != 0 or target_y % gcd2 != 0:
         return None  # No integer solutions exist
-
-    # Find a non-negative solution if one exists
-    for k1 in range(-1000,1001):
-        for k2 in range(-1000,1001):
-            a = (x1 * (target_x // gcd1)) + (k1*(b_dx // gcd1))
-            b = (y1 * (target_x // gcd1)) - (k1*(a_dx // gcd1))
-
-            if (a_dy*a + b_dy * b == target_y):
-                if a>=0 and b>=0:
-                    return a, b
     
+    #Increased range for k1 and k2
+    for k1 in range(-100000, 100001):
+        for k2 in range(-100000, 100001):
+            a = (x1 * (target_x // gcd1)) + (k1 * (b_dx // gcd1))
+            b = (y1 * (target_x // gcd1)) - (k1 * (a_dx // gcd1))
+
+            if (a_dy * a + b_dy * b == target_y):
+                if a >= 0 and b >= 0:
+                    return a, b
 
     return None
 
