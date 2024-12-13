@@ -1,99 +1,133 @@
-from typing import List, Optional, Tuple
+from typing import Optional, List, Tuple
 import sys
 from dataclasses import dataclass
-import math
+import re
+from math import gcd
+
 
 @dataclass
 class ClawMachine:
-    a_dx: int
-    a_dy: int
-    b_dx: int
-    b_dy: int
-    target_x: int
-    target_y: int
+    button_a: Tuple[int, int]  # (x, y) movement for button A
+    button_b: Tuple[int, int]  # (x, y) movement for button B
+    prize: Tuple[int, int]     # (x, y) coordinates of prize
 
-def parse_machine(lines: List[str]) -> Optional[ClawMachine]:
-    if not lines or len(lines) < 3:
+
+def parse_machine(lines: List[str]) -> ClawMachine:
+    """Parse a single claw machine configuration from input lines."""
+    pattern = r"Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)"
+    match = re.match(pattern, "\n".join(lines))
+    if not match:
+        raise ValueError("Invalid input format")
+    
+    nums = [int(x) for x in match.groups()]
+    return ClawMachine(
+        button_a=(nums[0], nums[1]),
+        button_b=(nums[2], nums[3]),
+        prize=(nums[4], nums[5])
+    )
+
+
+def bezout_coefficients(a: int, b: int) -> Tuple[int, int, int]:
+    """
+    Extended Euclidean Algorithm.
+    Returns (gcd, x, y) where gcd is the greatest common divisor of a and b
+    and x, y are coefficients where ax + by = gcd
+    """
+    old_r, r = a, b
+    old_s, s = 1, 0
+    old_t, t = 0, 1
+
+    while r != 0:
+        quotient = old_r // r
+        old_r, r = r, old_r - quotient * r
+        old_s, s = s, old_s - quotient * s
+        old_t, t = t, old_t - quotient * t
+
+    return old_r, old_s, old_t
+
+
+def solve_machine_diophantine(machine: ClawMachine) -> Optional[Tuple[int, int]]:
+    """
+    Solve the system of Diophantine equations for the machine using the extended Euclidean algorithm.
+    Returns (a_presses, b_presses) or None if no solution exists.
+    """
+    # For X coordinates: a₁x + b₁y = target_x
+    # For Y coordinates: a₂x + b₂y = target_y
+    a1, b1 = machine.button_a[0], machine.button_b[0]  # x-movements
+    a2, b2 = machine.button_a[1], machine.button_b[1]  # y-movements
+    target_x, target_y = machine.prize
+
+    # First equation: a₁x + b₁y = target_x
+    gcd_x, x1, y1 = bezout_coefficients(a1, b1)
+    if target_x % gcd_x != 0:
         return None
 
-    # Parse A button
-    a_parts = lines[0].split(", ")
-    a_dx = int(a_parts[0].split("+")[1])
-    a_dy = int(a_parts[1].split("+")[1])
+    # Second equation: a₂x + b₂y = target_y
+    gcd_y, x2, y2 = bezout_coefficients(a2, b2)
+    if target_y % gcd_y != 0:
+        return None
 
-    # Parse B button
-    b_parts = lines[1].split(", ")
-    b_dx = int(b_parts[0].split("+")[1])
-    b_dy = int(b_parts[1].split("+")[1])
+    # Particular solutions
+    x1 = x1 * (target_x // gcd_x)
+    y1 = y1 * (target_x // gcd_x)
+    x2 = x2 * (target_y // gcd_y)
+    y2 = y2 * (target_y // gcd_y)
 
-    # Parse prize location
-    prize_parts = lines[2].split(", ")
-    target_x = int(prize_parts[0].split("=")[1])
-    target_y = int(prize_parts[1].split("=")[1])
+    # Find k where both solutions align (we need positive solutions)
+    k1_start = max((-x1 * gcd_x) // (b1), (-y1 * gcd_x) // (-a1))
+    k2_start = max((-x2 * gcd_y) // (b2), (-y2 * gcd_y) // (-a2))
 
-    return ClawMachine(a_dx, a_dy, b_dx, b_dy, target_x, target_y)
-
-
-def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
-    if a == 0:
-        return b, 0, 1
-    gcd, x1, y1 = extended_gcd(b % a, a)
-    x = y1 - (b // a) * x1
-    y = x1
-    return gcd, x, y
-
-
-def solve_linear_equation(target_x: int, a_dx: int, b_dx: int, target_y: int, a_dy: int, b_dy: int) -> Optional[Tuple[int, int]]:
-    # Solve for A and B using Extended Euclidean Algorithm
-    gcd1, x1, y1 = extended_gcd(a_dx, b_dx)
-    gcd2, x2, y2 = extended_gcd(a_dy, b_dy)
-
-    if target_x % gcd1 != 0 or target_y % gcd2 != 0:
-        return None  # No integer solutions exist
-    
-    #Increased range for k1 and k2
-    for k1 in range(-100000, 100001):
-        for k2 in range(-100000, 100001):
-            a = (x1 * (target_x // gcd1)) + (k1 * (b_dx // gcd1))
-            b = (y1 * (target_x // gcd1)) - (k1 * (a_dx // gcd1))
-
-            if (a_dy * a + b_dy * b == target_y):
-                if a >= 0 and b >= 0:
-                    return a, b
+    # Try some reasonable number of k values
+    for k1 in range(k1_start, k1_start + 1000):
+        a_press1 = x1 + (b1 // gcd_x) * k1
+        b_press1 = y1 - (a1 // gcd_x) * k1
+        
+        for k2 in range(k2_start, k2_start + 1000):
+            a_press2 = x2 + (b2 // gcd_y) * k2
+            b_press2 = y2 - (a2 // gcd_y) * k2
+            
+            if a_press1 == a_press2 and b_press1 == b_press2 and a_press1 >= 0 and b_press1 >= 0:
+                return (a_press1, b_press1)
 
     return None
 
 
-def find_solution_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
-    return solve_linear_equation(machine.target_x, machine.a_dx, machine.b_dx, machine.target_y, machine.a_dy, machine.b_dy)
+def solve_machine(machine: ClawMachine) -> Optional[int]:
+    """
+    Solve for a single machine, returning minimum tokens needed or None if unsolvable.
+    A button costs 3 tokens, B button costs 1 token.
+    """
+    solution = solve_machine_diophantine(machine)
+    if solution is not None:
+        a_presses, b_presses = solution
+        return 3 * a_presses + b_presses
+    return None
 
 
-def calculate_tokens(a_presses: int, b_presses: int) -> int:
-    return (a_presses * 3) + b_presses
-
-def calculate_min_tokens_part2(input_data: List[str]) -> int:
-    input_str = "\n".join(input_data)
-    lines = [line.strip() for line in input_str.splitlines() if line.strip()]
-    machines = []
-
-    for i in range(0, len(lines), 3):
-        if i + 2 < len(lines):
-            machine = parse_machine(lines[i:i + 3])
-            if machine:
-                machine.target_x += 10000000000000
-                machine.target_y += 10000000000000
-                machines.append(machine)
-
+def calculate_min_tokens_part2(input_str: str) -> int:
+    """Calculate minimum tokens needed for part 2 with modified prize coordinates."""
+    machines_str = [m.strip() for m in input_str.strip().split("\n\n")]
     total_tokens = 0
+    prizes_possible = False
+    offset = 10000000000000
 
-    for machine in machines:
-        solution = find_solution_part2(machine)
-        if solution:
-            tokens = calculate_tokens(solution[0], solution[1])
-            total_tokens += tokens
-
+    for machine_str in machines_str:
+        lines = machine_str.split("\n")
+        machine = parse_machine(lines)
+        # Modify prize coordinates
+        machine.prize = (machine.prize[0] + offset, machine.prize[1] + offset)
+        solution = solve_machine(machine)
+        
+        if solution is not None:
+            prizes_possible = True
+            total_tokens += solution
+    
+    if not prizes_possible:
+        return 0
     return total_tokens
 
+
 def solution() -> int:
-    input_data = sys.stdin.read()
-    return calculate_min_tokens_part2(input_data.splitlines())
+    """Read from stdin and return the solution."""
+    input_str = sys.stdin.read()
+    return calculate_min_tokens_part2(input_str)
