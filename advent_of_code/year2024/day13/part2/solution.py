@@ -28,7 +28,6 @@ def parse_machine(lines: List[str]) -> Optional[ClawMachine]:
 
     # Parse prize location
     prize_parts = lines[2].split(", ")
-    # For part 2, add 10000000000000 to both X and Y coordinates
     target_x = int(prize_parts[0].split("=")[1])
     target_y = int(prize_parts[1].split("=")[1])
 
@@ -45,15 +44,24 @@ def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
 
 
 def solve_linear_equation(target_x: int, a_dx: int, b_dx: int, target_y: int, a_dy: int, b_dy: int) -> Optional[Tuple[int, int]]:
-    """Solve the system of linear Diophantine equations:
-    a_dx * A + b_dx * B = target_x
-    a_dy * A + b_dy * B = target_y
-    Returns (A, B) if a non-negative integer solution exists, None otherwise.
-    """
-    for a in range(101):  # Iterate through possible values of 'a'
-        for b in range(101):  # Iterate through possible values of 'b'
-            if (a_dx * a + b_dx * b == target_x) and (a_dy * a + b_dy * b == target_y):
-                return a, b
+    # Solve for A and B using Extended Euclidean Algorithm
+    gcd1, x1, y1 = extended_gcd(a_dx, b_dx)
+    gcd2, x2, y2 = extended_gcd(a_dy, b_dy)
+
+    if target_x % gcd1 != 0 or target_y % gcd2 != 0:
+        return None  # No integer solutions exist
+
+    # Find a non-negative solution if one exists
+    for k1 in range(-1000,1001):
+        for k2 in range(-1000,1001):
+            a = (x1 * (target_x // gcd1)) + (k1*(b_dx // gcd1))
+            b = (y1 * (target_x // gcd1)) - (k1*(a_dx // gcd1))
+
+            if (a_dy*a + b_dy * b == target_y):
+                if a>=0 and b>=0:
+                    return a, b
+    
+
     return None
 
 
@@ -66,11 +74,9 @@ def calculate_tokens(a_presses: int, b_presses: int) -> int:
 
 def calculate_min_tokens_part2(input_data: List[str]) -> int:
     input_str = "\n".join(input_data)
-    # Split input into groups of 3 lines (+ optional empty line)
     lines = [line.strip() for line in input_str.splitlines() if line.strip()]
     machines = []
 
-    # Parse machines and add 10000000000000 to prize coordinates
     for i in range(0, len(lines), 3):
         if i + 2 < len(lines):
             machine = parse_machine(lines[i:i + 3])
@@ -81,7 +87,6 @@ def calculate_min_tokens_part2(input_data: List[str]) -> int:
 
     total_tokens = 0
 
-    # For each machine, find the solution that requires minimum tokens
     for machine in machines:
         solution = find_solution_part2(machine)
         if solution:
