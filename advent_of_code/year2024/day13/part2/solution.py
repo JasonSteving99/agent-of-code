@@ -109,7 +109,7 @@ def solve_machine_part2(machine: ClawMachine) -> Optional[Tuple[int, int]]:
     return None
 
 
-def solution() -> int:
+def calculate_min_tokens_part2() -> int:
     """Read from stdin and return the solution for part 2."""
     input_str = sys.stdin.read().strip()
     
