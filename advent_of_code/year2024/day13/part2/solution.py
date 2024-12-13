@@ -1,67 +1,9 @@
-"""Solution for calculating minimum tokens needed to win prizes from claw machines - Part 2."""
+"""Solution for calculating minimum tokens needed to win prizes from claw machines after prize location shift."""
 from math import gcd
-from typing import Optional, Tuple
-
-
-def find_min_tokens(ax: int, ay: int, bx: int, by: int, px: int, py: int) -> Optional[Tuple[int, int]]:
-    """Find minimum token solution using the extended Euclidean algorithm.
-    
-    Returns a tuple of (a_presses, b_presses) or None if no solution exists.
-    """
-    # We need to solve:
-    # ax * a_presses + bx * b_presses = px  (equation 1)
-    # ay * a_presses + by * b_presses = py  (equation 2)
-    
-    # First check if px and py are achievable at all
-    dx = gcd(ax, bx)
-    dy = gcd(ay, by)
-    
-    if px % dx != 0 or py % dy != 0:
-        return None
-    
-    # Convert equations to simpler form by dividing all terms by their GCDs
-    ax_s, bx_s, px_s = ax // dx, bx // dx, px // dx
-    ay_s, by_s, py_s = ay // dy, by // dy, py // dy
-    
-    # We want to minimize 3*a_presses + b_presses
-    # Using the fact that we must satisfy both equations:
-    # ax_s * a + bx_s * b = px_s  (1)
-    # ay_s * a + by_s * b = py_s  (2)
-    
-    # Find determinant to check if system has a solution
-    det = ax_s * by_s - ay_s * bx_s
-    if det == 0:
-        return None
-        
-    # Find base solution using Cramer's rule
-    a_base = (by_s * px_s - bx_s * py_s) // det
-    b_base = (ax_s * py_s - ay_s * px_s) // det
-    
-    # Find step sizes for generating all solutions
-    t1 = bx_s // gcd(ax_s, bx_s)
-    t2 = by_s // gcd(ay_s, by_s)
-    
-    # Try solutions around the base solution
-    min_tokens = None
-    best_solution = None
-    
-    # Generate solutions by trying different multiples of t1 and t2
-    for k in range(-1000, 1001):  # Adjust range based on expected solution size
-        a = a_base + k * t1
-        b = b_base - k * t2
-        
-        # Only consider positive solutions
-        if a >= 0 and b >= 0:
-            tokens = 3 * a + b
-            if min_tokens is None or tokens < min_tokens:
-                min_tokens = tokens
-                best_solution = (a, b)
-    
-    return best_solution
-
+from typing import Optional, Dict, List, Tuple
 
 def calculate_min_cost_part2(machine_data: str) -> Optional[int]:
-    """Calculate minimum tokens needed to win prize, or None if impossible."""
+    """Calculate minimum tokens needed to win prize after location shift."""
     # Parse the machine data
     lines = machine_data.strip().split('\n')
     # Extract button movements and prize location
@@ -80,17 +22,84 @@ def calculate_min_cost_part2(machine_data: str) -> Optional[int]:
     # Parse prize location
     prize_x = int(prize_line.split(', ')[0].replace('X=', ''))
     prize_y = int(prize_line.split(', ')[1].replace('Y=', ''))
+
+    # Helper function to solve Diophantine equation
+    def solve_diophantine(a: int, b: int, c: int) -> Optional[Tuple[int, int]]:
+        """Solve Diophantine equation ax + by = c."""
+        g = gcd(a, b)
+        if c % g != 0:  # No solution exists
+            return None
+            
+        # Scale everything down by gcd
+        a, b, c = a // g, b // g, c // g
+        
+        # Use extended Euclidean algorithm to find one solution
+        def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
+            if a == 0:
+                return b, 0, 1
+            gcd, x1, y1 = extended_gcd(b % a, a)
+            x = y1 - (b // a) * x1
+            y = x1
+            return gcd, x, y
+            
+        _, x0, y0 = extended_gcd(a, b)
+        x0 *= c
+        y0 *= c
+        
+        # Now we have one solution (x0, y0)
+        # General solution is: x = x0 + k*(b/g), y = y0 - k*(a/g)
+        # We need to find k that minimizes tokens = 3x + y where x,y >= 0
+        # Try different values of k near x0/y0 to find minimum cost solution
+        def get_cost(x: int, y: int) -> Optional[int]:
+            if x >= 0 and y >= 0:
+                return 3 * x + y
+            return None
+
+        # Search k values until we find valid solution
+        k = 0
+        best_cost = None
+        best_solution = None
+        
+        # Search in both directions
+        for k in range(-10000000, 10000000):
+            x = x0 + k * b
+            y = y0 - k * a
+            cost = get_cost(x, y)
+            if cost is not None and (best_cost is None or cost < best_cost):
+                best_cost = cost
+                best_solution = (x, y)
+            # If we found a solution and start getting worse, break
+            if best_cost is not None and x > 0 and y > 0 and cost > best_cost:
+                break
+                
+        return best_solution
+
+    # Solve for x and y coordinates
+    x_solution = solve_diophantine(ax, bx, prize_x)
+    y_solution = solve_diophantine(ay, by, prize_y)
     
-    solution = find_min_tokens(ax, ay, bx, by, prize_x, prize_y)
-    if solution is None:
+    if x_solution is None or y_solution is None:
         return None
         
-    a_presses, b_presses = solution
-    return 3 * a_presses + b_presses
+    # Get the number of button presses needed for x and y coordinates
+    a_presses_x, b_presses_x = x_solution
+    a_presses_y, b_presses_y = y_solution
+    
+    # Find the minimum number of each button press needed
+    required_a = max(a_presses_x, a_presses_y)
+    required_b = max(b_presses_x, b_presses_y)
+    
+    if required_a < 0 or required_b < 0:
+        return None
+        
+    # Calculate total cost
+    return required_a * 3 + required_b
 
-
-def calculate_min_tokens_part2(input_data: str) -> int:
-    """Read input and return the total minimum tokens needed."""
+def solution() -> int:
+    """Read input from stdin and return the total minimum tokens needed."""
+    import sys
+    input_data = sys.stdin.read().strip()
+    
     # Split input into individual machine data
     machines = []
     current_machine = []
@@ -101,7 +110,7 @@ def calculate_min_tokens_part2(input_data: str) -> int:
             if len(current_machine) == 3:
                 machines.append('\n'.join(current_machine))
                 current_machine = []
-                
+    
     # Calculate total minimum tokens needed
     total_tokens = 0
     for machine in machines:
@@ -110,9 +119,3 @@ def calculate_min_tokens_part2(input_data: str) -> int:
             total_tokens += cost
             
     return total_tokens
-
-
-def solution() -> int:
-    """Read input from stdin and return the result."""
-    import sys
-    return calculate_min_tokens_part2(sys.stdin.read().strip())
