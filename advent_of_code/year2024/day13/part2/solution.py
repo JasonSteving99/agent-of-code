@@ -25,7 +25,7 @@ def parse_machine(lines: List[str]) -> ClawMachine:
     )
 
 def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
-    """Return gcd and coefficients of Bézout's identity."""
+    """Return gcd and coefficients of B
     if a == 0:
         return b, 0, 1
     gcd, x1, y1 = extended_gcd(b % a, a)
@@ -89,7 +89,7 @@ def find_minimum_solution(machine: ClawMachine) -> Optional[int]:
     
     return min_tokens
 
-def solution() -> int:
+def min_tokens_part2() -> int:
     """Read from stdin and return solution for part 2."""
     input_lines = sys.stdin.read().strip().split('\n\n')
     machines = []
@@ -104,15 +104,12 @@ def solution() -> int:
 
     total_tokens = 0
     prizes_possible = False
-    
+
     # Find solution for each machine
     for machine in machines:
         solution = find_minimum_solution(machine)
         if solution is not None:
             prizes_possible = True
             total_tokens += solution
-    
-    return total_tokens if prizes_possible else 0
 
-if __name__ == "__main__":
-    print(solution())
+    return total_tokens if prizes_possible else 0
