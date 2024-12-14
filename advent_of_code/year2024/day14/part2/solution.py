@@ -38,7 +38,6 @@ def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) 
     star_y = min_y
     trunk_found = False
     
-    # Define a more flexible criteria for the tree's body. We look for some points with gradually widening x-spread from top.
     body_points = []
     for y in range(star_y+1,height):
       row_points = [(x,y) for x,y in positions if y == y]
@@ -47,22 +46,13 @@ def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) 
     
     if len(body_points) < 3:
       return False
-    
-    # Check to see if body has a general triangular shape widening as you move down, and check for trunk at bottom.
-    last_width = 0
-    for i in range(len(body_points)-1): #check all body rows except the last one
-      width = len(set([x for x,y in body_points[i]])) #width of points at a level
-      if width <= last_width:
-        return False  # not generally widening
-      last_width = width
 
-    #trunk check
+    # Trunk check
     last_row = body_points[-1]
     if 1 <= len(last_row) <= 2:
         trunk_x_values = [x for x,y in last_row]
         if len(trunk_x_values) > 0 and all(abs(x - top_x) <= 2 for x in trunk_x_values):
             trunk_found = True
-
 
     return trunk_found
 
