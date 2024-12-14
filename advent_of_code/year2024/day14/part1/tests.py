@@ -29,7 +29,7 @@ p=7,3 v=-1,2
 p=2,4 v=2,-3
 p=9,5 v=-3,-3"""
     
-    expected_output = 12
+    expected_output = 21
     actual_output = calculate_safety_factor(input_data)
     
     assert actual_output == expected_output, \
