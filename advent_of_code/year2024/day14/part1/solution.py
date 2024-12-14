@@ -17,11 +17,22 @@ def parse_input(input_str: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]
 
 
 def update_position(pos: Tuple[int, int], vel: Tuple[int, int], width: int, height: int) -> Tuple[int, int]:
-    """Update position based on velocity and wrap around edges."""
+    """Update position based on velocity and teleport to the other side if it hits an edge."""
     x, y = pos
     vx, vy = vel
-    new_x = (x + vx) % width
-    new_y = (y + vy) % height
+    new_x = x + vx
+    new_y = y + vy
+
+    if new_x < 0:
+        new_x = width - 1
+    elif new_x >= width:
+        new_x = 0
+    
+    if new_y < 0:
+        new_y = height - 1
+    elif new_y >= height:
+        new_y = 0
+
     return (new_x, new_y)
 
 
