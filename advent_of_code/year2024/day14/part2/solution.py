@@ -29,39 +29,46 @@ def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, heig
     max_x = max(x for x, _ in positions)
     min_y = min(y for _, y in positions)
     max_y = max(y for _, y in positions)
-    
+
     if max_x - min_x < 4 or max_y - min_y < 4:
-        return False
+      return False
 
     center_x = (min_x + max_x) // 2
     center_y = (min_y + max_y) // 2
     
-    # Check for triangular structure (top to bottom)
-    tree_points = 0
-    for y_offset in range(max_y - min_y + 1):
-        row_count = 0
-        for x_offset in range(max_x - min_x + 1):
-          check_x = (min_x + x_offset) % width
-          check_y = (min_y + y_offset) % height
-          if robot_grid[(check_x, check_y)] > 0:
-              row_count += 1
-        if row_count > 0:
-          tree_points +=1
-    if tree_points < 4:
-        return False
-        
-    # Check if there are more points near the base of the tree (trunk part and bottom level)
-    base_points_count = 0
-    for x_offset in [-1, 0, 1]:
-      for y_offset in [0, 1]:
-          check_x = (center_x+x_offset) % width
-          check_y = (max_y-y_offset) % height
-          if robot_grid[(check_x, check_y)] >0:
-              base_points_count +=1
-
-    return base_points_count >= 2
+    # Check for a central trunk
+    trunk_found = False
+    for y_offset in range(2):
+      check_x = center_x
+      check_y = (max_y - y_offset) % height
+      if robot_grid[(check_x, check_y)] > 0:
+        trunk_found = True
+        break
+    if not trunk_found:
+      return False
     
+    # Check for wider branches, starting from the top (y=min_y) and going down
+    levels = []
+    for y_offset in range(max_y - min_y + 1):
+        level_positions = []
+        for x_offset in range(min_x, max_x + 1):
+            check_x = x_offset % width
+            check_y = (min_y + y_offset) % height
+            if robot_grid[(check_x, check_y)] > 0:
+                level_positions.append((check_x, check_y))
+        if level_positions:
+            levels.append(level_positions)
+    
+    # Basic triangular check: each row has more elements or same count as previous one
+    if len(levels) < 3:
+      return False
 
+    for i in range(len(levels)-1):
+        if len(levels[i]) > len(levels[i+1]):
+            return False
+
+    return True
+    
 def find_christmas_tree_time(input_data: str) -> int:
     # Parse input
     lines = input_data.strip().split('\n')
