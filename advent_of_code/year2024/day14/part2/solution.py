@@ -17,48 +17,36 @@ def get_position_after_time(pos: Tuple[int, int], vel: Tuple[int, int],
 
 def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if the current positions form a Christmas tree pattern."""
-    # Convert positions to a set for faster lookup
-    pos_set = set(positions)
-    
-    # Find the bounding box of all positions
     if not positions:
         return False
-    
+
     min_x = min(x for x, _ in positions)
     max_x = max(x for x, _ in positions)
     min_y = min(y for _, y in positions)
     max_y = max(y for _, y in positions)
-    
-    # The pattern should be relatively compact
+
     if max_x - min_x > width // 3 or max_y - min_y > height // 3:
         return False
-        
-    # Center point of the pattern
+
+    bounding_box_area = (max_x - min_x + 1) * (max_y - min_y + 1)
+    if bounding_box_area == 0:
+      return False
+    density = len(positions) / bounding_box_area
+    if density < 0.3:
+        return False
+
     center_x = (min_x + max_x) // 2
+    center_y = min_y
     
-    # Count points in triangular shape
     tree_points = 0
-    trunk_points = 0
+    for x, y in positions:
+        rel_x = abs(x - center_x)
+        rel_y = y - center_y
     
-    for x, y in pos_set:
-        # Normalize coordinates relative to center
-        rel_x = x - center_x
-        rel_y = y - min_y
-        
-        # Check tree portion (triangular shape)
-        if rel_y < (max_y - min_y) * 2 // 3:
-            if abs(rel_x) <= rel_y // 2:  # Triangular shape check
-                tree_points += 1
-        # Check trunk portion
-        else:
-            if abs(rel_x) <= 1:  # Narrow trunk
-                trunk_points += 1
-    
-    # Verify we have enough points in both tree and trunk sections
-    total_points = len(positions)
-    return (tree_points >= total_points * 2 // 3 and 
-            trunk_points >= 2 and 
-            trunk_points <= total_points // 4)
+        if rel_y >= 0 and rel_y <= (max_y - min_y) * 0.8 and rel_x <= (max_y - min_y) * 0.8 - rel_y * 0.5:
+          tree_points +=1
+          
+    return tree_points >= len(positions) * 0.6
 
 def find_christmas_tree(input_data: str) -> int:
     # Parse input
@@ -69,8 +57,6 @@ def find_christmas_tree(input_data: str) -> int:
     height = 103
     
     # Check each second up to a reasonable maximum
-    # Since we're looking for a pattern, it's likely to occur within
-    # a relatively small number of steps
     max_time = 1000  # Reasonable upper limit
     
     for time in range(max_time):
