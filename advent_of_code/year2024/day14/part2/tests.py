@@ -1,40 +1,36 @@
 """
-This test suite validates the find_christmas_tree_time function that:
-1. Takes a multi-line string input representing robots' initial positions and velocities
-2. Returns an integer representing the number of seconds needed for robots to form a Christmas tree pattern
-3. Each robot is specified by a line in format: p=x,y v=dx,dy where:
-   - x,y: initial position coordinates
-   - dx,dy: velocity components in tiles per second
+Unit tests for find_christmas_tree function that determines the minimum number of seconds
+needed for a group of robots to form a Christmas tree pattern based on their initial positions
+and velocities.
 
-Key aspects tested:
-- Parsing of robot positions and velocities from input string
-- Calculation of the time when robots align into a Christmas tree pattern
+The tests verify that given robots' initial positions and velocities in the format:
+'p=x1,y1 v=vx1,vy1\np=x2,y2 v=vx2,vy2\n...' 
+the function returns the correct number of seconds needed to form the pattern.
 """
 
-from solution import find_christmas_tree_time
+from solution import find_christmas_tree
 
-def test_robots_christmas_tree_formation():
-    # Input contains 12 robots with their positions and velocities
-    input_data = """p=0,4 v=3,-3
-p=6,3 v=-1,-3
-p=10,3 v=-1,2
-p=2,0 v=2,-1
-p=0,0 v=1,3
-p=3,0 v=-2,-2
-p=7,6 v=-1,-3
-p=3,0 v=-1,-2
-p=9,3 v=2,3
-p=7,3 v=-1,2
-p=2,4 v=2,-3
-p=9,5 v=-3,-3"""
+
+def test_find_christmas_tree_complex_pattern():
+    # Input with 12 robots with different positions and velocities
+    robot_input = (
+        "p=0,4 v=3,-3\n"
+        "p=6,3 v=-1,-3\n"
+        "p=10,3 v=-1,2\n"
+        "p=2,0 v=2,-1\n"
+        "p=0,0 v=1,3\n"
+        "p=3,0 v=-2,-2\n"
+        "p=7,6 v=-1,-3\n"
+        "p=3,0 v=-1,-2\n"
+        "p=9,3 v=2,3\n"
+        "p=7,3 v=-1,2\n"
+        "p=2,4 v=2,-3\n"
+        "p=9,5 v=-3,-3"
+    )
     
-    # The robots should form a Christmas tree pattern after 100 seconds
-    expected_time = 100
-    
-    result = find_christmas_tree_time(input_data)
-    
-    assert result == expected_time, (
-        f"Expected robots to form Christmas tree after {expected_time} seconds, "
-        f"but got {result} seconds instead.\n"
-        f"Input robots configuration:\n{input_data}"
+    # Test that the function correctly identifies the pattern formation time
+    result = find_christmas_tree(robot_input)
+    assert result == 3, (
+        f"Expected find_christmas_tree to return 3 seconds for the given robot configuration, "
+        f"but got {result} seconds instead.\nInput configuration:\n{robot_input}"
     )
