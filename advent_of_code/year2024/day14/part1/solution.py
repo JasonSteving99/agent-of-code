@@ -43,15 +43,18 @@ def count_robots_in_quadrants(positions: List[Tuple[int, int]], width: int, heig
     mid_y = height // 2
     
     for x, y in positions:
-        if x < mid_x and y < mid_y:
-            top_left += 1
-        elif x > mid_x and y < mid_y:
-            top_right += 1
-        elif x < mid_x and y > mid_y:
-            bottom_left += 1
-        elif x > mid_x and y > mid_y:
-            bottom_right += 1
-            
+      if x == mid_x and y == mid_y:
+        continue
+
+      if x <= mid_x and y <= mid_y:
+          top_left += 1
+      elif x > mid_x and y <= mid_y:
+          top_right += 1
+      elif x <= mid_x and y > mid_y:
+          bottom_left += 1
+      elif x > mid_x and y > mid_y:
+          bottom_right += 1
+    
     return (top_left, top_right, bottom_left, bottom_right)
 
 
