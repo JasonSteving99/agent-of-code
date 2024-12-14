@@ -65,15 +65,29 @@ def find_solution(a: int, b: int, c: int) -> Optional[Tuple[int, int]]:
     d, x0, y0 = extended_gcd(a, b)
     if c % d != 0:
         return None
+
     x0 *= c // d
     y0 *= c // d
     
-    # Iterate to find non-negative solutions
-    for k in range(-1000, 1000):
-        x = x0 + k * (b // d)
-        y = y0 - k * (a // d)
-        if x >= 0 and y >= 0:
-            return (x, y)
+    if b == 0:
+      if x0 >= 0 and y0 >= 0:
+        return x0, y0
+      return None
+    
+    # Adjust x0 to be the minimum non-negative value
+    k = (-x0 * d) // b
+    x = x0 + k * (b // d)
+    y = y0 - k * (a // d)
+    
+    if x < 0:
+      x = x + (b//d)
+      y = y - (a//d)
+    if x < 0 or y < 0:
+      return None
+
+    if x >= 0 and y >= 0:
+        return (x, y)
+    
     return None
 
 
