@@ -42,19 +42,16 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
     
     if len(sorted_levels) < 3:
         return False
-        
-    if len(sorted_levels[0][1]) > 1:
+    
+    if len(sorted_levels[0][1]) != 1:
       return False
     
-    if len(sorted_levels[1][1]) < 2: #second level should be at least 2
-      return False
-
-    if len(sorted_levels[-1][1]) < 2:
-      return False #trunk should have at least 2
-
-    for i in range(1, len(sorted_levels)-1):
-      if len(sorted_levels[i][1]) < len(sorted_levels[i-1][1]):
-          return False
+    for i in range(1, len(sorted_levels)):
+       if len(sorted_levels[i][1]) < 2:
+         return False
+       if i > 1 and len(sorted_levels[i][1]) < len(sorted_levels[i-1][1]):
+         return False
+    
     return True
 
 
