@@ -37,7 +37,7 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
     sorted_rows = sorted(points_by_row.keys())
 
     if not sorted_rows:
-      return False
+        return False
     
     for i in range(len(sorted_rows) - 1):
       if points_by_row[sorted_rows[i]] < points_by_row[sorted_rows[i+1]]:
