@@ -98,7 +98,8 @@ async def generate_implementation(
         attempts += 1
         if debugging_prompt:
             generated_implementation = await gemini_prompt(
-                GeminiModel.GEMINI_1_5_PRO,
+                # GeminiModel.GEMINI_1_5_PRO,
+                GeminiModel.GEMINI_2_0_FLASH_EXP,
                 system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
                 prompt=generate_implementation_prompt,
                 response_type=GeneratedImplementation,

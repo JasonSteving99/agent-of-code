@@ -24,12 +24,20 @@ def write_and_commit_changes(
         with open(os.path.join(basedir, to_commit.filename), "w") as f:
             f.write(to_commit.content)
 
-    # TODO(steving) Commit and push the changes to git.
     agent_commit_message = (
         f"Coding-Agent ({aoc_problem.year}.{aoc_problem.day}.{aoc_problem.part}): {commit_message}"
     )
     print(agent_commit_message)
     if not dry_run:
         subprocess.run(["git", "add", basedir], check=True)
-        subprocess.run(["git", "commit", "-m", agent_commit_message], check=True)
-        subprocess.run(["git", "push", "origin", "main"], check=True)
+
+        # Only commit if there are changes. This is to avoid a "nothing to commit" error.
+        if _has_staged_changes():
+            subprocess.run(["git", "commit", "-m", agent_commit_message], check=True)
+            subprocess.run(["git", "push", "origin", "main"], check=True)
+        else:
+            print("No changes to commit.")
+
+
+def _has_staged_changes() -> bool:
+    return subprocess.run(["git", "diff", "--cached", "--quiet", "--exit-code"]).returncode != 0
