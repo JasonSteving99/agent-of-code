@@ -103,28 +103,24 @@ def find_minimal_solution(a_move: Tuple[int, int], b_move: Tuple[int, int],
     ty = b_move[1] // gcd(a_move[1], b_move[1])
     sx = -a_move[0] // gcd(a_move[0], b_move[0])
     sy = -a_move[1] // gcd(a_move[1], b_move[1])
-    
-    # Find k1, k2 that make both solutions non-negative
-    k1_min = max((-x_a) // tx if tx > 0 else (-x_a) // tx - 1,
-                 (-y_a) // ty if ty > 0 else (-y_a) // ty - 1)
-    k1_max = min((100000 - x_a) // tx if tx > 0 else (-x_a) // tx - 1,
-                 (100000 - y_a) // ty if ty > 0 else (-y_a) // ty - 1)
-    
+
+    k1_min = max((-x_a) // tx if tx != 0 else float('-inf') , (-y_a) // ty if ty != 0 else float('-inf')) if tx != 0 or ty != 0 else 0
+    k1_max = min((100000 - x_a) // tx if tx > 0 else float('inf') , (100000 - y_a) // ty if ty > 0 else float('inf')) if tx != 0 or ty !=0 else 0
+
     # Find the solution with minimum total tokens
     min_tokens = float('inf')
     best_solution = None
     
-    for k in range(k1_min, k1_max + 1):
+    for k in range(max(k1_min, -100000), min(k1_max, 100000) + 1):
         a_presses = x_a + k * tx
         b_presses = x_b - k * sx
-        
-        if a_presses >= 0 and b_presses >= 0 and \
-            (a_presses * a_move[0] + b_presses * b_move[0] == target[0]) and \
-            (a_presses * a_move[1] + b_presses * b_move[1] == target[1]):
-            tokens = 3 * a_presses + b_presses
-            if tokens < min_tokens:
-                min_tokens = tokens
-                best_solution = (a_presses, b_presses)
+        if (a_presses * a_move[0] + b_presses * b_move[0] == target[0] and
+            a_presses * a_move[1] + b_presses * b_move[1] == target[1]):
+            if a_presses >= 0 and b_presses >= 0:    
+                tokens = 3 * a_presses + b_presses
+                if tokens < min_tokens:
+                    min_tokens = tokens
+                    best_solution = (a_presses, b_presses)
     
     return best_solution
 
