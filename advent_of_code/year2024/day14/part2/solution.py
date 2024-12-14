@@ -33,7 +33,7 @@ def simulate_step(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 
 
 def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int, height: int) -> bool:
-    """Check if the robots form a more general tree-like shape."""
+    """Check if the robots form a more general tree-like shape with tighter constraints."""
     if not positions:
         return False
 
@@ -48,19 +48,19 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
 
     # Check bounding box is somewhat elongated vertically
     if bbox_height < 10 or bbox_width > bbox_height: 
-       return False
+        return False
     
-    # Count positions near the center for a tree-like distribution
+    # Count positions near the center for a tree-like distribution. Narrowed the check.
     mid_x = width // 2
-    mid_y = (min_y + max_y) // 2 #approx center for given y range
+    mid_y = (min_y + max_y) // 2  #approx center for given y range
 
     center_points = 0
     for x, y in positions:
-        if abs(x- mid_x) < bbox_width//3 and abs(y-mid_y) < bbox_height//2:
+        if abs(x- mid_x) < bbox_width//5 and abs(y-mid_y) < bbox_height//3:
             center_points += 1
-    
-    # Ensure a reasonable cluster of points near center
-    if center_points < 4: 
+
+    # Ensure a denser cluster of points near center. Increased required center points.
+    if center_points < 6: 
         return False
 
     # Check we have enough robots to form a tree
