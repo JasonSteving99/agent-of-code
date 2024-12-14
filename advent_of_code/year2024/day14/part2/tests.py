@@ -1,18 +1,16 @@
 """
-Unit tests for the Christmas Tree Robot Formation challenge.
-
-These tests validate a function that determines how many seconds it takes for robots with given
-initial positions and velocities to form a Christmas tree pattern. The input is a multi-line
-string where each line describes a robot's position and velocity in the format 'p=x,y v=dx,dy'.
-The function should return an integer representing the time needed for the robots to form the pattern.
+This test module verifies the find_christmas_tree_time function that:
+1. Takes a string input representing initial positions and velocities of multiple robots
+2. Each robot has position (p=x,y) and velocity (v=dx,dy) on each line
+3. Robots move on a 101x103 grid with wrapping at edges
+4. Returns the minimum time (in seconds) when robots form a Christmas tree pattern
 """
 
 from solution import find_christmas_tree_time
 
-
-def test_robots_form_christmas_tree_after_100_seconds():
-    # Input describes 12 robots with their initial positions and velocities
-    robot_data = (
+def test_robots_form_tree_at_100_seconds():
+    # Input with 12 robots' initial positions and velocities
+    robot_config = (
         "p=0,4 v=3,-3\n"
         "p=6,3 v=-1,-3\n"
         "p=10,3 v=-1,2\n"
@@ -27,13 +25,11 @@ def test_robots_form_christmas_tree_after_100_seconds():
         "p=9,5 v=-3,-3"
     )
     
-    # Expected time for robots to form Christmas tree pattern
-    expected_time = 100
+    result = find_christmas_tree_time(robot_config)
     
-    # Assert the function correctly determines the formation time
-    result = find_christmas_tree_time(robot_data)
-    assert result == expected_time, (
-        f"Expected robots to form Christmas tree after {expected_time} seconds, "
-        f"but got {result} seconds instead.\n"
-        f"Input robot data:\n{robot_data}"
+    # Verify that robots form Christmas tree pattern at exactly t=100 seconds
+    assert result == 100, (
+        f"Expected robots to form Christmas tree pattern at t=100 seconds, "
+        f"but got t={result} seconds instead.\n"
+        f"Input configuration:\n{robot_config}"
     )
