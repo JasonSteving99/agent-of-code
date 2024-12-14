@@ -23,13 +23,6 @@ def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, heig
     for x, y in positions:
         robot_grid[(x, y)] += 1
 
-    # Find center of mass to help locate the tree
-    if not positions:
-        return False
-    
-    center_x = sum(x for x, _ in positions) // len(positions)
-    center_y = sum(y for _, y in positions) // len(positions)
-
     # Expected relative positions for a basic Christmas tree shape
     # Assuming the tree should have:
     # - A star/top point
@@ -48,17 +41,21 @@ def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, heig
         (0, 2), (0, 3)
     }
 
-    # Count how many robots match the pattern
-    matches = 0
     required_matches = len(tree_pattern) * 0.8  # Allow for some imperfection
+    
+    # Iterate through all possible center points
+    for cx in range(width):
+        for cy in range(height):
+             matches = 0
+             for rel_pos in tree_pattern:
+                check_x = (cx + rel_pos[0]) % width
+                check_y = (cy + rel_pos[1]) % height
+                if robot_grid[(check_x, check_y)] > 0:
+                    matches += 1
+             if matches >= required_matches:
+                return True
 
-    for rel_pos in tree_pattern:
-        check_x = (center_x + rel_pos[0]) % width
-        check_y = (center_y + rel_pos[1]) % height
-        if robot_grid[(check_x, check_y)] > 0:
-            matches += 1
-
-    return matches >= required_matches
+    return False
 
 def find_christmas_tree_time(input_data: str) -> int:
     # Parse input
