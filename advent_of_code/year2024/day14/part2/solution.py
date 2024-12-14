@@ -38,12 +38,13 @@ def get_positions_at_time(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 
 def looks_like_tree(positions: Set[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if the robot positions form a Christmas tree pattern."""
-    # Convert positions to a grid for pattern analysis
+    if not positions:
+        return False
+    
     grid = [[0] * width for _ in range(height)]
     for x, y in positions:
         grid[y][x] = 1
-    
-    # Find the bounding box of the pattern
+
     min_x, max_x, min_y, max_y = width, 0, height, 0
     for y in range(height):
         for x in range(width):
@@ -52,32 +53,32 @@ def looks_like_tree(positions: Set[Tuple[int, int]], width: int, height: int) ->
                 max_x = max(max_x, x)
                 min_y = min(min_y, y)
                 max_y = max(max_y, y)
-    
-    if max_y - min_y < 5 or max_x - min_x < 3:
-        return False  # Too small to be a tree
-    
-    # Calculate pattern density in triangular shape
+
     tree_height = max_y - min_y + 1
     tree_base = max_x - min_x + 1
+
+    if tree_height < 5 or tree_base < 3:
+        return False
     
-    # Check if the overall shape is triangular
-    points_in_triangle = 0
+    if tree_height > tree_base * 2:
+      return False
+    
     total_points = len(positions)
-    
+    expected_points = (tree_base * tree_height) / 2
+
+    if not (expected_points * 0.6 < total_points < expected_points * 1.4):
+      return False
+
+    points_in_triangle = 0
     for y in range(min_y, max_y + 1):
-        y_ratio = (y - min_y) / tree_height
-        # Expected width at this height
-        expected_width = tree_base * (1 - y_ratio)
-        points_in_row = sum(1 for x in range(min_x, max_x + 1) if (x, y) in positions)
-        
-        if points_in_row > expected_width * 1.5:
-            return False
-        
-        if points_in_row > 0:
-            points_in_triangle += points_in_row
-    
-    # Check if most points form a triangular shape
-    return points_in_triangle >= total_points * 0.8
+      row_width = sum(grid[y][x] for x in range(min_x, max_x+1))
+      expected_row_width = int(tree_base * (1- (y - min_y) / tree_height))
+      if row_width > expected_row_width * 1.5:
+          return False
+      if row_width > 0:
+         points_in_triangle += row_width
+
+    return points_in_triangle >= total_points * 0.6 
 
 
 def find_christmas_tree_time(input_str: str) -> int:
@@ -85,8 +86,7 @@ def find_christmas_tree_time(input_str: str) -> int:
     robots = parse_input(input_str)
     width, height = 101, 103
     
-    # Search for the pattern in reasonable time window
-    for seconds in range(200):  # Increased the range to 200
+    for seconds in range(250):  # Increased search range to 250
         positions = get_positions_at_time(robots, width, height, seconds)
         if looks_like_tree(positions, width, height):
             return seconds
