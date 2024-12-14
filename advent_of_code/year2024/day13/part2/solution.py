@@ -34,9 +34,9 @@ def parse_input(input_str: str) -> list[Tuple[Tuple[int, int], Tuple[int, int], 
             parts = line.split(',')
             x = int(parts[0].split('=')[1])
             y = int(parts[1].split('=')[1])
-            # Add the offset for part 2
-            x = x if x > offset else x + offset
-            y = y if y > offset else y + offset
+            # Always add the offset for part 2
+            x += offset
+            y += offset
             current_machine.append((x, y))
             machines.append(tuple(current_machine))
             current_machine = []
