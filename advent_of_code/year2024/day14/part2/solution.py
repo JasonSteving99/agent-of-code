@@ -25,28 +25,28 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
     min_y = min(y for _, y in positions)
     max_y = max(y for _, y in positions)
 
-    if max_x - min_x > width // 3 or max_y - min_y > height // 3:
+    if max_x - min_x > width // 2 or max_y - min_y > height // 2:
         return False
-
-    bounding_box_area = (max_x - min_x + 1) * (max_y - min_y + 1)
-    if bounding_box_area == 0:
-      return False
-    density = len(positions) / bounding_box_area
-    if density < 0.3:
-        return False
-
-    center_x = (min_x + max_x) // 2
-    center_y = min_y
     
-    tree_points = 0
+    points_by_row = {}
     for x, y in positions:
-        rel_x = abs(x - center_x)
-        rel_y = y - center_y
+        if y not in points_by_row:
+            points_by_row[y] = 0
+        points_by_row[y] += 1
     
-        if rel_y >= 0 and rel_y <= (max_y - min_y) * 0.8 and rel_x <= (max_y - min_y) * 0.8 - rel_y * 0.5:
-          tree_points +=1
-          
-    return tree_points >= len(positions) * 0.6
+    sorted_rows = sorted(points_by_row.keys())
+
+    if not sorted_rows:
+      return False
+    
+    for i in range(len(sorted_rows) - 1):
+      if points_by_row[sorted_rows[i]] < points_by_row[sorted_rows[i+1]]:
+        return False
+    
+    if len(sorted_rows) < 3: # minimal tree needs a base and some levels
+        return False
+
+    return True
 
 def find_christmas_tree(input_data: str) -> int:
     # Parse input
