@@ -53,18 +53,20 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
                 center_level = y
 
     if center_level == -1:
-      return False
+        return False
 
-    # Calculate average density at exact center
-    center_density = len(levels.get(center_level, []))
-
-    # Check if overall distribution is consistent with a tree shape
-    for y in range(height):
-        distance = abs(y - center_level)
-        if distance > 0:
-            density = len(levels.get(y, []))
-            if density > center_density / (distance * 2) if (distance * 2) > 0 else float('inf'):
+    # Verify tree shape. Check for each level that the x-coordinates
+    # are contained within the x-range of the center level.  Also check that
+    # all levels have at least one robot.
+    min_x_center = min(levels[center_level])
+    max_x_center = max(levels[center_level])
+    for y, x_coords in levels.items():
+        if not x_coords:
+            return False
+        for x in x_coords:
+            if x < min_x_center or x > max_x_center:
                 return False
+
     return True
 
 
