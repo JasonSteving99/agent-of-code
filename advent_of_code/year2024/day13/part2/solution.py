@@ -104,8 +104,8 @@ def find_minimal_solution(a_move: Tuple[int, int], b_move: Tuple[int, int],
     sx = -a_move[0] // gcd(a_move[0], b_move[0])
     sy = -a_move[1] // gcd(a_move[1], b_move[1])
 
-    k1_min = max((-x_a) // tx if tx != 0 else float('-inf') , (-y_a) // ty if ty != 0 else float('-inf')) if tx != 0 or ty != 0 else 0
-    k1_max = min((100000 - x_a) // tx if tx > 0 else float('inf') , (100000 - y_a) // ty if ty > 0 else float('inf')) if tx != 0 or ty !=0 else 0
+    k1_min = max((-x_a) // tx if tx != 0 else -100000 , (-y_a) // ty if ty != 0 else -100000) 
+    k1_max = min((100000 - x_a) // tx if tx > 0 else 100000 , (100000 - y_a) // ty if ty > 0 else 100000)
 
     # Find the solution with minimum total tokens
     min_tokens = float('inf')
