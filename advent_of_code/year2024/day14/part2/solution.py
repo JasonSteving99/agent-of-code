@@ -35,12 +35,6 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
     if not occupied:
         return False
     
-    min_x = min(x for x, _ in occupied)
-    max_x = max(x for x, _ in occupied)
-    min_y = min(y for _, y in occupied)
-    max_y = max(y for _, y in occupied)
-    
-    
     levels = defaultdict(set)
     for x, y in occupied:
         levels[y].add(x)
@@ -50,24 +44,18 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
     
     if len(sorted_levels) < 3:  # Need minimum height for a tree
         return False
-        
-    #Check if any level is empty
-    for _, level_points in sorted_levels:
-        if not level_points:
-            return False
     
-    # Check for single star at top
-    if len(sorted_levels[0][1]) != 1:
+    # Check for single point or line at the top (star)
+    if len(sorted_levels[0][1]) > 2:  # Star should be small at top level
+      return False
+    
+    # Check for at least two points on second level
+    if len(sorted_levels[1][1]) < 2:
         return False
-    
-    # Check for widening pattern in middle (tree shape)
-    middle_section = sorted_levels[1:]
-    prev_width = 0
-    for _, level_points in middle_section:
-        curr_width = max(level_points) - min(level_points) if level_points else 0
-        if curr_width <= prev_width and prev_width != 0:
-            return False
-        prev_width = curr_width
+
+    # Check for at least two points in the bottom level (trunk)
+    if len(sorted_levels[-1][1]) < 2:
+        return False
     
     return True
 
