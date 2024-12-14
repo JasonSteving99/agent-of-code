@@ -33,41 +33,45 @@ def simulate_step(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 
 
 def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int, height: int) -> bool:
-    """Check if the robots form a more general tree-like shape with tighter constraints."""
+    """Check if the robots form a Christmas tree pattern based on row lengths."""
     if not positions:
         return False
 
-    x_coords = [pos[0] for pos in positions]
-    y_coords = [pos[1] for pos in positions]
-    
-    min_x, max_x = min(x_coords), max(x_coords)
-    min_y, max_y = min(y_coords), max(y_coords)
-    
-    bbox_width = max_x - min_x
-    bbox_height = max_y - min_y
+    # group robots by their y coordinates
+    rows = {}
+    for (x, y), count in positions.items():
+        rows.setdefault(y, 0) # init to zero if not in rows dict
+        rows[y] += count
 
-    # Check bounding box is somewhat elongated vertically
-    if bbox_height < 10 or bbox_width > bbox_height: 
+    if len(rows) < 4: # tree must have at least 4 rows
+        return False
+        
+    sorted_rows = sorted(rows.items(), key = lambda item: item[0]) # sort rows by y coordinate
+    
+    row_lengths = [length for _, length in sorted_rows]
+
+    # Check if the robot counts in each row form a triangular pattern
+    if len(row_lengths) < 4:
         return False
     
-    # Count positions near the center for a tree-like distribution. Narrowed the check.
-    mid_x = width // 2
-    mid_y = (min_y + max_y) // 2  #approx center for given y range
+    # Get the length of the center row (longest row)
+    max_row_length = max(row_lengths)
 
-    center_points = 0
-    for x, y in positions:
-        if abs(x- mid_x) < bbox_width//5 and abs(y-mid_y) < bbox_height//3:
-            center_points += 1
-
-    # Ensure a denser cluster of points near center. Increased required center points.
-    if center_points < 6: 
+    # Check if longest row is significantly longer than others
+    if max_row_length < 3:
         return False
-
-    # Check we have enough robots to form a tree
-    total_robots = sum(positions.values())
-    if total_robots < 8:
-       return False
     
+    # Check that other row lengths decrease in a tree-like fashion
+    center_index = row_lengths.index(max_row_length)
+    
+    for i in range(center_index):
+        if row_lengths[i] > row_lengths[i+1] +2:
+             return False # row lengths must decrease
+             
+    for i in range(center_index, len(row_lengths) -1):
+        if row_lengths[i+1] > row_lengths[i] +2:
+             return False # row lengths must decrease
+
     return True
 
 
