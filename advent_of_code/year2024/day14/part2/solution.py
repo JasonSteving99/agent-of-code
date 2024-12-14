@@ -26,42 +26,40 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
     max_y = max(y for _, y in positions)
 
     if max_x - min_x > width // 2 or max_y - min_y > height // 2:
-      return False
-
-    # Calculate centroid
-    sum_x = sum(x for x, _ in positions)
-    sum_y = sum(y for _, y in positions)
-    centroid_x = sum_x / len(positions)
-    centroid_y = sum_y / len(positions)
+        return False
     
-    # Check for symmetry around vertical line passing through centroid
-    symmetric_count = 0
-    for x, y in positions:
-        mirrored_x = 2 * centroid_x - x
-        for x2, y2 in positions:
-            if abs(x2 - mirrored_x) < 1e-6 and abs(y - y2) < 1e-6:
-                symmetric_count += 1
-                break
-
-    if symmetric_count < len(positions) * 0.6:
-      return False
-
-    # Check for triangular shape
+    if len(positions) < 3: # A tree needs at least 3 points
+        return False
+    
+    # Group points by their y-coordinates
     points_by_row = {}
     for x, y in positions:
-        if y not in points_by_row:
-            points_by_row[y] = 0
-        points_by_row[y] += 1
+      if y not in points_by_row:
+        points_by_row[y] = []
+      points_by_row[y].append(x)
     
     sorted_rows = sorted(points_by_row.keys())
 
     if len(sorted_rows) < 3:
       return False
 
+    # Check for decreasing width going up
     for i in range(len(sorted_rows) - 1):
-      if points_by_row[sorted_rows[i]] < points_by_row[sorted_rows[i+1]]:
-        return False
+        if len(points_by_row[sorted_rows[i]]) < len(points_by_row[sorted_rows[i+1]]):
+            return False
+
+    # Check for approximate symmetry
+    centroid_x = sum(x for x, _ in positions) / len(positions)
+    symmetric_count = 0
+    for x, y in positions:
+      mirrored_x = 2 * centroid_x - x
+      for x2, y2 in positions:
+        if abs(x2 - mirrored_x) < 1e-6 and abs(y - y2) < 1e-6:
+            symmetric_count += 1
+            break
     
+    if symmetric_count < len(positions) * 0.5:
+      return False
 
     return True
 
