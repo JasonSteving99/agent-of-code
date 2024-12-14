@@ -86,7 +86,7 @@ def find_christmas_tree_time(input_str: str) -> int:
     width, height = 101, 103
     
     # Search for the pattern in reasonable time window
-    for seconds in range(100):  # Adjust range if needed
+    for seconds in range(200):  # Increased the range to 200
         positions = get_positions_at_time(robots, width, height, seconds)
         if looks_like_tree(positions, width, height):
             return seconds
