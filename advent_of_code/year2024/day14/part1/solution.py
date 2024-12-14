@@ -24,12 +24,16 @@ def calculate_position(
     """Calculate final position after given time with wrapping."""
     x, y = initial_pos
     vx, vy = velocity
-    
-    # Calculate total movement
-    total_x = (x + vx * time) % width
-    total_y = (y + vy * time) % height
-    
-    return (total_x, total_y)
+
+    # Calculate new positions without modulo
+    new_x = x + vx * time
+    new_y = y + vy * time
+
+    # Wrap around the edges
+    final_x = (new_x + width) % width
+    final_y = (new_y + height) % height
+
+    return (final_x, final_y)
 
 
 def count_robots_in_quadrants(
