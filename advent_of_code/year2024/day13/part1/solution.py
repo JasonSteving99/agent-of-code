@@ -1,75 +1,72 @@
-from typing import Optional, List, Tuple
+"""Solution for claw machine token minimization problem."""
+from typing import Tuple, List, Optional
 import sys
-from dataclasses import dataclass
 import re
 
 
-@dataclass
-class ClawMachine:
-    button_a: Tuple[int, int]  # (x, y) movement for button A
-    button_b: Tuple[int, int]  # (x, y) movement for button B
-    prize: Tuple[int, int]     # (x, y) coordinates of prize
+def parse_machine(lines: List[str]) -> Tuple[int, int, int, int, int, int]:
+    """Parse a single machine's configuration from input lines."""
+    pattern = r'[XY]=?([+-]?\d+)'
+    a_nums = [int(x) for x in re.findall(pattern, lines[0])]
+    b_nums = [int(x) for x in re.findall(pattern, lines[1])]
+    prize = [int(x) for x in re.findall(pattern, lines[2])]
+    return (a_nums[0], a_nums[1], b_nums[0], b_nums[1], prize[0], prize[1])
 
 
-def parse_machine(lines: List[str]) -> ClawMachine:
-    """Parse a single claw machine configuration from input lines."""
-    pattern = r"Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)"
-    match = re.match(pattern, "\n".join(lines))
-    if not match:
-        raise ValueError("Invalid input format")
+def find_solution(ax: int, ay: int, bx: int, by: int, px: int, py: int,
+                 max_presses: int = 100) -> Optional[Tuple[int, int]]:
+    """
+    Find the number of A and B button presses needed to reach the prize.
+    Returns None if no solution exists within the max_presses limit.
+    """
+    # Try all possible combinations of A presses
+    for a in range(max_presses + 1):
+        # Calculate remaining X distance after a presses of A
+        remaining_x = px - (a * ax)
+        if remaining_x < 0:
+            # If we've gone too far in X, no point continuing
+            break
+            
+        # Check if remaining X is divisible by B's X movement
+        if bx != 0 and remaining_x % bx == 0:
+            b = remaining_x // bx
+            # Check if b is within limits
+            if 0 <= b <= max_presses:
+                # Check if Y coordinate matches with these press counts
+                if a * ay + b * by == py:
+                    return (a, b)
     
-    nums = [int(x) for x in match.groups()]
-    return ClawMachine(
-        button_a=(nums[0], nums[1]),
-        button_b=(nums[2], nums[3]),
-        prize=(nums[4], nums[5])
-    )
+    return None
 
 
-def solve_machine(machine: ClawMachine) -> Optional[int]:
-    """
-    Solve for a single machine, returning minimum tokens needed or None if unsolvable.
-    A button costs 3 tokens, B button costs 1 token.
-    """
-    min_tokens = None
-
-    for a_presses in range(101):
-        for b_presses in range(101):
-            x = a_presses * machine.button_a[0] + b_presses * machine.button_b[0]
-            y = a_presses * machine.button_a[1] + b_presses * machine.button_b[1]
-
-            if (x, y) == machine.prize:
-                tokens = 3 * a_presses + b_presses
-                if min_tokens is None or tokens < min_tokens:
-                    min_tokens = tokens
-
-    return min_tokens
-
-
-def claw_machine_min_tokens(input_str: str) -> Optional[int]:
-    """
-    Calculate minimum tokens needed to win all possible prizes.
-    Returns None if no prizes can be won.
-    """
-    # Split input into individual machines
-    machines_str = [m.strip() for m in input_str.strip().split("\n\n")]
-    
-    # Parse and solve each machine
+def min_tokens_for_prize(input_data: str) -> Optional[int]:
+    """Calculate minimum tokens needed to win all possible prizes."""
+    lines = input_data.strip().split('\n')
     total_tokens = 0
-    prizes_possible = False
+    possible_wins = 0
     
-    for machine_str in machines_str:
-        machine = parse_machine(machine_str.split("\n"))
-        solution = solve_machine(machine)
+    # Process machines in groups of 3 lines
+    for i in range(0, len(lines), 4):
+        if i + 3 > len(lines):
+            break
+            
+        machine = parse_machine(lines[i:i+3])
+        ax, ay, bx, by, px, py = machine
         
-        if solution is not None:
-            prizes_possible = True
-            total_tokens += solution
+        # Find solution for this machine
+        solution = find_solution(ax, ay, bx, by, px, py)
+        
+        if solution:
+            # Calculate tokens: 3 for each A press, 1 for each B press
+            a_presses, b_presses = solution
+            tokens = (a_presses * 3) + b_presses
+            total_tokens += tokens
+            possible_wins += 1
     
-    return total_tokens if prizes_possible else None
+    # Return None if no prizes can be won
+    return total_tokens if possible_wins > 0 else None
 
 
 def solution() -> Optional[int]:
     """Read from stdin and return the solution."""
-    input_str = sys.stdin.read()
-    return claw_machine_min_tokens(input_str)
+    return min_tokens_for_prize(sys.stdin.read())
