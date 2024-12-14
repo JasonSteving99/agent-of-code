@@ -132,15 +132,16 @@ def find_minimal_solution(a_move: Tuple[int, int], b_move: Tuple[int, int],
     return best_solution
 
 
-def calculate_min_tokens(machines: list[ClawMachine]) -> int:
+def min_tokens_to_win_all_prizes_part2(input_str: str) -> int:
     """Calculate minimum tokens needed to win all possible prizes."""
+    machines = parse_input(input_str)
     OFFSET = 10000000000000  # Prize coordinate offset
     total_tokens = 0
     prizes_possible = False
     
     for machine in machines:
         # Adjust prize coordinates
-        target = (machine.prize[0], machine.prize[1])
+        target = (machine.prize[0] , machine.prize[1])
         
         solution = find_minimal_solution(
             machine.a_move,
@@ -155,9 +156,3 @@ def calculate_min_tokens(machines: list[ClawMachine]) -> int:
             total_tokens += tokens
     
     return total_tokens if prizes_possible else 0
-
-
-def solution() -> int:
-    """Read from stdin and solve the problem."""
-    machines = parse_input(sys.stdin.read())
-    return calculate_min_tokens(machines)
