@@ -110,15 +110,11 @@ def find_minimal_solution(a_move: Tuple[int, int], b_move: Tuple[int, int],
     k1_max = min((100000 - x_a) // tx if tx > 0 else (-x_a) // tx - 1,
                  (100000 - y_a) // ty if ty > 0 else (-y_a) // ty - 1)
     
-    if k1_min > k1_max:
-        return None
-        
     # Find the solution with minimum total tokens
     min_tokens = float('inf')
     best_solution = None
     
-    k = k1_min
-    while k <= k1_max:
+    for k in range(k1_min, k1_max + 1):
         a_presses = x_a + k * tx
         b_presses = x_b - k * sx
         if (a_presses >= 0 and b_presses >= 0 and
@@ -127,7 +123,6 @@ def find_minimal_solution(a_move: Tuple[int, int], b_move: Tuple[int, int],
             if tokens < min_tokens:
                 min_tokens = tokens
                 best_solution = (a_presses, b_presses)
-        k += 1
     
     return best_solution
 
