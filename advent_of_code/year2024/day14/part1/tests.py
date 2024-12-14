@@ -1,20 +1,21 @@
 """
-Unit tests for the calculate_safety_factor function.
+Tests for the calculate_safety_factor function.
 
-These tests verify the function that:
-1. Parses input string containing robot positions (p) and velocities (v)
-2. Simulates robot movement for 100 seconds with wrapping behavior at grid boundaries 
-3. Calculates safety factor by:
-   - Dividing the grid into quadrants (excluding center lines)
-   - Counting robots in each quadrant
-   - Multiplying the robot counts in quadrants together
+These tests validate the calculation of a safety factor after robots move in a confined space with teleporting edges.
+The function takes a string input representing initial positions and velocities of multiple robots in the format:
+'p=x,y v=vx,vy' (one robot per line), and returns an integer safety factor after 100 seconds of movement.
+
+Key aspects tested:
+- Parsing of multi-line input string containing position and velocity data
+- Calculation of final positions after 100 seconds considering teleporting edges
+- Computation of the safety factor based on final robot positions
 """
 
 from solution import calculate_safety_factor
-import pytest
 
-def test_calculate_safety_factor_complex_scenario():
-    # Complex scenario with multiple robots in different positions and velocities
+
+def test_twelve_robots_movement():
+    # Test case with 12 robots with various starting positions and velocities
     input_data = (
         "p=0,4 v=3,-3\n"
         "p=6,3 v=-1,-3\n"
@@ -33,10 +34,9 @@ def test_calculate_safety_factor_complex_scenario():
     
     result = calculate_safety_factor(input_data)
     
-    # Provide detailed context in assertion message
     assert result == expected_safety_factor, (
-        f"Safety factor calculation failed for complex robot scenario.\n"
+        f"Safety factor calculation failed for 12 robots.\n"
         f"Input: {input_data}\n"
-        f"Expected: {expected_safety_factor}\n"
+        f"Expected safety factor: {expected_safety_factor}\n"
         f"Got: {result}"
     )

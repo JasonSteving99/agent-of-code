@@ -1,91 +1,85 @@
-"""Solution for Restroom Redoubt problem"""
-from dataclasses import dataclass
-from typing import List, Tuple
+"""Solution for calculating safety factor of robot positions."""
+from typing import Tuple, List
 import sys
 
 
-@dataclass
 class Robot:
-    """Class representing a robot's position and velocity"""
-    pos_x: int
-    pos_y: int
-    vel_x: int
-    vel_y: int
+    """Class representing a robot with position and velocity."""
+    def __init__(self, pos: Tuple[int, int], vel: Tuple[int, int]):
+        self.pos = pos
+        self.vel = vel
 
 
-def parse_robot(line: str) -> Robot:
-    """Parse a single line of input into a Robot object"""
-    pos, vel = line.strip().split()
-    px, py = map(int, pos[2:].split(','))
-    vx, vy = map(int, vel[2:].split(','))
-    return Robot(px, py, vx, vy)
+def parse_input(input_str: str) -> List[Robot]:
+    """Parse input string to create list of robots."""
+    robots = []
+    for line in input_str.strip().splitlines():
+        pos_str, vel_str = line.split()
+        px, py = map(int, pos_str[2:].split(','))
+        vx, vy = map(int, vel_str[2:].split(','))
+        robots.append(Robot((px, py), (vx, vy)))
+    return robots
 
 
-def get_final_positions(robots: List[Robot], width: int, height: int, seconds: int) -> List[Tuple[int, int]]:
-    """Calculate final positions of all robots after given seconds"""
-    positions = []
-    for robot in robots:
-        # Calculate final position using modulo for wrapping
-        final_x = (robot.pos_x + robot.vel_x * seconds) % width
-        final_y = (robot.pos_y + robot.vel_y * seconds) % height
-        positions.append((final_x, final_y))
-    return positions
+def update_position(pos: Tuple[int, int], vel: Tuple[int, int], width: int, height: int) -> Tuple[int, int]:
+    """Update position of robot considering wrapping around edges."""
+    new_x = (pos[0] + vel[0]) % width
+    new_y = (pos[1] + vel[1]) % height
+    return (new_x, new_y)
 
 
-def count_robots_in_quadrants(positions: List[Tuple[int, int]], width: int, height: int) -> Tuple[int, int, int, int]:
-    """Count robots in each quadrant, excluding center lines"""
-    top_left = 0
-    top_right = 0
-    bottom_left = 0
-    bottom_right = 0
-    
+def get_quadrant(x: int, y: int, width: int, height: int) -> int:
+    """Get the quadrant number (1-4) for a position, or 0 if on dividing lines."""
     mid_x = width // 2
     mid_y = height // 2
     
-    for x, y in positions:
-      if x == mid_x and y == mid_y:
-        continue
-
-      if x <= mid_x and y <= mid_y:
-          top_left += 1
-      elif x > mid_x and y <= mid_y:
-          top_right += 1
-      elif x <= mid_x and y > mid_y:
-          bottom_left += 1
-      elif x > mid_x and y > mid_y:
-          bottom_right += 1
+    if x == mid_x or y == mid_y:
+        return 0
     
-    return (top_left, top_right, bottom_left, bottom_right)
+    if x < mid_x:
+        if y < mid_y:
+            return 1
+        return 3
+    else:
+        if y < mid_y:
+            return 2
+        return 4
 
 
 def calculate_safety_factor(input_data: str) -> int:
-    """
-    Calculate the safety factor based on robot positions after 100 seconds
+    """Calculate the safety factor after 100 seconds."""
+    # Set dimensions
+    width = 101
+    height = 103
+    time_steps = 100
+
+    # Parse input and create robots
+    robots = parse_input(input_data)
     
-    Args:
-        input_data: String containing robot positions and velocities
-        
-    Returns:
-        Safety factor (product of robot counts in each quadrant)
-    """
-    # Parse input
-    robots = [parse_robot(line) for line in input_data.strip().splitlines()]
+    # Simulate movement for specified time
+    for _ in range(time_steps):
+        for robot in robots:
+            robot.pos = update_position(robot.pos, robot.vel, width, height)
     
-    # Constants for the problem
-    WIDTH = 101
-    HEIGHT = 103
-    SECONDS = 100
+    # Count robots in each quadrant
+    quadrant_counts = [0] * 5  # Index 0 not used
     
-    # Get final positions
-    final_positions = get_final_positions(robots, WIDTH, HEIGHT, SECONDS)
+    for robot in robots:
+        quadrant = get_quadrant(robot.pos[0], robot.pos[1], width, height)
+        if quadrant != 0:  # Don't count robots on dividing lines
+            quadrant_counts[quadrant] += 1
     
-    # Count robots in quadrants
-    q1, q2, q3, q4 = count_robots_in_quadrants(final_positions, WIDTH, HEIGHT)
+    # Calculate safety factor (multiply non-zero quadrant counts)
+    safety_factor = 1
+    for count in quadrant_counts[1:]:  # Skip index 0
+        safety_factor *= count
     
-    # Calculate safety factor
-    return q1 * q2 * q3 * q4
+    return safety_factor
 
 
 def solution() -> int:
-    """Read from stdin and return the result"""
-    return calculate_safety_factor(sys.stdin.read())
+    """Read from stdin and return the solution."""
+    return calculate_safety_factor(sys.stdin.read().strip())
+
+if __name__ == "__main__":
+    print(solution())
