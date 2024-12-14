@@ -47,31 +47,37 @@ def looks_like_tree(positions: Set[Tuple[int, int]], width: int, height: int) ->
         max_x = max(max_x, x)
         min_y = min(min_y, y)
         max_y = max(max_y, y)
-    
+
     tree_height = max_y - min_y + 1
     tree_base = max_x - min_x + 1
 
     if tree_height < 5 or tree_base < 3:
         return False
+
     if tree_height > tree_base * 2: # ensure not too tall
-      return False
+        return False
 
     total_points = len(positions)
     expected_points = (tree_base * tree_height) / 2
 
-    if not (expected_points * 0.6 < total_points < expected_points * 1.4):
-      return False
+    if not (expected_points * 0.5 < total_points < expected_points * 1.5):
+        return False
     
     # Check for decreasing count in the rows
     previous_count = 10000
-    for y in range(min_y, max_y+1):
+    for y in range(min_y, max_y + 1):
         current_row_count = sum(1 for x in range(min_x, max_x + 1) if (x, y) in positions)
 
-        if current_row_count > previous_count * 1.2: #check decreasing number of robots
-          return False
-
+        if y == min_y and current_row_count > tree_base * 0.6:
+            return False # top is too wide
+            
+        if current_row_count > previous_count * 1.3 : # check decreasing number of robots
+            return False
+        if current_row_count > previous_count * 1.1 +2 : # allow for some fluctuation
+            return False
+            
         previous_count = current_row_count
-      
+
     return True
 
 
@@ -80,7 +86,7 @@ def find_christmas_tree_time(input_str: str) -> int:
     robots = parse_input(input_str)
     width, height = 101, 103
 
-    for seconds in range(500):
+    for seconds in range(600):
         positions = get_positions_at_time(robots, width, height, seconds)
         if looks_like_tree(positions, width, height):
             return seconds
