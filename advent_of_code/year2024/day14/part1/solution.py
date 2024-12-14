@@ -25,13 +25,9 @@ def calculate_position(
     x, y = initial_pos
     vx, vy = velocity
 
-    # Calculate new positions without modulo
-    new_x = x + vx * time
-    new_y = y + vy * time
-
-    # Wrap around the edges
-    final_x = (new_x + width) % width
-    final_y = (new_y + height) % height
+    # Calculate new positions and apply modulo
+    final_x = (x + vx * time) % width
+    final_y = (y + vy * time) % height
 
     return (final_x, final_y)
 
