@@ -37,41 +37,34 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
     if not positions:
         return False
 
-    # group robots by their y coordinates
+    # Group robots by their y coordinates
     rows = {}
     for (x, y), count in positions.items():
-        rows.setdefault(y, 0) # init to zero if not in rows dict
+        rows.setdefault(y, 0)
         rows[y] += count
 
-    if len(rows) < 4: # tree must have at least 4 rows
+    if len(rows) < 4:
         return False
-        
-    sorted_rows = sorted(rows.items(), key = lambda item: item[0]) # sort rows by y coordinate
-    
+
+    sorted_rows = sorted(rows.items())
     row_lengths = [length for _, length in sorted_rows]
-
-    # Check if the robot counts in each row form a triangular pattern
-    if len(row_lengths) < 4:
-        return False
     
-    # Get the length of the center row (longest row)
+    # Find the center row (longest one)
     max_row_length = max(row_lengths)
-
-    # Check if longest row is significantly longer than others
+    center_index = row_lengths.index(max_row_length)
+    
     if max_row_length < 3:
         return False
     
-    # Check that other row lengths decrease in a tree-like fashion
-    center_index = row_lengths.index(max_row_length)
-    
+    # Check for decreasing lengths symmetrically from center
     for i in range(center_index):
-        if row_lengths[i] > row_lengths[i+1] +2:
-             return False # row lengths must decrease
-             
-    for i in range(center_index, len(row_lengths) -1):
-        if row_lengths[i+1] > row_lengths[i] +2:
-             return False # row lengths must decrease
-
+        if row_lengths[i] > row_lengths[i + 1] + 2 or row_lengths[i] <= 0:
+          return False
+          
+    for i in range(center_index, len(row_lengths) - 1):
+      if row_lengths[i+1] > row_lengths[i] + 2 or row_lengths[i+1] <= 0:
+        return False
+        
     return True
 
 
