@@ -1,19 +1,20 @@
 """
-These unit tests verify the find_christmas_tree function which:
-1. Takes a string input representing multiple robots' initial positions and velocities
-2. Each robot is specified in format 'p=x,y v=a,b' where (x,y) is position and (a,b) is velocity
-3. Returns an integer representing minimum seconds until robots form a Christmas tree shape
+Tests for finding the earliest time when robots form a recognizable pattern.
 
-The tests verify that given a set of robots with specific starting positions and velocities,
-the function correctly calculates the time needed for them to arrange into a Christmas tree pattern.
+The tests verify that given initial positions and velocities of robots,
+the function correctly identifies the earliest time when they form
+a specific pattern. Each robot's position and velocity are specified
+in a string format where positions are 'p=x,y' and velocities are 'v=x,y'.
+
+The coordinate space wraps around at the edges, and robots move according
+to their velocities.
 """
 
-from solution import find_christmas_tree
+from solution import find_earliest_christmas_tree
 
-
-def test_robots_forming_christmas_tree():
-    # Given a set of 12 robots with specific positions and velocities
-    robot_config = (
+def test_robots_form_pattern_at_100_seconds():
+    # Test case with 12 robots that form a pattern at t=100
+    initial_state = (
         "p=0,4 v=3,-3\n"
         "p=6,3 v=-1,-3\n"
         "p=10,3 v=-1,2\n"
@@ -28,11 +29,9 @@ def test_robots_forming_christmas_tree():
         "p=9,5 v=-3,-3"
     )
     
-    # When calculating the time needed for Christmas tree formation
-    result = find_christmas_tree(robot_config)
+    result = find_earliest_christmas_tree(initial_state)
     
-    # Then it should take exactly 3 seconds
-    assert result == 3, (
-        f"Expected robots to form Christmas tree in 3 seconds, but got {result} seconds.\n"
-        f"Input configuration:\n{robot_config}"
+    assert result == 100, (
+        f"Expected pattern to form at t=100 with initial state:\n{initial_state}\n"
+        f"but got t={result}"
     )
