@@ -1,94 +1,104 @@
-from typing import List, Tuple
+"""Solution for finding when robots form a Christmas tree pattern."""
+from typing import List, Tuple, Dict, Set
 import sys
 
-def parse_input(line: str) -> Tuple[Tuple[int, int], Tuple[int, int]]:
-    """Parse a line containing position and velocity."""
-    p_part, v_part = line.strip().split()
-    px, py = map(int, p_part[2:].split(','))
-    vx, vy = map(int, v_part[2:].split(','))
-    return ((px, py), (vx, vy))
 
-def get_position_after_time(pos: Tuple[int, int], vel: Tuple[int, int], 
-                          width: int, height: int, time: int) -> Tuple[int, int]:
-    """Calculate position after given time with wraparound."""
-    x = (pos[0] + vel[0] * time) % width
-    y = (pos[1] + vel[1] * time) % height
+def parse_input(input_str: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    """Parse input string into list of position and velocity tuples."""
+    robots = []
+    for line in input_str.strip().split('\n'):
+        pos, vel = line.split()
+        px, py = map(int, pos.replace('p=', '').split(','))
+        vx, vy = map(int, vel.replace('v=', '').split(','))
+        robots.append(((px, py), (vx, vy)))
+    return robots
+
+
+def update_position(pos: Tuple[int, int], vel: Tuple[int, int], width: int, height: int) -> Tuple[int, int]:
+    """Update position considering teleportation at boundaries."""
+    x, y = pos[0] + vel[0], pos[1] + vel[1]
+    x = x % width  # Wrap around horizontally
+    y = y % height  # Wrap around vertically
     return (x, y)
 
-def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, height: int) -> bool:
-    """Check if the current positions form a Christmas tree pattern."""
-    if not positions:
-        return False
 
-    min_x = min(x for x, _ in positions)
-    max_x = max(x for x, _ in positions)
-    min_y = min(y for _, y in positions)
-    max_y = max(y for _, y in positions)
-
-    if max_x - min_x > width // 2 or max_y - min_y > height // 2:
-        return False
+def get_positions_at_time(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]], 
+                         width: int, height: int, seconds: int) -> Set[Tuple[int, int]]:
+    """Get set of positions where robots are at a given time."""
+    positions = set()
     
-    if len(positions) < 3: # A tree needs at least 3 points
-        return False
-    
-    # Group points by their y-coordinates
-    points_by_row = {}
-    for x, y in positions:
-      if y not in points_by_row:
-        points_by_row[y] = []
-      points_by_row[y].append(x)
-    
-    sorted_rows = sorted(points_by_row.keys())
-
-    if len(sorted_rows) < 3:
-      return False
-
-    # Check for decreasing width going up
-    for i in range(len(sorted_rows) - 1):
-        if len(points_by_row[sorted_rows[i]]) < len(points_by_row[sorted_rows[i+1]]):
-            return False
-
-    # Check for approximate symmetry
-    centroid_x = sum(x for x, _ in positions) / len(positions)
-    symmetric_count = 0
-    for x, y in positions:
-      mirrored_x = 2 * centroid_x - x
-      for x2, y2 in positions:
-        if abs(x2 - mirrored_x) < 1e-6 and abs(y - y2) < 1e-6:
-            symmetric_count += 1
-            break
-    
-    if symmetric_count < len(positions) * 0.5:
-      return False
-
-    return True
-
-def find_christmas_tree(input_data: str) -> int:
-    # Parse input
-    lines = input_data.strip().split('\n')
-    robots = [parse_input(line) for line in lines]
-    
-    width = 101
-    height = 103
-    
-    # Check each second up to a reasonable maximum
-    max_time = 1000  # Reasonable upper limit
-    
-    for time in range(max_time):
-        positions = [
-            get_position_after_time(pos, vel, width, height, time)
-            for pos, vel in robots
-        ]
+    for pos, vel in robots:
+        curr_pos = pos
+        for _ in range(seconds):
+            curr_pos = update_position(curr_pos, vel, width, height)
+        positions.add(curr_pos)
         
-        if is_christmas_tree_pattern(positions, width, height):
-            return time
+    return positions
+
+
+def looks_like_tree(positions: Set[Tuple[int, int]], width: int, height: int) -> bool:
+    """Check if the robot positions form a Christmas tree pattern."""
+    # Convert positions to a grid for pattern analysis
+    grid = [[0] * width for _ in range(height)]
+    for x, y in positions:
+        grid[y][x] = 1
     
-    # If no pattern is found, return -1 or raise an exception
-    return -1
+    # Find the bounding box of the pattern
+    min_x, max_x, min_y, max_y = width, 0, height, 0
+    for y in range(height):
+        for x in range(width):
+            if grid[y][x]:
+                min_x = min(min_x, x)
+                max_x = max(max_x, x)
+                min_y = min(min_y, y)
+                max_y = max(max_y, y)
+    
+    if max_y - min_y < 5 or max_x - min_x < 3:
+        return False  # Too small to be a tree
+    
+    # Calculate pattern density in triangular shape
+    tree_height = max_y - min_y + 1
+    tree_base = max_x - min_x + 1
+    
+    # Check if the overall shape is triangular
+    points_in_triangle = 0
+    total_points = len(positions)
+    
+    for y in range(min_y, max_y + 1):
+        y_ratio = (y - min_y) / tree_height
+        # Expected width at this height
+        expected_width = tree_base * (1 - y_ratio)
+        points_in_row = sum(1 for x in range(min_x, max_x + 1) if (x, y) in positions)
+        
+        if points_in_row > expected_width * 1.5:
+            return False
+        
+        if points_in_row > 0:
+            points_in_triangle += points_in_row
+    
+    # Check if most points form a triangular shape
+    return points_in_triangle >= total_points * 0.8
+
+
+def find_christmas_tree_time(input_str: str) -> int:
+    """Find the earliest time when robots form a Christmas tree pattern."""
+    robots = parse_input(input_str)
+    width, height = 101, 103
+    
+    # Search for the pattern in reasonable time window
+    for seconds in range(100):  # Adjust range if needed
+        positions = get_positions_at_time(robots, width, height, seconds)
+        if looks_like_tree(positions, width, height):
+            return seconds
+    
+    return -1  # Pattern not found
+
 
 def solution() -> int:
+    """Read from stdin and return the solution."""
     input_data = sys.stdin.read()
-    return find_christmas_tree(input_data)
+    return find_christmas_tree_time(input_data)
+
 
 if __name__ == "__main__":
     print(solution())

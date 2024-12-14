@@ -1,19 +1,18 @@
 """
-Unit tests for find_christmas_tree function that determines the minimum number of seconds
-needed for a group of robots to form a Christmas tree pattern based on their initial positions
-and velocities.
+Unit tests for the Christmas Tree Robot Formation challenge.
 
-The tests verify that given robots' initial positions and velocities in the format:
-'p=x1,y1 v=vx1,vy1\np=x2,y2 v=vx2,vy2\n...' 
-the function returns the correct number of seconds needed to form the pattern.
+These tests validate a function that determines how many seconds it takes for robots with given
+initial positions and velocities to form a Christmas tree pattern. The input is a multi-line
+string where each line describes a robot's position and velocity in the format 'p=x,y v=dx,dy'.
+The function should return an integer representing the time needed for the robots to form the pattern.
 """
 
-from solution import find_christmas_tree
+from solution import find_christmas_tree_time
 
 
-def test_find_christmas_tree_complex_pattern():
-    # Input with 12 robots with different positions and velocities
-    robot_input = (
+def test_robots_form_christmas_tree_after_100_seconds():
+    # Input describes 12 robots with their initial positions and velocities
+    robot_data = (
         "p=0,4 v=3,-3\n"
         "p=6,3 v=-1,-3\n"
         "p=10,3 v=-1,2\n"
@@ -28,9 +27,13 @@ def test_find_christmas_tree_complex_pattern():
         "p=9,5 v=-3,-3"
     )
     
-    # Test that the function correctly identifies the pattern formation time
-    result = find_christmas_tree(robot_input)
-    assert result == 3, (
-        f"Expected find_christmas_tree to return 3 seconds for the given robot configuration, "
-        f"but got {result} seconds instead.\nInput configuration:\n{robot_input}"
+    # Expected time for robots to form Christmas tree pattern
+    expected_time = 100
+    
+    # Assert the function correctly determines the formation time
+    result = find_christmas_tree_time(robot_data)
+    assert result == expected_time, (
+        f"Expected robots to form Christmas tree after {expected_time} seconds, "
+        f"but got {result} seconds instead.\n"
+        f"Input robot data:\n{robot_data}"
     )
