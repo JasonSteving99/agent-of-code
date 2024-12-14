@@ -49,7 +49,7 @@ def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) 
             max_width_y = y
             
         # Found potential trunk
-        if count <= 2 and y > max_width_y and max_width >= 3:
+        if 1 <= count <= 2 and max_width >= 3:
             trunk_points = [(x,y) for x,y in positions if y == y ]
             trunk_x_values = [x for x,y in trunk_points]
             if len(trunk_x_values) > 0 and all(abs(x - top_x) <= 1 for x in trunk_x_values):
@@ -58,8 +58,7 @@ def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) 
 
     if (row_counts[min_y] == 1 and
         max_width >= 3 and
-        trunk_found and
-        max_width_y > star_y):
+        trunk_found):
         return True
         
     return False
