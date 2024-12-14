@@ -112,7 +112,7 @@ def solve_for_machine(a_move: Tuple[int, int], b_move: Tuple[int, int],
     return None
 
 
-def solution() -> int:
+def calculate_min_tokens_part2() -> int:
     """Read from stdin and solve the problem."""
     machines = parse_input(sys.stdin.read())
     total_tokens = 0
