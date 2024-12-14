@@ -60,7 +60,7 @@ def looks_like_tree(positions: Set[Tuple[int, int]], width: int, height: int) ->
     total_points = len(positions)
     expected_points = (tree_base * tree_height) / 2
 
-    if not (expected_points * 0.5 < total_points < expected_points * 1.5):
+    if not (expected_points * 0.2 < total_points):
         return False
     
     # Check for decreasing count in the rows
