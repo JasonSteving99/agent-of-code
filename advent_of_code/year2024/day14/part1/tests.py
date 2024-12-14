@@ -1,17 +1,27 @@
 """
-This test suite validates the calculation of safety factor for robots based on their quadrant distribution.
-The tests verify that given initial positions and velocities of robots, the function correctly:
-1. Processes the input string format with positions and velocities
-2. Simulates robot movement for 100 seconds within bounded area
-3. Calculates final quadrant distribution and safety factor
+Tests for the calculate_safety_factor function that determines the safety factor
+after simulating robot movements for 100 seconds.
 
-The safety factor is the product of robot counts in each quadrant after simulation.
+The function takes a string input representing multiple robots with their
+initial positions (p) and velocities (v) in the format:
+p=x,y v=vx,vy for each robot, with robots separated by newlines.
+
+The function should:
+1. Parse the input string to extract robot positions and velocities
+2. Simulate robot movement for 100 seconds, handling any boundary wrapping
+3. Calculate the final safety factor by multiplying the number of robots
+   in each quadrant of the space
+
+Test cases cover:
+- A complex scenario with multiple robots moving in different directions
 """
 
 from solution import calculate_safety_factor
 
-def test_robot_distribution_safety_factor():
-    # Complex case with multiple robots across different positions
+
+def test_multiple_robots_complex_movement():
+    # Given a string input representing 12 robots with various starting positions
+    # and velocities across the space
     input_data = ("p=0,4 v=3,-3\n"
                  "p=6,3 v=-1,-3\n"
                  "p=10,3 v=-1,2\n"
@@ -25,12 +35,12 @@ def test_robot_distribution_safety_factor():
                  "p=2,4 v=2,-3\n"
                  "p=9,5 v=-3,-3")
     
-    expected_safety_factor = 12
-    
+    # When calculating the safety factor after 100 seconds
     result = calculate_safety_factor(input_data)
     
-    assert result == expected_safety_factor, (
-        f"Expected safety factor of {expected_safety_factor} "
-        f"for input robots:\n{input_data}\n"
+    # Then the safety factor should be 12, representing the product
+    # of robots in each quadrant after the movement simulation
+    assert result == 12, (
+        f"Expected safety factor of 12 for input:\n{input_data}\n"
         f"but got {result}"
     )
