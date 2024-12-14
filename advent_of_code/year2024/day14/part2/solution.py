@@ -40,58 +40,52 @@ def looks_like_tree(positions: Set[Tuple[int, int]], width: int, height: int) ->
     """Check if the robot positions form a Christmas tree pattern."""
     if not positions:
         return False
-    
-    grid = [[0] * width for _ in range(height)]
-    for x, y in positions:
-        grid[y][x] = 1
 
     min_x, max_x, min_y, max_y = width, 0, height, 0
-    for y in range(height):
-        for x in range(width):
-            if grid[y][x]:
-                min_x = min(min_x, x)
-                max_x = max(max_x, x)
-                min_y = min(min_y, y)
-                max_y = max(max_y, y)
-
+    for x, y in positions:
+        min_x = min(min_x, x)
+        max_x = max(max_x, x)
+        min_y = min(min_y, y)
+        max_y = max(max_y, y)
+    
     tree_height = max_y - min_y + 1
     tree_base = max_x - min_x + 1
 
     if tree_height < 5 or tree_base < 3:
         return False
-    
-    if tree_height > tree_base * 2:
+    if tree_height > tree_base * 2: # ensure not too tall
       return False
-    
+
     total_points = len(positions)
     expected_points = (tree_base * tree_height) / 2
 
     if not (expected_points * 0.6 < total_points < expected_points * 1.4):
       return False
+    
+    # Check for decreasing count in the rows
+    previous_count = 10000
+    for y in range(min_y, max_y+1):
+        current_row_count = sum(1 for x in range(min_x, max_x + 1) if (x, y) in positions)
 
-    points_in_triangle = 0
-    for y in range(min_y, max_y + 1):
-      row_width = sum(grid[y][x] for x in range(min_x, max_x+1))
-      expected_row_width = int(tree_base * (1- (y - min_y) / tree_height))
-      if row_width > expected_row_width * 1.5:
+        if current_row_count > previous_count * 1.2: #check decreasing number of robots
           return False
-      if row_width > 0:
-         points_in_triangle += row_width
 
-    return points_in_triangle >= total_points * 0.6 
+        previous_count = current_row_count
+      
+    return True
 
 
 def find_christmas_tree_time(input_str: str) -> int:
     """Find the earliest time when robots form a Christmas tree pattern."""
     robots = parse_input(input_str)
     width, height = 101, 103
-    
-    for seconds in range(250):  # Increased search range to 250
+
+    for seconds in range(500):
         positions = get_positions_at_time(robots, width, height, seconds)
         if looks_like_tree(positions, width, height):
             return seconds
-    
-    return -1  # Pattern not found
+
+    return -1
 
 
 def solution() -> int:
