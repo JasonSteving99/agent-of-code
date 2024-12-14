@@ -21,7 +21,7 @@ def get_positions_at_time(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if the robots form a Christmas tree pattern."""
     if not positions:
-      return False
+        return False
 
     grid = [[0] * width for _ in range(height)]
     for x, y in positions:
@@ -37,39 +37,44 @@ def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) 
 
     star_y = min_y
     trunk_found = False
-    max_width = 0
-    max_width_y = -1
     
-    for y in range(star_y + 1, height):
-        count = row_counts[y]
-        if count == 0:
-            continue
-        if count > max_width:
-            max_width = count
-            max_width_y = y
-            
-        if 1 <= count <= 2:
-            trunk_points = [(x,y) for x,y in positions if y == y ]
-            trunk_x_values = [x for x,y in trunk_points]
-            if len(trunk_x_values) > 0 and all(abs(x - top_x) <= 1 for x in trunk_x_values):
-                trunk_found = True
-                break
+    # Define a more flexible criteria for the tree's body. We look for some points with gradually widening x-spread from top.
+    body_points = []
+    for y in range(star_y+1,height):
+      row_points = [(x,y) for x,y in positions if y == y]
+      if len(row_points) > 0:
+        body_points.append(row_points)
+    
+    if len(body_points) < 3:
+      return False
+    
+    # Check to see if body has a general triangular shape widening as you move down, and check for trunk at bottom.
+    last_width = 0
+    for i in range(len(body_points)-1): #check all body rows except the last one
+      width = len(set([x for x,y in body_points[i]])) #width of points at a level
+      if width <= last_width:
+        return False  # not generally widening
+      last_width = width
 
-    if (row_counts[min_y] == 1 and trunk_found):
-        return True
-        
-    return False
+    #trunk check
+    last_row = body_points[-1]
+    if 1 <= len(last_row) <= 2:
+        trunk_x_values = [x for x,y in last_row]
+        if len(trunk_x_values) > 0 and all(abs(x - top_x) <= 2 for x in trunk_x_values):
+            trunk_found = True
+
+
+    return trunk_found
 
 def find_christmas_tree_time(input_data: str) -> int:
     lines = input_data.strip().split('\n')
     robots = [parse_input(line) for line in lines]
     width = 101
     height = 103
-    for time in range(1000):
+    for time in range(1001):
         positions = get_positions_at_time(robots, width, height, time)
         if is_christmas_tree(positions, width, height):
             return time
-            
     return -1
 
 def solution() -> int:
