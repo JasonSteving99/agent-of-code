@@ -117,8 +117,10 @@ def find_minimal_solution(a_move: Tuple[int, int], b_move: Tuple[int, int],
     for k in range(k1_min, k1_max + 1):
         a_presses = x_a + k * tx
         b_presses = x_b - k * sx
-        if (a_presses >= 0 and b_presses >= 0 and
-            a_presses * a_move[1] + b_presses * b_move[1] == target[1]):
+        
+        if a_presses >= 0 and b_presses >= 0 and \
+            (a_presses * a_move[0] + b_presses * b_move[0] == target[0]) and \
+            (a_presses * a_move[1] + b_presses * b_move[1] == target[1]):
             tokens = 3 * a_presses + b_presses
             if tokens < min_tokens:
                 min_tokens = tokens
