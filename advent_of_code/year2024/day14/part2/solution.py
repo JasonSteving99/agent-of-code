@@ -1,6 +1,5 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Set
 import sys
-from collections import defaultdict
 
 def parse_input(line: str) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     """Parse a line containing position and velocity."""
@@ -9,66 +8,73 @@ def parse_input(line: str) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     vx, vy = map(int, v_part[2:].split(','))
     return ((px, py), (vx, vy))
 
-def get_position_after_time(pos: Tuple[int, int], vel: Tuple[int, int], 
-                          width: int, height: int, time: int) -> Tuple[int, int]:
-    """Calculate position after given time with wraparound."""
-    x = (pos[0] + vel[0] * time) % width
-    y = (pos[1] + vel[1] * time) % height
-    return (x, y)
+def get_positions_at_time(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]], 
+                         width: int, height: int, time: int) -> Set[Tuple[int, int]]:
+    """Calculate positions of all robots at a given time."""
+    positions = set()
+    for pos, vel in robots:
+        x = (pos[0] + vel[0] * time) % width
+        y = (pos[1] + vel[1] * time) % height
+        positions.add((x, y))
+    return positions
 
-def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, height: int) -> bool:
+def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if the robots form a Christmas tree pattern."""
-    if not positions:
-        return False
-
-    robot_grid = defaultdict(int)
+    # Christmas tree pattern characteristics:
+    # 1. Should have a star/point at the top
+    # 2. Should be roughly triangular in shape
+    # 3. Should have a trunk at the bottom
+    
+    # Convert positions to a grid for easier pattern matching
+    grid = [[0] * width for _ in range(height)]
     for x, y in positions:
-        robot_grid[(x, y)] += 1
-
-    min_x = min(x for x, _ in positions)
-    max_x = max(x for x, _ in positions)
+        grid[y][x] = 1
+    
+    # Find the topmost robot (star)
     min_y = min(y for _, y in positions)
-    max_y = max(y for _, y in positions)
-
-    if max_x - min_x < 4 or max_y - min_y < 4:
-      return False
-
-    center_x = (min_x + max_x) // 2
-    center_y = (min_y + max_y) // 2
+    top_points = [(x, y) for x, y in positions if y == min_y]
+    if len(top_points) != 1:  # Should have exactly one point at top
+        return False
     
-    # Check for a central trunk
+    # Count robots in each row
+    row_counts = [sum(1 for x, y in positions if y == row) for row in range(height)]
+    
+    # Looking for a pattern like:
+    # First row (star): 1 robot
+    # Next few rows: gradually increasing number of robots
+    # Bottom (trunk): 1-2 robots
+    
+    # Check basic tree shape properties
+    star_y = min_y
     trunk_found = False
-    for y_offset in range(2):
-      check_x = center_x
-      check_y = (max_y - y_offset) % height
-      if robot_grid[(check_x, check_y)] > 0:
-        trunk_found = True
-        break
-    if not trunk_found:
-      return False
+    max_width = 0
+    max_width_y = -1
     
-    # Check for wider branches, starting from the top (y=min_y) and going down
-    levels = []
-    for y_offset in range(max_y - min_y + 1):
-        level_positions = []
-        for x_offset in range(min_x, max_x + 1):
-            check_x = x_offset % width
-            check_y = (min_y + y_offset) % height
-            if robot_grid[(check_x, check_y)] > 0:
-                level_positions.append((check_x, check_y))
-        if level_positions:
-            levels.append(level_positions)
+    for y in range(star_y + 1, height):
+        count = row_counts[y]
+        if count == 0:
+            continue
+        if count > max_width:
+            max_width = count
+            max_width_y = y
+        # Found potential trunk
+        if count <= 2 and y > max_width_y and max_width >= 3:
+            trunk_found = True
+            break
     
-    # Basic triangular check: each row has more elements or same count as previous one
-    if len(levels) < 3:
-      return False
+    # Verify tree characteristics:
+    # 1. Has a single star
+    # 2. Has a body that's wider than the top
+    # 3. Has a trunk
+    # 4. The overall shape is roughly triangular
+    if (row_counts[min_y] == 1 and 
+        max_width >= 3 and 
+        trunk_found and 
+        max_width_y > star_y):
+        return True
+        
+    return False
 
-    for i in range(len(levels)-1):
-        if len(levels[i]) > len(levels[i+1]):
-            return False
-
-    return True
-    
 def find_christmas_tree_time(input_data: str) -> int:
     # Parse input
     lines = input_data.strip().split('\n')
@@ -78,24 +84,17 @@ def find_christmas_tree_time(input_data: str) -> int:
     width = 101
     height = 103
     
-    # Check positions every second up to a reasonable limit
-    MAX_TIME = 1000  # Reasonable upper limit
-    
-    for time in range(MAX_TIME):
-        # Calculate positions at current time
-        current_positions = [
-            get_position_after_time(pos, vel, width, height, time)
-            for pos, vel in robots
-        ]
-        
-        # Check if current positions form a Christmas tree
-        if looks_like_christmas_tree(current_positions, width, height):
+    # Due to the periodic nature of the movement and the modulo operation,
+    # we can limit our search to a reasonable range
+    for time in range(1000):  # reasonable upper limit
+        positions = get_positions_at_time(robots, width, height, time)
+        if is_christmas_tree(positions, width, height):
             return time
-    
-    # If no pattern found within limit
-    return -1
+            
+    return -1  # If no pattern found
 
 def solution() -> int:
+    # Read input from stdin
     input_data = sys.stdin.read()
     return find_christmas_tree_time(input_data)
 
