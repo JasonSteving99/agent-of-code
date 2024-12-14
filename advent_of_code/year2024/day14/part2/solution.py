@@ -2,6 +2,7 @@
 from typing import List, Tuple, Dict
 import sys
 from collections import defaultdict
+import math
 
 
 def parse_input(input_str: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
@@ -35,78 +36,59 @@ def calculate_position(
 
 def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if robots form a Christmas tree pattern."""
-    # Create a grid representation
-    grid = defaultdict(int)
+    if not positions:
+      return False
+
+    min_x = min(x for x, _ in positions)
+    max_x = max(x for x, _ in positions)
+    min_y = min(y for _, y in positions)
+    max_y = max(y for _, y in positions)
+    
+    if max_x - min_x < 5 or max_y - min_y < 7:
+      return False
+
+    avg_y = sum(y for _, y in positions) / len(positions)
+    density_lower = sum(1 for _, y in positions if y > avg_y) / (max_y - avg_y) if (max_y - avg_y) > 0 else 0
+    density_upper = sum(1 for _, y in positions if y < avg_y) / (avg_y - min_y) if (avg_y - min_y) > 0 else 0
+
+    if density_lower <= density_upper and density_lower > 0 and density_upper > 0:
+        return False
+    
+    levels = defaultdict(list)
     for x, y in positions:
-        grid[(x, y)] += 1
-    
-    # Define characteristics of a Christmas tree pattern:
-    # 1. Should have a triangular shape
-    # 2. Should have a trunk at the bottom
-    # 3. Should be roughly symmetrical
-    
-    # Find the bounds of the pattern
-    if not grid:
-        return False
-    
-    positions_list = list(grid.keys())
-    min_x = min(x for x, _ in positions_list)
-    max_x = max(x for x, _ in positions_list)
-    min_y = min(y for _, y in positions_list)
-    max_y = max(y for _, y in positions_list)
-    
-    # Pattern should be roughly centered
-    center_x = (min_x + max_x) // 2
-    width_of_pattern = max_x - min_x
-    height_of_pattern = max_y - min_y
-    
-    # Check for minimum size and rough proportions of a tree
-    if width_of_pattern < 5 or height_of_pattern < 7:
-        return False
-    
-    if width_of_pattern > height_of_pattern:
-        return False
-    
-    # Check for trunk (should have 1-2 robots at bottom center)
-    trunk_count = sum(1 for x, y in positions_list if abs(x - center_x) <= 1 and y >= max_y - 2)
-    if trunk_count not in (1, 2):
-        return False
-    
-    # Check for triangular shape (more robots at bottom than top)
-    levels = defaultdict(int)
-    for _, y in positions_list:
-        levels[y] += 1
+      levels[y].append(x)
     
     sorted_levels = sorted(levels.items())
     if len(sorted_levels) < 4:
         return False
     
-    # Top should have fewer robots than middle
-    if levels[min_y] >= levels[(min_y + max_y) // 2]:
-        return False
-    
-    return True
+    prev_range = float('inf')
+    for y, x_coords in sorted_levels:
+        if len(x_coords) > 0:
+            current_range = max(x_coords) - min(x_coords)
+            if current_range > prev_range:
+                return False
+            prev_range = current_range
+            
 
+    return True
 
 def find_earliest_christmas_tree(input_str: str) -> int:
     """Find the earliest time when robots form a Christmas tree pattern."""
     robots = parse_input(input_str)
     WIDTH = 101
     HEIGHT = 103
-    
-    # Search through time intervals
-    for time in range(1, 1000):  # reasonable upper limit
-        # Calculate positions at current time
+
+    for time in range(1, 1000):
         current_positions = []
         for pos, vel in robots:
             current_pos = calculate_position(pos, vel, time, WIDTH, HEIGHT)
             current_positions.append(current_pos)
-        
-        # Check if current positions form a Christmas tree
+
         if is_christmas_tree_pattern(current_positions, WIDTH, HEIGHT):
             return time
-    
-    return -1  # If no pattern found
+
+    return -1
 
 
 def solution() -> int:
