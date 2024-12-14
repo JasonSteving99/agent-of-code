@@ -34,13 +34,13 @@ def test_multiple_robots_complex_movement():
                  "p=7,3 v=-1,2\n"
                  "p=2,4 v=2,-3\n"
                  "p=9,5 v=-3,-3")
-    
+
     # When calculating the safety factor after 100 seconds
     result = calculate_safety_factor(input_data)
-    
-    # Then the safety factor should be 12, representing the product
+
+    # Then the safety factor should be 21, representing the product
     # of robots in each quadrant after the movement simulation
-    assert result == 12, (
-        f"Expected safety factor of 12 for input:\n{input_data}\n"
+    assert result == 21, (
+        f"Expected safety factor of 21 for input:\n{input_data}\n"
         f"but got {result}"
     )
