@@ -24,25 +24,16 @@ def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, heig
         robot_grid[(x, y)] += 1
 
     # Expected relative positions for a basic Christmas tree shape
-    # Assuming the tree should have:
-    # - A star/top point
-    # - 2-3 levels of increasing width
-    # - A trunk
     tree_pattern = {
-        # Star/top
-        (0, -2),
-        # Top level
-        (-1, -1), (0, -1), (1, -1),
-        # Middle level
-        (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0),
-        # Bottom level
-        (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1),
-        # Trunk
-        (0, 2), (0, 3)
+        (0, -2),   # Top
+        (-1, -1), (0, -1), (1, -1), # Level 1
+        (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0),   # Level 2
+        (-1, 1), (0, 1), (1, 1),   # Level 3
+        (0,2), # Trunk
+        (0,3) # Base
     }
 
-    required_matches = len(tree_pattern) * 0.8  # Allow for some imperfection
-    
+
     # Iterate through all possible center points
     for cx in range(width):
         for cy in range(height):
@@ -52,7 +43,7 @@ def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, heig
                 check_y = (cy + rel_y) % height
                 if robot_grid[(check_x, check_y)] > 0:
                     matches += 1
-            if matches >= required_matches:
+            if matches == len(tree_pattern):
                 return True
     return False
 
