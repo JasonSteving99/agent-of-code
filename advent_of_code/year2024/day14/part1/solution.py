@@ -71,8 +71,9 @@ def calculate_safety_factor(input_data: str) -> int:
     
     # Calculate safety factor (multiply non-zero quadrant counts)
     safety_factor = 1
-    for count in quadrant_counts[1:]:  # Skip index 0
-        safety_factor *= count
+    non_zero_counts = [count for count in quadrant_counts[1:] if count > 0]
+    for count in non_zero_counts:
+         safety_factor *= count
     
     return safety_factor
 
