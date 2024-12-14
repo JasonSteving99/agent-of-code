@@ -112,9 +112,9 @@ def solve_for_machine(a_move: Tuple[int, int], b_move: Tuple[int, int],
     return None
 
 
-def calculate_min_tokens_part2() -> int:
+def calculate_min_tokens_part2(input_data: list[str]) -> int:
     """Read from stdin and solve the problem."""
-    machines = parse_input(sys.stdin.read())
+    machines = parse_input('\n'.join(input_data))
     total_tokens = 0
     prizes_possible = False
     
@@ -129,3 +129,7 @@ def calculate_min_tokens_part2() -> int:
             total_tokens += tokens
     
     return total_tokens if prizes_possible else 0
+
+def solution() -> int:
+    input_data = sys.stdin.readlines()
+    return calculate_min_tokens_part2(input_data)
