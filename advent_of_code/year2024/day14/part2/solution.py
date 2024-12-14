@@ -2,7 +2,6 @@
 from typing import List, Tuple, Dict
 import sys
 from collections import defaultdict
-import math
 
 
 def parse_input(input_str: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
@@ -37,40 +36,30 @@ def calculate_position(
 def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if robots form a Christmas tree pattern."""
     if not positions:
-      return False
-
-    min_x = min(x for x, _ in positions)
-    max_x = max(x for x, _ in positions)
-    min_y = min(y for _, y in positions)
-    max_y = max(y for _, y in positions)
-    
-    if max_x - min_x < 5 or max_y - min_y < 7:
-      return False
-
-    avg_y = sum(y for _, y in positions) / len(positions)
-    density_lower = sum(1 for _, y in positions if y > avg_y) / (max_y - avg_y) if (max_y - avg_y) > 0 else 0
-    density_upper = sum(1 for _, y in positions if y < avg_y) / (avg_y - min_y) if (avg_y - min_y) > 0 else 0
-
-    if density_lower <= density_upper and density_lower > 0 and density_upper > 0:
         return False
-    
+
     levels = defaultdict(list)
     for x, y in positions:
-      levels[y].append(x)
-    
-    sorted_levels = sorted(levels.items())
-    if len(sorted_levels) < 4:
-        return False
-    
-    prev_range = float('inf')
-    for y, x_coords in sorted_levels:
-        if len(x_coords) > 0:
-            current_range = max(x_coords) - min(x_coords)
-            if current_range > prev_range:
-                return False
-            prev_range = current_range
-            
+        levels[y].append(x)
 
+    # Find center level (smallest x-range)
+    min_range = float('inf')
+    center_level = -1
+    for y, x_coords in levels.items():
+        if x_coords:
+            current_range = max(x_coords) - min(x_coords)
+            if current_range < min_range:
+                min_range = current_range
+                center_level = y
+
+    if center_level == -1:
+        return False
+
+    # Check for general increase in range as we move away from center
+    for y, x_coords in levels.items():
+        if x_coords:
+            if abs(y-center_level) > 2 and max(x_coords) - min(x_coords) < min_range + 3: # Tolerance added
+                return False
     return True
 
 def find_earliest_christmas_tree(input_str: str) -> int:
