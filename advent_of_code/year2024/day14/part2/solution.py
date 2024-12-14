@@ -20,31 +20,21 @@ def get_positions_at_time(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 
 def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if the robots form a Christmas tree pattern."""
-    # Christmas tree pattern characteristics:
-    # 1. Should have a star/point at the top
-    # 2. Should be roughly triangular in shape
-    # 3. Should have a trunk at the bottom
-    
-    # Convert positions to a grid for easier pattern matching
+    if not positions:
+      return False
+
     grid = [[0] * width for _ in range(height)]
     for x, y in positions:
         grid[y][x] = 1
-    
-    # Find the topmost robot (star)
+
     min_y = min(y for _, y in positions)
     top_points = [(x, y) for x, y in positions if y == min_y]
     if len(top_points) != 1:  # Should have exactly one point at top
         return False
-    
-    # Count robots in each row
+    top_x = top_points[0][0] 
+
     row_counts = [sum(1 for x, y in positions if y == row) for row in range(height)]
-    
-    # Looking for a pattern like:
-    # First row (star): 1 robot
-    # Next few rows: gradually increasing number of robots
-    # Bottom (trunk): 1-2 robots
-    
-    # Check basic tree shape properties
+
     star_y = min_y
     trunk_found = False
     max_width = 0
@@ -57,19 +47,18 @@ def is_christmas_tree(positions: Set[Tuple[int, int]], width: int, height: int) 
         if count > max_width:
             max_width = count
             max_width_y = y
+            
         # Found potential trunk
         if count <= 2 and y > max_width_y and max_width >= 3:
-            trunk_found = True
-            break
-    
-    # Verify tree characteristics:
-    # 1. Has a single star
-    # 2. Has a body that's wider than the top
-    # 3. Has a trunk
-    # 4. The overall shape is roughly triangular
-    if (row_counts[min_y] == 1 and 
-        max_width >= 3 and 
-        trunk_found and 
+            trunk_points = [(x,y) for x,y in positions if y == y ]
+            trunk_x_values = [x for x,y in trunk_points]
+            if len(trunk_x_values) > 0 and all(abs(x - top_x) <= 1 for x in trunk_x_values):
+                trunk_found = True
+                break
+
+    if (row_counts[min_y] == 1 and
+        max_width >= 3 and
+        trunk_found and
         max_width_y > star_y):
         return True
         
@@ -84,8 +73,6 @@ def find_christmas_tree_time(input_data: str) -> int:
     width = 101
     height = 103
     
-    # Due to the periodic nature of the movement and the modulo operation,
-    # we can limit our search to a reasonable range
     for time in range(1000):  # reasonable upper limit
         positions = get_positions_at_time(robots, width, height, time)
         if is_christmas_tree(positions, width, height):
