@@ -18,34 +18,49 @@ def get_position_after_time(pos: Tuple[int, int], vel: Tuple[int, int],
 
 def looks_like_christmas_tree(positions: List[Tuple[int, int]], width: int, height: int) -> bool:
     """Check if the robots form a Christmas tree pattern."""
-    # Convert positions to a grid-like structure
+    if not positions:
+        return False
+
     robot_grid = defaultdict(int)
     for x, y in positions:
         robot_grid[(x, y)] += 1
 
-    # Expected relative positions for a basic Christmas tree shape
-    tree_pattern = {
-        (0, -2),   # Top
-        (-1, -1), (0, -1), (1, -1), # Level 1
-        (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0),   # Level 2
-        (-1, 1), (0, 1), (1, 1),   # Level 3
-        (0,2), # Trunk
-        (0,3) # Base
-    }
+    min_x = min(x for x, _ in positions)
+    max_x = max(x for x, _ in positions)
+    min_y = min(y for _, y in positions)
+    max_y = max(y for _, y in positions)
+    
+    if max_x - min_x < 4 or max_y - min_y < 4:
+        return False
 
+    center_x = (min_x + max_x) // 2
+    center_y = (min_y + max_y) // 2
+    
+    # Check for triangular structure (top to bottom)
+    tree_points = 0
+    for y_offset in range(max_y - min_y + 1):
+        row_count = 0
+        for x_offset in range(max_x - min_x + 1):
+          check_x = (min_x + x_offset) % width
+          check_y = (min_y + y_offset) % height
+          if robot_grid[(check_x, check_y)] > 0:
+              row_count += 1
+        if row_count > 0:
+          tree_points +=1
+    if tree_points < 4:
+        return False
+        
+    # Check if there are more points near the base of the tree (trunk part and bottom level)
+    base_points_count = 0
+    for x_offset in [-1, 0, 1]:
+      for y_offset in [0, 1]:
+          check_x = (center_x+x_offset) % width
+          check_y = (max_y-y_offset) % height
+          if robot_grid[(check_x, check_y)] >0:
+              base_points_count +=1
 
-    # Iterate through all possible center points
-    for cx in range(width):
-        for cy in range(height):
-            matches = 0
-            for rel_x, rel_y in tree_pattern:
-                check_x = (cx + rel_x) % width
-                check_y = (cy + rel_y) % height
-                if robot_grid[(check_x, check_y)] > 0:
-                    matches += 1
-            if matches == len(tree_pattern):
-                return True
-    return False
+    return base_points_count >= 2
+    
 
 def find_christmas_tree_time(input_data: str) -> int:
     # Parse input
