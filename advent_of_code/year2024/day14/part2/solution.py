@@ -31,32 +31,30 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
         for _ in range(count):
             occupied.add(pos)
     
-    # Get bounds of the occupied positions
     if not occupied:
         return False
-    
+
     levels = defaultdict(set)
     for x, y in occupied:
         levels[y].add(x)
-    
-    # Sort levels from top to bottom
+
     sorted_levels = sorted(levels.items(), key=lambda x: x[0])
     
-    if len(sorted_levels) < 3:  # Need minimum height for a tree
+    if len(sorted_levels) < 3:
         return False
-    
-    # Check for single point or line at the top (star)
-    if len(sorted_levels[0][1]) > 2:  # Star should be small at top level
+        
+    if len(sorted_levels[0][1]) > 1:
       return False
     
-    # Check for at least two points on second level
-    if len(sorted_levels[1][1]) < 2:
-        return False
+    if len(sorted_levels[1][1]) < 2: #second level should be at least 2
+      return False
 
-    # Check for at least two points in the bottom level (trunk)
     if len(sorted_levels[-1][1]) < 2:
-        return False
-    
+      return False #trunk should have at least 2
+
+    for i in range(1, len(sorted_levels)-1):
+      if len(sorted_levels[i][1]) < len(sorted_levels[i-1][1]):
+          return False
     return True
 
 
