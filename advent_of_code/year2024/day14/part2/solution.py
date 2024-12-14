@@ -1,4 +1,4 @@
-from typing import List, Tuple, Set
+from typing import List, Tuple
 import sys
 
 def parse_input(line: str) -> Tuple[Tuple[int, int], Tuple[int, int]]:
@@ -26,8 +26,27 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
     max_y = max(y for _, y in positions)
 
     if max_x - min_x > width // 2 or max_y - min_y > height // 2:
-        return False
+      return False
+
+    # Calculate centroid
+    sum_x = sum(x for x, _ in positions)
+    sum_y = sum(y for _, y in positions)
+    centroid_x = sum_x / len(positions)
+    centroid_y = sum_y / len(positions)
     
+    # Check for symmetry around vertical line passing through centroid
+    symmetric_count = 0
+    for x, y in positions:
+        mirrored_x = 2 * centroid_x - x
+        for x2, y2 in positions:
+            if abs(x2 - mirrored_x) < 1e-6 and abs(y - y2) < 1e-6:
+                symmetric_count += 1
+                break
+
+    if symmetric_count < len(positions) * 0.6:
+      return False
+
+    # Check for triangular shape
     points_by_row = {}
     for x, y in positions:
         if y not in points_by_row:
@@ -36,15 +55,13 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
     
     sorted_rows = sorted(points_by_row.keys())
 
-    if not sorted_rows:
-        return False
-    
+    if len(sorted_rows) < 3:
+      return False
+
     for i in range(len(sorted_rows) - 1):
       if points_by_row[sorted_rows[i]] < points_by_row[sorted_rows[i+1]]:
         return False
     
-    if len(sorted_rows) < 3: # minimal tree needs a base and some levels
-        return False
 
     return True
 
