@@ -60,25 +60,21 @@ def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
 def find_solution(a: int, b: int, c: int) -> Optional[Tuple[int, int]]:
     """
     Solves the Diophantine equation: ax + by = c
-    Returns a solution (x, y) if it exists, None otherwise
+    Returns a non-negative solution (x, y) if it exists, None otherwise
     """
-    # Find GCD and coefficients
     d, x0, y0 = extended_gcd(a, b)
-    
-    # Check if solution exists
     if c % d != 0:
         return None
+    x0 *= c // d
+    y0 *= c // d
     
-    # Calculate particular solution
-    x0 = x0 * (c // d)
-    y0 = y0 * (c // d)
-    
-    # Find solution with smallest non-negative values
-    k = -x0 * d // b
-    x = x0 + k * (b // d)
-    y = y0 - k * (a // d)
-    
-    return (x, y)
+    # Iterate to find non-negative solutions
+    for k in range(-1000, 1000):
+        x = x0 + k * (b // d)
+        y = y0 - k * (a // d)
+        if x >= 0 and y >= 0:
+            return (x, y)
+    return None
 
 
 def solve_for_machine(a_move: Tuple[int, int], b_move: Tuple[int, int], 
