@@ -33,33 +33,42 @@ def simulate_step(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 
 
 def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int, height: int) -> bool:
-    """Check if the robots form a Christmas tree pattern."""
+    """Check if the robots form a more general tree-like shape."""
+    if not positions:
+        return False
+
+    x_coords = [pos[0] for pos in positions]
+    y_coords = [pos[1] for pos in positions]
+    
+    min_x, max_x = min(x_coords), max(x_coords)
+    min_y, max_y = min(y_coords), max(y_coords)
+    
+    bbox_width = max_x - min_x
+    bbox_height = max_y - min_y
+
+    # Check bounding box is somewhat elongated vertically
+    if bbox_height < 10 or bbox_width > bbox_height: 
+       return False
+    
+    # Count positions near the center for a tree-like distribution
     mid_x = width // 2
-    center_line_count = sum(1 for (x, y), count in positions.items() if x == mid_x)
+    mid_y = (min_y + max_y) // 2 #approx center for given y range
+
+    center_points = 0
+    for x, y in positions:
+        if abs(x- mid_x) < bbox_width//3 and abs(y-mid_y) < bbox_height//2:
+            center_points += 1
     
-    # Check if we have a vertical line in the center
-    if center_line_count < 3:
+    # Ensure a reasonable cluster of points near center
+    if center_points < 4: 
         return False
-    
-    # Count robots in triangular pattern around center
-    left_side = 0
-    right_side = 0
-    
-    for (x, y), count in positions.items():
-        dist_from_center = abs(x - mid_x)
-        if dist_from_center < 10:  # reasonable distance for tree width
-            if x < mid_x:
-                left_side += count
-            elif x > mid_x:
-                right_side += count
-    
-    # Check if sides are roughly symmetrical
-    if abs(left_side - right_side) > 2:
-        return False
-    
-    # Check if we have enough robots to form a tree
+
+    # Check we have enough robots to form a tree
     total_robots = sum(positions.values())
-    return total_robots >= 10  # reasonable minimum for a tree pattern
+    if total_robots < 8:
+       return False
+    
+    return True
 
 
 def find_christmas_tree_time(input_str: str) -> int:
