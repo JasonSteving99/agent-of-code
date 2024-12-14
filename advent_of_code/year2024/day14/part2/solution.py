@@ -40,15 +40,6 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
     min_y = min(y for _, y in occupied)
     max_y = max(y for _, y in occupied)
     
-    # The tree should be roughly centered in the grid
-    center_x = width // 2
-    if abs(min_x + max_x - width) > width // 4:  # Tree not centered enough
-        return False
-    
-    # Check for general tree shape:
-    # 1. Single point at top (star)
-    # 2. Triangular shape widening towards bottom
-    # 3. Small rectangle at bottom (trunk)
     
     levels = defaultdict(set)
     for x, y in occupied:
@@ -57,27 +48,26 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
     # Sort levels from top to bottom
     sorted_levels = sorted(levels.items(), key=lambda x: x[0])
     
-    if len(sorted_levels) < 5:  # Need minimum height for a tree
+    if len(sorted_levels) < 3:  # Need minimum height for a tree
         return False
+        
+    #Check if any level is empty
+    for _, level_points in sorted_levels:
+        if not level_points:
+            return False
     
     # Check for single star at top
     if len(sorted_levels[0][1]) != 1:
         return False
     
     # Check for widening pattern in middle (tree shape)
-    middle_section = sorted_levels[1:-1]
+    middle_section = sorted_levels[1:]
     prev_width = 0
     for _, level_points in middle_section:
-        curr_width = max(level_points) - min(level_points)
-        if curr_width <= prev_width:
+        curr_width = max(level_points) - min(level_points) if level_points else 0
+        if curr_width <= prev_width and prev_width != 0:
             return False
         prev_width = curr_width
-    
-    # Check for narrow trunk at bottom
-    trunk_points = sorted_levels[-1][1]
-    trunk_width = max(trunk_points) - min(trunk_points)
-    if trunk_width > 3:  # Trunk should be narrow
-        return False
     
     return True
 
