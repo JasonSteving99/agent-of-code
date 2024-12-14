@@ -55,24 +55,18 @@ def is_christmas_tree_pattern(positions: List[Tuple[int, int]], width: int, heig
     if center_level == -1:
       return False
 
-    # Calculate average density near the center
-    center_density = 0
-    count = 0
-    for y in range(max(0, center_level - 1), min(height, center_level + 2)):
-      center_density += len(levels[y])
-      count += 1
-    if count > 0:
-      center_density /= count
-    else:
-      return False # Handle the edge case where count is 0
+    # Calculate average density at exact center
+    center_density = len(levels.get(center_level, []))
 
     # Check if overall distribution is consistent with a tree shape
     for y in range(height):
-        if abs(y - center_level) > 2:
-            density = len(levels[y]) / (abs(y - center_level) + 1) if (abs(y - center_level) + 1) > 0 else 0
-            if density > center_density * 0.75:
-                return False # Too many points far from the center, not a good tree
+        distance = abs(y - center_level)
+        if distance > 0:
+            density = len(levels.get(y, []))
+            if density > center_density / (distance * 2) if (distance * 2) > 0 else float('inf'):
+                return False
     return True
+
 
 def find_earliest_christmas_tree(input_str: str) -> int:
     """Find the earliest time when robots form a Christmas tree pattern."""
