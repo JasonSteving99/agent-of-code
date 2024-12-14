@@ -32,6 +32,28 @@ def simulate_step(robots: List[Tuple[Tuple[int, int], Tuple[int, int]]],
     return positions
 
 
+def _is_valid_tree_pattern(row_lengths: List[int]) -> bool:
+    """Helper function to check for tree pattern using row lengths."""
+    if len(row_lengths) < 4:
+        return False
+
+    max_row_length = max(row_lengths)
+    center_index = row_lengths.index(max_row_length)
+
+    if max_row_length < 3:
+        return False
+
+    for i in range(center_index):
+        if row_lengths[i] != row_lengths[i + 1] + 1 or row_lengths[i] <= 0:
+          return False
+
+    for i in range(center_index, len(row_lengths) - 1):
+      if row_lengths[i + 1] != row_lengths[i] - 1 or row_lengths[i+1] <= 0:
+        return False
+
+    return True
+
+
 def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int, height: int) -> bool:
     """Check if the robots form a Christmas tree pattern based on row lengths."""
     if not positions:
@@ -48,24 +70,7 @@ def is_christmas_tree_pattern(positions: Dict[Tuple[int, int], int], width: int,
 
     sorted_rows = sorted(rows.items())
     row_lengths = [length for _, length in sorted_rows]
-    
-    # Find the center row (longest one)
-    max_row_length = max(row_lengths)
-    center_index = row_lengths.index(max_row_length)
-    
-    if max_row_length < 3:
-        return False
-    
-    # Check for decreasing lengths symmetrically from center
-    for i in range(center_index):
-        if row_lengths[i] > row_lengths[i + 1] + 2 or row_lengths[i] <= 0:
-          return False
-          
-    for i in range(center_index, len(row_lengths) - 1):
-      if row_lengths[i+1] > row_lengths[i] + 2 or row_lengths[i+1] <= 0:
-        return False
-        
-    return True
+    return _is_valid_tree_pattern(row_lengths)
 
 
 def find_christmas_tree_time(input_str: str) -> int:
