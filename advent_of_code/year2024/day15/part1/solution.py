@@ -61,7 +61,7 @@ def calculate_final_gps_sum(input_str: str) -> int:
     parts = input_str.strip().split('\n\n')
     grid = [list(line) for line in parts[0].strip().split('\n')]
     moves = ''.join(parts[1].strip().split('\n'))
-    moves = moves.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+    moves = moves.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '')
 
     # Find initial positions
     robot_pos, boxes = find_robot_and_boxes(grid)
