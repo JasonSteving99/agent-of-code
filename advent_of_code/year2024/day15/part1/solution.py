@@ -70,11 +70,11 @@ def calculate_final_gps_sum(warehouse_input: str) -> int:
             warehouse_map[robot_pos[0]][robot_pos[1]] = '.'
             warehouse_map[new_robot_pos[0]][new_robot_pos[1]] = '@'
             robot_pos = new_robot_pos
+
         else:
             # Move robot
             warehouse_map[robot_pos[0]][robot_pos[1]] = '.'
             warehouse_map[new_robot_pos[0]][new_robot_pos[1]] = '@'
-
             robot_pos = new_robot_pos
     
     # Calculate GPS sum
