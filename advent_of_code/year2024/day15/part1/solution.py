@@ -36,19 +36,19 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
     # Helper function to check if movement is valid
     def can_move(pos: Tuple[int, int], delta: Tuple[int, int], curr_grid: List[List[str]]) -> bool:
         next_pos = (pos[0] + delta[0], pos[1] + delta[1])
-
-        if curr_grid[next_pos[0]][next_pos[1]] == 'O':
-            box_next = (next_pos[0] + delta[0], next_pos[1] + delta[1])
-            if not (0 <= box_next[0] < rows and 0 <= box_next[1] < cols):
-                return False
-            if curr_grid[box_next[0]][box_next[1]] in ['#', 'O']:
-                return False
+        
+        if 0 <= next_pos[0] < rows and 0 <= next_pos[1] < cols:
+            if curr_grid[next_pos[0]][next_pos[1]] == 'O':
+                box_next = (next_pos[0] + delta[0], next_pos[1] + delta[1])
+                if 0 <= box_next[0] < rows and 0 <= box_next[1] < cols: 
+                    if curr_grid[box_next[0]][box_next[1]] in ['#', 'O']:
+                        return False
+                else:
+                    return False 
+            elif curr_grid[next_pos[0]][next_pos[1]] == '#':
+                return False  
         else:
-            if not (0 <= next_pos[0] < rows and 0 <= next_pos[1] < cols):
-                return False
-            if curr_grid[next_pos[0]][next_pos[1]] == '#':
-                return False
-
+            return False  
         return True
 
     # Process movements
