@@ -1,68 +1,105 @@
+"""Implementation for solving the warehouse robot movement puzzle"""
 from typing import List, Set, Tuple
-import sys
+import re
 
 def parse_input(input_str: str) -> Tuple[List[List[str]], str]:
+    """Parse the input string into warehouse layout and movement instructions"""
     parts = input_str.strip().split('\n\n')
-    warehouse_map = [list(line) for line in parts[0].splitlines()]
-    moves = ''.join(parts[1].strip().split('\n'))
-    return warehouse_map, moves
+    layout = [list(line) for line in parts[0].splitlines()]
+    movements = ''.join(parts[1].split())
+    return layout, movements
 
-def get_robot_position(warehouse: List[List[str]]) -> Tuple[int, int]:
-    for i, row in enumerate(warehouse):
+def find_robot(layout: List[List[str]]) -> Tuple[int, int]:
+    """Find the initial position of the robot"""
+    for i, row in enumerate(layout):
         for j, cell in enumerate(row):
             if cell == '@':
                 return i, j
-    return -1, -1  # Should never happen given valid input
+    raise ValueError("Robot not found in layout")
 
-def try_move(warehouse: List[List[str]], robot_pos: Tuple[int, int], 
-             direction: str) -> Tuple[bool, Tuple[int, int]]:
-    ri, rj = robot_pos
-    di = -1 if direction == '^' else 1 if direction == 'v' else 0
-    dj = -1 if direction == '<' else 1 if direction == '>' else 0
-    new_ri, new_rj = ri + di, rj + dj
+def move_possible(layout: List[List[str]], from_pos: Tuple[int, int], 
+                 to_pos: Tuple[int, int], box_pos: Tuple[int, int] = None) -> bool:
+    """Check if a move is possible"""
+    rows, cols = len(layout), len(layout[0])
     
-    # Check if move would hit wall
-    if warehouse[new_ri][new_rj] == '#':
-        return False, robot_pos
+    # Check if destination is within bounds
+    if not (0 <= to_pos[0] < rows and 0 <= to_pos[1] < cols):
+        return False
     
-    # If empty space, robot can move
-    if warehouse[new_ri][new_rj] == '.':
-        warehouse[ri][rj] = '.'
-        warehouse[new_ri][new_rj] = '@'
-        return True, (new_ri, new_rj)
-    
-    # If box, check if box can be pushed
-    if warehouse[new_ri][new_rj] == 'O':
-        box_new_ri, box_new_rj = new_ri + di, new_rj + dj
-        if warehouse[box_new_ri][box_new_rj] == '.':
-            warehouse[ri][rj] = '.'
-            warehouse[new_ri][new_rj] = '@'
-            warehouse[box_new_ri][box_new_rj] = 'O'
-            return True, (new_ri, new_rj)
-    
-    return False, robot_pos
+    # Check if destination is a wall
+    if layout[to_pos[0]][to_pos[1]] == '#':
+        return False
+        
+    # If moving a box, check if destination is clear
+    if box_pos and (layout[to_pos[0]][to_pos[1]] in ['O', '#']):
+        return False
+        
+    return True
 
-def calculate_gps_coordinates(warehouse: List[List[str]]) -> int:
-    total = 0
-    for i, row in enumerate(warehouse):
+def get_box_coordinates(layout: List[List[str]]) -> Set[Tuple[int, int]]:
+    """Get coordinates of all boxes"""
+    boxes = set()
+    for i, row in enumerate(layout):
         for j, cell in enumerate(row):
             if cell == 'O':
-                total += (100 * i + j)
-    return total
+                boxes.add((i, j))
+    return boxes
 
-def calculate_final_box_gps_sum(input_data: str) -> int:
+def calculate_gps_sum(boxes: Set[Tuple[int, int]]) -> int:
+    """Calculate the sum of GPS coordinates for all boxes"""
+    return sum(100 * row + col for row, col in boxes)
+
+def calculate_final_gps_sum(input_str: str) -> int:
+    """
+    Calculate the sum of GPS coordinates of all boxes after robot movement
+    
+    Args:
+        input_str: String containing warehouse layout and movement instructions
+    
+    Returns:
+        int: Sum of GPS coordinates of all boxes after movement
+    """
     # Parse input
-    warehouse, moves = parse_input(input_data)
+    layout, movements = parse_input(input_str)
     
-    # Get initial robot position
-    robot_pos = get_robot_position(warehouse)
+    # Get initial robot position and box positions
+    robot_pos = find_robot(layout)
     
-    # Execute all moves
-    for move in moves:
-        robot_pos = try_move(warehouse, robot_pos, move)[1]
+    # Direction vectors for movement
+    directions = {
+        '^': (-1, 0),
+        'v': (1, 0),
+        '<': (0, -1),
+        '>': (0, 1)
+    }
     
-    # Calculate final GPS sum
-    return calculate_gps_coordinates(warehouse)
-
-def solution() -> int:
-    return calculate_final_box_gps_sum(sys.stdin.read())
+    # Process each movement
+    curr_pos = robot_pos
+    layout[curr_pos[0]][curr_pos[1]] = '.'  # Clear initial robot position
+    
+    for move in movements:
+        dx, dy = directions[move]
+        new_pos = (curr_pos[0] + dx, curr_pos[1] + dy)
+        
+        # Check if movement is possible
+        if not move_possible(layout, curr_pos, new_pos):
+            continue
+            
+        # If there's a box in the way
+        if layout[new_pos[0]][new_pos[1]] == 'O':
+            box_new_pos = (new_pos[0] + dx, new_pos[1] + dy)
+            
+            # Check if box can be pushed
+            if not move_possible(layout, new_pos, box_new_pos, box_new_pos):
+                continue
+                
+            # Move box
+            layout[new_pos[0]][new_pos[1]] = '.'
+            layout[box_new_pos[0]][box_new_pos[1]] = 'O'
+        
+        # Move robot
+        curr_pos = new_pos
+    
+    # Get final box positions and calculate GPS sum
+    boxes = get_box_coordinates(layout)
+    return calculate_gps_sum(boxes)
