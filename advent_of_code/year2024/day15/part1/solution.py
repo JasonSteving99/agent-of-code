@@ -1,6 +1,7 @@
 """Solution for calculating GPS coordinates sum after robot movements."""
 from typing import List, Tuple, Set
 import sys
+import html
 
 def find_robot_and_boxes(grid: List[str]) -> Tuple[Tuple[int, int], Set[Tuple[int, int]]]:
     """Find starting positions of robot and boxes."""
@@ -60,6 +61,7 @@ def calculate_final_gps_sum(input_str: str) -> int:
     parts = input_str.strip().split('\n\n')
     grid = [list(line) for line in parts[0].strip().split('\n')]
     moves = ''.join(parts[1].strip().split('\n'))
+    moves = html.unescape(moves)
     
     # Find initial positions
     robot_pos, boxes = find_robot_and_boxes(grid)
