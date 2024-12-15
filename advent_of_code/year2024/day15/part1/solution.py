@@ -40,8 +40,8 @@ def try_move(grid: List[List[str]], robot_pos: Tuple[int, int],
     
     # If empty space, can move
     if grid[new_r][new_c] == '.':
-        grid[r][c] = '.'
         grid[new_r][new_c] = '@'
+        grid[r][c] = '.'
         return (new_r, new_c)
     
     # If box, try to push it
