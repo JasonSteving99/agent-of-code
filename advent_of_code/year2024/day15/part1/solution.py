@@ -99,7 +99,7 @@ def calculate_final_gps_sum(input_str: str) -> int:
             layout[box_new_pos[0]][box_new_pos[1]] = 'O'
 
         # Move robot
-        curr_pos = new_pos
+        curr_pos = new_pos  # Robot moves to the new position
 
     # Get final box positions and calculate GPS sum
     boxes = get_box_coordinates(layout)
