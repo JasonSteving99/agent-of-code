@@ -72,9 +72,9 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
                 curr_pos = next_pos
             else:
                 grid[next_pos[0]][next_pos[1]] = '@'
-                
+                curr_pos = next_pos
+
             grid[curr_pos[0]][curr_pos[1]] = '.'
-            curr_pos = next_pos
 
     # Calculate GPS coordinates sum
     gps_sum = 0
