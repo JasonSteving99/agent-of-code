@@ -34,23 +34,21 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
             break
 
     # Helper function to check if movement is valid
-    def can_move(pos: Tuple[int, int], delta: Tuple[int, int], 
-                curr_grid: List[List[str]]) -> bool:
+    def can_move(pos: Tuple[int, int], delta: Tuple[int, int], curr_grid: List[List[str]]) -> bool:
         next_pos = (pos[0] + delta[0], pos[1] + delta[1])
-        
-        # Check wall collision
-        if next_pos[0] < 0 or next_pos[0] >= rows or next_pos[1] < 0 or next_pos[1] >= cols:
-            return False
-        if curr_grid[next_pos[0]][next_pos[1]] == '#':
-            return False
-            
-        # If next position has box, check if box can be pushed
+
         if curr_grid[next_pos[0]][next_pos[1]] == 'O':
             box_next = (next_pos[0] + delta[0], next_pos[1] + delta[1])
-            if (box_next[0] < 0 or box_next[0] >= rows or
-                box_next[1] < 0 or box_next[1] >= cols or
-                curr_grid[box_next[0]][box_next[1]] in ['#', 'O']):
+            if not (0 <= box_next[0] < rows and 0 <= box_next[1] < cols):
                 return False
+            if curr_grid[box_next[0]][box_next[1]] in ['#', 'O']:
+                return False
+        else:
+            if not (0 <= next_pos[0] < rows and 0 <= next_pos[1] < cols):
+                return False
+            if curr_grid[next_pos[0]][next_pos[1]] == '#':
+                return False
+
         return True
 
     # Process movements
@@ -86,3 +84,15 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
                 gps_sum += (100 * i + j)
 
     return gps_sum
+
+def solution() -> int:
+    input_lines = []
+    while True:
+        try:
+            line = input()
+            input_lines.append(line)
+        except EOFError:
+            break
+    input_str = "\n".join(input_lines)
+    result = calculate_final_box_gps_sum(input_str)
+    return result
