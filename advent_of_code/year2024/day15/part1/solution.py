@@ -1,12 +1,13 @@
 """Implementation for solving the warehouse robot movement puzzle"""
 from typing import List, Set, Tuple
 import re
+from html import unescape
 
 def parse_input(input_str: str) -> Tuple[List[List[str]], str]:
     """Parse the input string into warehouse layout and movement instructions"""
     parts = input_str.strip().split('\n\n')
     layout = [list(line) for line in parts[0].splitlines()]
-    movements = ''.join(parts[1].split())
+    movements = ''.join(unescape(parts[1]).split())
     return layout, movements
 
 def find_robot(layout: List[List[str]]) -> Tuple[int, int]:
