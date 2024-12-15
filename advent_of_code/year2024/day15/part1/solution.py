@@ -53,7 +53,8 @@ def try_move(grid: List[List[str]], robot_pos: Tuple[int, int],
         # Push box and move robot
         grid[box_new_r][box_new_c] = 'O'
         grid[new_r][new_c] = '@'
-        grid[r][c] = '.'
+        if grid[r][c] != 'O':
+           grid[r][c] = '.'
         return (new_r, new_c)
     
     return None
