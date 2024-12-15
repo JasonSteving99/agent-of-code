@@ -48,7 +48,7 @@ def try_move(grid: List[List[str]], robot_pos: Tuple[int, int],
     if grid[new_r][new_c] == 'O':
         box_new_r, box_new_c = new_r + dy, new_c + dx
         # Can't push if wall or another box
-        if grid[box_new_r][box_new_c] in '#O':
+        if grid[box_new_r][box_new_c] == '#' or grid[box_new_r][box_new_c] == 'O':
             return None
         # Push box and move robot
         grid[box_new_r][box_new_c] = 'O'
