@@ -69,6 +69,7 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
                 box_next = (next_pos[0] + delta[0], next_pos[1] + delta[1])
                 grid[box_next[0]][box_next[1]] = 'O'
                 grid[next_pos[0]][next_pos[1]] = '@'
+                curr_pos = next_pos
             else:
                 grid[next_pos[0]][next_pos[1]] = '@'
                 
