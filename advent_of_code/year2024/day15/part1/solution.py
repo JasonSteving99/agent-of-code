@@ -64,11 +64,11 @@ def calculate_final_gps_sum(warehouse_input: str) -> int:
             if (warehouse_map[box_new_pos[0]][box_new_pos[1]] == '#' or 
                 warehouse_map[box_new_pos[0]][box_new_pos[1]] == 'O'):
                 continue
-                
-            # Move box and update robot position
+            
+            # Move box and robot
             warehouse_map[box_new_pos[0]][box_new_pos[1]] = 'O'
-            warehouse_map[new_robot_pos[0]][new_robot_pos[1]] = '@'
             warehouse_map[robot_pos[0]][robot_pos[1]] = '.'
+            warehouse_map[new_robot_pos[0]][new_robot_pos[1]] = '@'
             robot_pos = new_robot_pos
 
         else:
@@ -76,7 +76,7 @@ def calculate_final_gps_sum(warehouse_input: str) -> int:
             warehouse_map[robot_pos[0]][robot_pos[1]] = '.'
             warehouse_map[new_robot_pos[0]][new_robot_pos[1]] = '@'
             robot_pos = new_robot_pos
-            
+    
     # Calculate GPS sum
     gps_sum = 0
     for i in range(len(warehouse_map)):
