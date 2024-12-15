@@ -63,7 +63,7 @@ def calculate_final_gps_sum(input_str: str) -> int:
     # Parse input
     layout, movements = parse_input(input_str)
 
-    # Get initial robot position and box positions
+    # Get initial robot position
     robot_pos = find_robot(layout)
 
     # Direction vectors for movement
@@ -82,24 +82,15 @@ def calculate_final_gps_sum(input_str: str) -> int:
         dx, dy = directions[move]
         new_pos = (curr_pos[0] + dx, curr_pos[1] + dy)
 
-        # Check if movement is possible
-        if not move_possible(layout, curr_pos, new_pos):
-            continue
-
-        # If there's a box in the way
-        if layout[new_pos[0]][new_pos[1]] == 'O':
-            box_new_pos = (new_pos[0] + dx, new_pos[1] + dy)
-
-            # Check if box can be pushed
-            if not move_possible(layout, new_pos, box_new_pos, box_new_pos):
-                continue
-
-            # Move box
-            layout[new_pos[0]][new_pos[1]] = '.'
-            layout[box_new_pos[0]][box_new_pos[1]] = 'O'
-
-        # Move robot
-        curr_pos = new_pos  # Robot moves to the new position
+        if move_possible(layout, curr_pos, new_pos):
+            if layout[new_pos[0]][new_pos[1]] == 'O':
+                box_new_pos = (new_pos[0] + dx, new_pos[1] + dy)
+                if move_possible(layout, new_pos, box_new_pos, box_new_pos):
+                    layout[new_pos[0]][new_pos[1]] = '.'
+                    layout[box_new_pos[0]][box_new_pos[1]] = 'O'
+                    curr_pos = new_pos
+            else:
+                curr_pos = new_pos
 
     # Get final box positions and calculate GPS sum
     boxes = get_box_coordinates(layout)
