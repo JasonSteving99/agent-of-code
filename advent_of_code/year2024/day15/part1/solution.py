@@ -1,80 +1,87 @@
-"""Solution for calculating GPS coordinates sum after robot movements."""
-from typing import List, Tuple, Set
+```python
+from typing import List, Set, Tuple
 import sys
-import html
 
-def find_robot_and_boxes(grid: List[str]) -> Tuple[Tuple[int, int], Set[Tuple[int, int]]]:
-    """Find starting positions of robot and boxes."""
+
+def calculate_final_box_gps_sum(input_str: str) -> int:
+    """Calculate the sum of GPS coordinates of all boxes after robot movement."""
+    # Parse the input
+    lines = input_str.strip().split('\n')
+    
+    # Find the empty line separating map from moves
+    separator_idx = lines.index('')
+    map_lines = lines[:separator_idx]
+    moves = ''.join(lines[separator_idx + 1:]).strip()
+    
+    # Initialize game state
+    height = len(map_lines)
+    width = len(map_lines[0])
+    boxes: Set[Tuple[int, int]] = set()
     robot_pos = None
-    boxes = set()
-    for i, row in enumerate(grid):
-        for j, cell in enumerate(row):
-            if cell == '@':
-                robot_pos = (i, j)
-            elif cell == 'O':
+
+    # Parse initial state
+    for i, line in enumerate(map_lines):
+        for j, char in enumerate(line):
+            if char == 'O':
                 boxes.add((i, j))
-    return robot_pos, boxes
+            elif char == '@':
+                robot_pos = [i, j]
 
-def can_move(grid: List[str], 
-             pos: Tuple[int, int], 
-             boxes: Set[Tuple[int, int]], 
-             new_pos: Tuple[int, int], 
-             box_new_pos: Tuple[int, int] = None) -> bool:
-    """Check if movement is possible."""
-    if grid[new_pos[0]][new_pos[1]] == '#':
-        return False
-    if new_pos in boxes:
-        if box_new_pos is None:
-            return False
-        if grid[box_new_pos[0]][box_new_pos[1]] == '#' or box_new_pos in boxes:
-            return False
-    return True
+    # Movement directions
+    directions = {
+        '^': (-1, 0),
+        'v': (1, 0),
+        '<': (0, -1),
+        '>': (0, 1)
+    }
 
-def move_robot(direction: str, 
-               robot_pos: Tuple[int, int], 
-               boxes: Set[Tuple[int, int]], 
-               grid: List[str]) -> Tuple[Tuple[int, int], Set[Tuple[int, int]]]:
-    """Move robot in given direction."""
-    moves = {'^': (-1, 0), 'v': (1, 0), '<': (0, -1), '>': (0, 1)}
-    dx, dy = moves[direction]
-    new_pos = (robot_pos[0] + dx, robot_pos[1] + dy)
-    
-    if new_pos in boxes:
-        box_new_pos = (new_pos[0] + dx, new_pos[1] + dy)
-        if can_move(grid, robot_pos, boxes, new_pos, box_new_pos):
-            boxes.remove(new_pos)
-            boxes.add(box_new_pos)
-            return new_pos, boxes
-        return robot_pos, boxes
-    
-    if can_move(grid, robot_pos, boxes, new_pos):
-        return new_pos, boxes
-    return robot_pos, boxes
-
-def calculate_gps_sum(boxes: Set[Tuple[int, int]]) -> int:
-    """Calculate sum of GPS coordinates for all boxes."""
-    return sum(100 * row + col for row, col in boxes)
-
-def calculate_final_gps_sum(input_str: str) -> int:
-    """Calculate the final sum of GPS coordinates after robot movements."""
-    # Parse input
-    parts = input_str.strip().split('\n\n')
-    grid = [list(line) for line in parts[0].strip().split('\n')]
-    moves = ''.join(parts[1].strip().split('\n'))
-    moves = moves.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '')
-
-    # Find initial positions
-    robot_pos, boxes = find_robot_and_boxes(grid)
-    
-    # Process movements
+    # Process each move
     for move in moves:
-        robot_pos, boxes = move_robot(move, robot_pos, boxes, grid)
-    
-    return calculate_gps_sum(boxes)
+        if move not in directions:
+            continue
+            
+        dy, dx = directions[move]
+        new_pos = [robot_pos[0] + dy, robot_pos[1] + dx]
+        
+        # Check if new position is within bounds and not a wall
+        if (0 <= new_pos[0] < height and 
+            0 <= new_pos[1] < width and 
+            map_lines[new_pos[0]][new_pos[1]] != '#'):
+            
+            # Check if there's a box in the way
+            if (new_pos[0], new_pos[1]) in boxes:
+                box_new_pos = (new_pos[0] + dy, new_pos[1] + dx)
+                
+                # Check if box can be pushed
+                if (0 <= box_new_pos[0] < height and 
+                    0 <= box_new_pos[1] < width and 
+                    map_lines[box_new_pos[0]][box_new_pos[1]] != '#' and 
+                    box_new_pos not in boxes):
+                    
+                    # Move the box
+                    boxes.remove((new_pos[0], new_pos[1]))
+                    boxes.add(box_new_pos)
+                    # Move the robot
+                    robot_pos = new_pos
+            else:
+                # Move the robot
+                robot_pos = new_pos
+
+    # Calculate GPS sum
+    total = 0
+    for box in boxes:
+        gps = box[0] * 100 + box[1]
+        total += gps
+
+    return total
+
 
 def solution() -> int:
     """Read from stdin and return solution."""
-    return calculate_final_gps_sum(sys.stdin.read())
+    input_data = sys.stdin.read()
+    return calculate_final_box_gps_sum(input_data)
+
 
 if __name__ == "__main__":
     print(solution())
+```
