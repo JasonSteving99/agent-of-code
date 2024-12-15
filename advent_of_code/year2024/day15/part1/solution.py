@@ -54,14 +54,17 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
                 # Check if box can be pushed
                 if (0 <= box_new_pos[0] < height and 
                     0 <= box_new_pos[1] < width and 
-                    map_lines[box_new_pos[0]][box_new_pos[1]] != '#' and 
-                    box_new_pos not in boxes):
+                    map_lines[box_new_pos[0]][box_new_pos[1]] != '#' and
+                     box_new_pos not in boxes):
                     
                     # Move the box
                     boxes.remove((new_pos[0], new_pos[1]))
                     boxes.add(box_new_pos)
-                    # Move the robot
+                    
+                     # Move the robot
                     robot_pos = new_pos
+                   
+                
             else:
                 # Move the robot
                 robot_pos = new_pos
