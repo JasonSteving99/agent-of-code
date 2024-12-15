@@ -35,9 +35,9 @@ def try_move(warehouse: List[List[str]], robot_pos: Tuple[int, int],
     if warehouse[new_ri][new_rj] == 'O':
         box_new_ri, box_new_rj = new_ri + di, new_rj + dj
         if (warehouse[box_new_ri][box_new_rj] == '.'):
-            warehouse[box_new_ri][box_new_rj] = 'O'
-            warehouse[new_ri][new_rj] = '@'
             warehouse[ri][rj] = '.'
+            warehouse[new_ri][new_rj] = '@'
+            warehouse[box_new_ri][box_new_rj] = 'O'
             return True, (new_ri, new_rj)
     
     return False, robot_pos
