@@ -1,4 +1,3 @@
-```python
 from typing import List, Set, Tuple
 import sys
 
@@ -84,4 +83,3 @@ def solution() -> int:
 
 if __name__ == "__main__":
     print(solution())
-```
