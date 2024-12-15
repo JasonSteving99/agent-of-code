@@ -1,98 +1,68 @@
-"""Calculates the sum of the GPS coordinates of all boxes after robot movements."""
 from typing import List, Set, Tuple
+import sys
 
+def parse_input(input_str: str) -> Tuple[List[List[str]], str]:
+    parts = input_str.strip().split('\n\n')
+    warehouse_map = [list(line) for line in parts[0].splitlines()]
+    moves = ''.join(parts[1].strip().split('\n'))
+    return warehouse_map, moves
 
-def calculate_final_box_gps_sum(input_str: str) -> int:
+def get_robot_position(warehouse: List[List[str]]) -> Tuple[int, int]:
+    for i, row in enumerate(warehouse):
+        for j, cell in enumerate(row):
+            if cell == '@':
+                return i, j
+    return -1, -1  # Should never happen given valid input
+
+def try_move(warehouse: List[List[str]], robot_pos: Tuple[int, int], 
+             direction: str) -> Tuple[bool, Tuple[int, int]]:
+    ri, rj = robot_pos
+    di = -1 if direction == '^' else 1 if direction == 'v' else 0
+    dj = -1 if direction == '<' else 1 if direction == '>' else 0
+    new_ri, new_rj = ri + di, rj + dj
+    
+    # Check if move would hit wall
+    if warehouse[new_ri][new_rj] == '#':
+        return False, robot_pos
+    
+    # If empty space, robot can move
+    if warehouse[new_ri][new_rj] == '.':
+        warehouse[ri][rj] = '.'
+        warehouse[new_ri][new_rj] = '@'
+        return True, (new_ri, new_rj)
+    
+    # If box, check if box can be pushed
+    if warehouse[new_ri][new_rj] == 'O':
+        box_new_ri, box_new_rj = new_ri + di, new_rj + dj
+        if (warehouse[box_new_ri][box_new_rj] == '.'):
+            warehouse[box_new_ri][box_new_rj] = 'O'
+            warehouse[new_ri][new_rj] = '@'
+            warehouse[ri][rj] = '.'
+            return True, (new_ri, new_rj)
+    
+    return False, robot_pos
+
+def calculate_gps_coordinates(warehouse: List[List[str]]) -> int:
+    total = 0
+    for i, row in enumerate(warehouse):
+        for j, cell in enumerate(row):
+            if cell == 'O':
+                total += (100 * i + j)
+    return total
+
+def calculate_final_box_gps_sum(input_data: str) -> int:
     # Parse input
-    lines = input_str.strip().split('\n')
-
-    # Find where grid ends and movements begin
-    grid: List[str] = []
-    moves = ""
-    parsing_grid = True
-    for line in lines:
-        if parsing_grid:
-            if line and all(c in "#.O@" for c in line):
-                grid.append(line)
-            elif not line:
-                parsing_grid = False
-        else:
-            moves += line.strip()
-
-    # Convert grid to list for easier manipulation
-    grid = [list(row) for row in grid]
-    rows, cols = len(grid), len(grid[0])
-
-    # Find robot position
-    robot_pos = None
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == '@':
-                robot_pos = (i, j)
-                break
-        if robot_pos:
-            break
-
-    # Helper function to check if movement is valid
-    def can_move(pos: Tuple[int, int], delta: Tuple[int, int], curr_grid: List[List[str]]) -> bool:
-        next_pos = (pos[0] + delta[0], pos[1] + delta[1])
-        
-        if 0 <= next_pos[0] < rows and 0 <= next_pos[1] < cols:
-            if curr_grid[next_pos[0]][next_pos[1]] == 'O':
-                box_next = (next_pos[0] + delta[0], next_pos[1] + delta[1])
-                if not (0 <= box_next[0] < rows and 0 <= box_next[1] < cols):
-                    return False
-                if curr_grid[box_next[0]][box_next[1]] in ['#', 'O']:
-                    return False
-            elif curr_grid[next_pos[0]][next_pos[1]] == '#':
-                return False
-        else:
-            return False
-        return True
-
-    # Process movements
-    curr_pos = robot_pos
-    direction_map = {
-        '^': (-1, 0),
-        'v': (1, 0),
-        '<': (0, -1),
-        '>': (0, 1)
-    }
-
+    warehouse, moves = parse_input(input_data)
+    
+    # Get initial robot position
+    robot_pos = get_robot_position(warehouse)
+    
+    # Execute all moves
     for move in moves:
-        delta = direction_map[move]
-        if can_move(curr_pos, delta, grid):
-            next_pos = (curr_pos[0] + delta[0], curr_pos[1] + delta[1])
-            
-            # If moving into a box, push it
-            if grid[next_pos[0]][next_pos[1]] == 'O':
-                box_next = (next_pos[0] + delta[0], next_pos[1] + delta[1])
-                grid[box_next[0]][box_next[1]] = 'O'
-                grid[next_pos[0]][next_pos[1]] = '@'
-                curr_pos = next_pos
-            else:
-                grid[next_pos[0]][next_pos[1]] = '@'
-                curr_pos = next_pos
-
-            grid[curr_pos[0]][curr_pos[1]] = '.'
-
-    # Calculate GPS coordinates sum
-    gps_sum = 0
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == 'O':
-                gps_sum += (100 * i + j)
-
-    return gps_sum
+        robot_pos = try_move(warehouse, robot_pos, move)[1]
+    
+    # Calculate final GPS sum
+    return calculate_gps_coordinates(warehouse)
 
 def solution() -> int:
-    input_lines = []
-    while True:
-        try:
-            line = input()
-            input_lines.append(line)
-        except EOFError:
-            break
-    input_str = "\n".join(input_lines)
-    result = calculate_final_box_gps_sum(input_str)
-    return result
+    return calculate_final_box_gps_sum(sys.stdin.read())
