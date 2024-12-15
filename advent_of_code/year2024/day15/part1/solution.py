@@ -88,7 +88,7 @@ def calculate_final_gps_sum(input_str: str) -> int:
                 if move_possible(layout, new_pos, box_new_pos, box_new_pos):
                     layout[new_pos[0]][new_pos[1]] = '.'
                     layout[box_new_pos[0]][box_new_pos[1]] = 'O'
-                    curr_pos = new_pos
+                    curr_pos = new_pos # Robot's position is updated after pushing the box
             else:
                 curr_pos = new_pos
 
