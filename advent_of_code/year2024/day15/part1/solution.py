@@ -58,22 +58,11 @@ def calculate_final_box_gps_sum(input_str: str) -> int:
                      box_new_pos not in boxes):
                     
                     # Move the box
-                    old_box_pos = (new_pos[0], new_pos[1])
-                    boxes.remove(old_box_pos)
+                    boxes.remove((new_pos[0], new_pos[1]))
                     boxes.add(box_new_pos)
-
-                    # Update the map_lines
-                    row_str = list(map_lines[old_box_pos[0]])
-                    row_str[old_box_pos[1]] = '.'
-                    map_lines[old_box_pos[0]] = "".join(row_str)
-
-                    row_str = list(map_lines[box_new_pos[0]])
-                    row_str[box_new_pos[1]] = 'O'
-                    map_lines[box_new_pos[0]] = "".join(row_str)
-
+                    
                     # Move the robot
                     robot_pos = new_pos
-
 
             else:
                 # Move the robot
