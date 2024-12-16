@@ -1,22 +1,19 @@
 """
-Tests for the count_tiles_on_best_paths function which counts how many tiles
-(including S and E) are part of any best path in a reindeer maze, considering
-both movement cost (1 point) and turning cost (1000 points).
+Tests for the count_tiles_in_best_paths function.
 
-The tested function takes a maze string representation as input where:
-- 'S' represents the start position
-- 'E' represents the end position
-- '.' represents empty walkable tiles
-- '#' represents walls
-
-The function should return an integer representing the count of tiles that
-are part of any best (lowest-cost) path from S to E.
+This test suite covers:
+- Counting the number of tiles that are part of any best (lowest cost) path for a reindeer
+  moving through a maze, where:
+  * Moving forward one step costs 1
+  * Rotating 90 degrees costs 1000 
+  * Valid moves are to empty spaces ('.'), start ('S'), or end ('E')
+  * Walls ('#') cannot be entered
+  * The output should count how many unique tiles are part of any optimal path
 """
 
-from solution import count_tiles_on_best_paths
+from solution import count_tiles_in_best_paths
 
-
-def test_small_maze_best_paths():
+def test_simple_maze_best_path_tiles():
     maze = (
         "###############\n"
         "#.......#....E#\n"
@@ -34,14 +31,13 @@ def test_small_maze_best_paths():
         "#S..#.....#...#\n"
         "###############"
     )
-    result = count_tiles_on_best_paths(maze)
+    result = count_tiles_in_best_paths(maze)
     assert result == 45, (
-        f"For the small maze, expected 45 tiles to be part of best paths, "
-        f"but got {result}. The maze was:\n{maze}"
+        f"Expected 45 tiles in best paths for simple maze, but got {result}.\n"
+        f"Input maze:\n{maze}"
     )
 
-
-def test_larger_maze_best_paths():
+def test_larger_maze_best_path_tiles():
     maze = (
         "#################\n"
         "#...#...#...#..E#\n"
@@ -61,8 +57,8 @@ def test_larger_maze_best_paths():
         "#S#.............#\n"
         "#################"
     )
-    result = count_tiles_on_best_paths(maze)
+    result = count_tiles_in_best_paths(maze)
     assert result == 64, (
-        f"For the larger maze, expected 64 tiles to be part of best paths, "
-        f"but got {result}. The maze was:\n{maze}"
+        f"Expected 64 tiles in best paths for larger maze, but got {result}.\n"
+        f"Input maze:\n{maze}"
     )

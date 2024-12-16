@@ -41,8 +41,7 @@ def get_turns(direction: Direction) -> List[Direction]:
     else:  # WEST
         return [Direction.SOUTH, Direction.NORTH]
 
-def find_lowest_cost_paths(maze_str: str) -> Tuple[int, List[Set[Tuple[int, int]]]]:
-    # Parse maze
+def find_best_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
     maze = maze_str.strip().split('\n')
     rows, cols = len(maze), len(maze[0])
     
@@ -55,37 +54,29 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, List[Set[Tuple[int, int]
             elif maze[i][j] == 'E':
                 end_pos = (i, j)
     
-    # Dijkstra's algorithm
+    # Priority queue entries are (cost, pos, direction, path)
     pq = [(0, start_pos, Direction.EAST, {start_pos})]
     visited = set()
     costs = defaultdict(lambda: float('inf'))
     costs[(start_pos, Direction.EAST)] = 0
-    
-    lowest_cost = float('inf')
-    best_paths: List[Set[Tuple[int, int]]] = []
+    best_cost = float('inf')
+    best_paths = set()
     
     while pq:
         cost, pos, direction, path = heappop(pq)
         
         if (pos, direction) in visited:
             continue
+        
+        if pos == end_pos:
+            if cost < best_cost:
+                best_cost = cost
+                best_paths = {frozenset(path)}
+            elif cost == best_cost:
+                best_paths.add(frozenset(path))
+            continue
             
         visited.add((pos, direction))
-        
-        # If we've reached the end
-        if pos == end_pos:
-             if cost < lowest_cost:
-                lowest_cost = cost
-                best_paths = [path.copy()]
-                best_paths[0].add(end_pos)
-             elif cost == lowest_cost:
-                 new_path = path.copy()
-                 new_path.add(end_pos)
-                 best_paths.append(new_path)
-             continue
-        
-        if cost > lowest_cost:
-             continue
         
         # Try moving forward
         next_pos = get_next_pos(pos, direction)
@@ -93,32 +84,33 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, List[Set[Tuple[int, int]
             0 <= next_pos[1] < cols and 
             maze[next_pos[0]][next_pos[1]] != '#'):
             new_cost = cost + get_step_cost()
-            if new_cost <= costs[(next_pos, direction)]:
+            if new_cost < costs[(next_pos, direction)]:
                 costs[(next_pos, direction)] = new_cost
-                new_path = path.copy()
-                new_path.add(next_pos)
+                new_path = path | {next_pos}
                 heappush(pq, (new_cost, next_pos, direction, new_path))
         
         # Try turning left or right
         for new_direction in get_turns(direction):
             new_cost = cost + get_turn_cost()
-            if new_cost <= costs[(pos, new_direction)]:
+            if new_cost < costs[(pos, new_direction)]:
                 costs[(pos, new_direction)] = new_cost
-                heappush(pq, (new_cost, pos, new_direction, path.copy()))
+                heappush(pq, (new_cost, pos, new_direction, path))
     
-    return lowest_cost, best_paths
-
-def count_tiles_on_best_paths(maze_str: str) -> int:
-    _, best_paths = find_lowest_cost_paths(maze_str)
-    unique_tiles = set()
+    # Combine all positions from all best paths
+    all_best_positions = set()
     for path in best_paths:
-        unique_tiles.update(path)
-    return len(unique_tiles)
+        all_best_positions.update(path)
+    
+    return best_cost, all_best_positions
+
+def count_tiles_in_best_paths(maze_str: str) -> int:
+    _, best_positions = find_best_paths(maze_str)
+    return len(best_positions)
 
 def solution() -> int:
     # Read input from stdin
     input_data = sys.stdin.read()
-    return count_tiles_on_best_paths(input_data)
+    return count_tiles_in_best_paths(input_data)
 
 if __name__ == "__main__":
     print(solution())
