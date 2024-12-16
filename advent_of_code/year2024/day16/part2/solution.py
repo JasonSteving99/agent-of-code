@@ -1,4 +1,4 @@
-from typing import List, Tuple, Set, Dict, Optional
+from typing import List, Tuple, Set, Dict
 import sys
 from enum import Enum, auto
 from heapq import heappush, heappop
@@ -31,6 +31,7 @@ def get_step_cost() -> int:
     return 1
 
 def get_turns(direction: Direction) -> List[Direction]:
+    # Returns left and right turns
     if direction == Direction.NORTH:
         return [Direction.WEST, Direction.EAST]
     elif direction == Direction.EAST:
@@ -40,10 +41,19 @@ def get_turns(direction: Direction) -> List[Direction]:
     else:  # WEST
         return [Direction.SOUTH, Direction.NORTH]
 
-def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> Tuple[int, Set[Tuple[int, int]]]:
+def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
+    # Parse maze
+    maze = maze_str.strip().split('\n')
     rows, cols = len(maze), len(maze[0])
-    optimal_paths: List[Set[Tuple[int,int]]] = []
-    min_cost = float('inf')
+    
+    # Find start and end positions
+    start_pos = end_pos = None
+    for i in range(rows):
+        for j in range(cols):
+            if maze[i][j] == 'S':
+                start_pos = (i, j)
+            elif maze[i][j] == 'E':
+                end_pos = (i, j)
     
     # Dijkstra's algorithm
     pq = [(0, start_pos, Direction.EAST, {start_pos})]
@@ -51,20 +61,27 @@ def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tup
     costs = defaultdict(lambda: float('inf'))
     costs[(start_pos, Direction.EAST)] = 0
     
+    lowest_cost = float('inf')
+    best_paths = set()
+    
     while pq:
         cost, pos, direction, path = heappop(pq)
         
-        if (pos, direction, cost) in visited:
+        if (pos, direction) in visited:
             continue
             
-        visited.add((pos, direction, cost))
+        visited.add((pos, direction))
         
+        # If we've reached the end
         if pos == end_pos:
-            if cost < min_cost:
-                min_cost = cost
-                optimal_paths = [path]
-            elif cost == min_cost:
-                optimal_paths.append(path)
+            if cost < lowest_cost:
+                lowest_cost = cost
+                best_paths = path.copy()
+            elif cost == lowest_cost:
+                best_paths.update(path)
+            continue
+            
+        if cost > lowest_cost:
             continue
         
         # Try moving forward
@@ -75,7 +92,8 @@ def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tup
             new_cost = cost + get_step_cost()
             if new_cost <= costs[(next_pos, direction)]:
                 costs[(next_pos, direction)] = new_cost
-                new_path = path | {next_pos}
+                new_path = path.copy()
+                new_path.add(next_pos)
                 heappush(pq, (new_cost, next_pos, direction, new_path))
         
         # Try turning left or right
@@ -83,37 +101,18 @@ def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tup
             new_cost = cost + get_turn_cost()
             if new_cost <= costs[(pos, new_direction)]:
                 costs[(pos, new_direction)] = new_cost
-                heappush(pq, (new_cost, pos, new_direction, path))
+                heappush(pq, (new_cost, pos, new_direction, path.copy()))
     
-    best_tiles: Set[Tuple[int, int]] = set()
-    for path in optimal_paths:
-        best_tiles.update(path)
-    
-    return min_cost, best_tiles
+    return lowest_cost, best_paths
 
-def count_best_path_tiles(maze_str: str) -> int:
-    # Parse maze
-    maze = maze_str.strip().split('\n')
-    
-    # Find start and end positions
-    start_pos = end_pos = None
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
-            if maze[i][j] == 'S':
-                start_pos = (i, j)
-            elif maze[i][j] == 'E':
-                end_pos = (i, j)
-    
-    if not (start_pos and end_pos):
-        return 0
-    
-    # Find all tiles that are part of optimal paths
-    _, best_tiles = find_optimal_paths(maze, start_pos, end_pos)
-    return len(best_tiles)
+def count_tiles_on_best_paths(maze_str: str) -> int:
+    _, best_paths = find_lowest_cost_paths(maze_str)
+    return len(best_paths)
 
 def solution() -> int:
+    # Read input from stdin
     input_data = sys.stdin.read()
-    return count_best_path_tiles(input_data)
+    return count_tiles_on_best_paths(input_data)
 
 if __name__ == "__main__":
     print(solution())
