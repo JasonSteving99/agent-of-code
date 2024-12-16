@@ -41,7 +41,7 @@ def get_turns(direction: Direction) -> List[Direction]:
     else:  # WEST
         return [Direction.SOUTH, Direction.NORTH]
 
-def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
+def find_lowest_cost_paths(maze_str: str) -> Tuple[int, List[Set[Tuple[int, int]]]]:
     # Parse maze
     maze = maze_str.strip().split('\n')
     rows, cols = len(maze), len(maze[0])
@@ -62,7 +62,7 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
     costs[(start_pos, Direction.EAST)] = 0
     
     lowest_cost = float('inf')
-    best_paths: Set[Tuple[int, int]] = set()
+    best_paths: List[Set[Tuple[int, int]]] = []
     
     while pq:
         cost, pos, direction, path = heappop(pq)
@@ -76,12 +76,12 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
         if pos == end_pos:
             if cost < lowest_cost:
                 lowest_cost = cost
-                best_paths = set(path)
-                best_paths.add(end_pos)
+                best_paths = [path.copy()]
+                best_paths[0].add(end_pos)
             elif cost == lowest_cost:
-               
-                best_paths.update(path)
-                best_paths.add(end_pos)
+                new_path = path.copy()
+                new_path.add(end_pos)
+                best_paths.append(new_path)
             continue
             
         if cost > lowest_cost:
@@ -110,7 +110,10 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
 
 def count_tiles_on_best_paths(maze_str: str) -> int:
     _, best_paths = find_lowest_cost_paths(maze_str)
-    return len(best_paths)
+    unique_tiles = set()
+    for path in best_paths:
+        unique_tiles.update(path)
+    return len(unique_tiles)
 
 def solution() -> int:
     # Read input from stdin
