@@ -54,10 +54,10 @@ def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tup
     while pq:
         cost, pos, direction, path = heappop(pq)
         
-        if (pos, direction) in visited:
+        if (pos, direction, cost) in visited:
             continue
             
-        visited.add((pos, direction))
+        visited.add((pos, direction, cost))
         
         if pos == end_pos:
             if cost < min_cost:
