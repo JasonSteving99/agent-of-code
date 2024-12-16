@@ -60,7 +60,7 @@ def find_best_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
     costs = defaultdict(lambda: float('inf'))
     costs[(start_pos, Direction.EAST)] = 0
     best_cost = float('inf')
-    best_paths = set()  # Step 0: Initialize best_paths as an empty set.
+    best_paths = set() # Step 0: Initialize best_paths as an empty set outside the while loop.
     
     while pq:
         cost, pos, direction, path = heappop(pq)
@@ -68,15 +68,15 @@ def find_best_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
         if (pos, direction) in visited:
             continue
         
+        visited.add((pos, direction))
+
         if pos == end_pos:
             if cost < best_cost:
                 best_cost = cost
                 best_paths = {frozenset(path)}
             elif cost == best_cost:
-                best_paths.add(frozenset(path)) # Step 1: Add paths with equal best_cost to best_paths set.
-            continue
-            
-        visited.add((pos, direction))
+                best_paths.add(frozenset(path)) # Step 1: If a new path to the end has the same cost as the best cost, add the new path to best_paths.
+            # Step 2: Remove the 'continue' statement after updating best_paths
         
         # Try moving forward
         next_pos = get_next_pos(pos, direction)
