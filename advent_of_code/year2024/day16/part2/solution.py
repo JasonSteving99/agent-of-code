@@ -60,7 +60,7 @@ def find_best_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
     costs = defaultdict(lambda: float('inf'))
     costs[(start_pos, Direction.EAST)] = 0
     best_cost = float('inf')
-    best_paths = set() # Step 0: Initialize best_paths as a set outside the loop.
+    best_paths = set()  # Step 0: Initialize best_paths set outside the while loop.
     
     while pq:
         cost, pos, direction, path = heappop(pq)
@@ -73,10 +73,10 @@ def find_best_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
         if pos == end_pos:
             if cost < best_cost:
                 best_cost = cost
-                best_paths = {frozenset(path)} # Step 1: If a new best path is found, update best_paths by clearing and adding the new path
+                best_paths = {frozenset(path)} # Step 1: Clear and add new best path to best_paths
             elif cost == best_cost:
-                best_paths.add(frozenset(path)) # Step 1:  or add to the set if the cost is equal.
-            # Step 2: Remove the "continue" statement after finding a best path to add its tiles.
+                best_paths.add(frozenset(path)) # Step 1: or add to it if costs are equal
+            # Step 2: Remove the 'continue' statement after finding a best path.
 
         
         # Try moving forward
@@ -97,7 +97,7 @@ def find_best_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
                 costs[(pos, new_direction)] = new_cost
                 heappush(pq, (new_cost, pos, new_direction, path))
 
-    all_best_positions = set() # Step 3: Update all_best_positions to iterate over each path in best_paths and add all locations.
+    all_best_positions = set() # Step 3: Update all_best_positions by iterating over all paths in best_paths.
     for path in best_paths:
         all_best_positions.update(path)
     
