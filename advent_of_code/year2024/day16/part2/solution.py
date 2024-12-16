@@ -74,18 +74,18 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, List[Set[Tuple[int, int]
         
         # If we've reached the end
         if pos == end_pos:
-            if cost < lowest_cost:
+             if cost < lowest_cost:
                 lowest_cost = cost
                 best_paths = [path.copy()]
                 best_paths[0].add(end_pos)
-            elif cost == lowest_cost:
-                new_path = path.copy()
-                new_path.add(end_pos)
-                best_paths.append(new_path)
-            continue
-            
+             elif cost == lowest_cost:
+                 new_path = path.copy()
+                 new_path.add(end_pos)
+                 best_paths.append(new_path)
+             continue
+        
         if cost > lowest_cost:
-            continue
+             continue
         
         # Try moving forward
         next_pos = get_next_pos(pos, direction)
