@@ -10,6 +10,9 @@ class Direction(Enum):
     SOUTH = auto()
     WEST = auto()
 
+    def __lt__(self, other):
+        return self.value < other.value
+
 def get_next_pos(pos: Tuple[int, int], direction: Direction) -> Tuple[int, int]:
     row, col = pos
     if direction == Direction.NORTH:
@@ -52,7 +55,7 @@ def calculate_lowest_maze_traversal_cost(maze_str: str) -> int:
             elif maze[i][j] == 'E':
                 end_pos = (i, j)
     
-    # Dijkstra's algorithm with state being (position, direction)
+    # Dijkstra's algorithm with state being (cost, pos, direction)
     # Priority queue entries are (cost, pos, direction)
     pq = [(0, start_pos, Direction.EAST)]
     visited = set()
