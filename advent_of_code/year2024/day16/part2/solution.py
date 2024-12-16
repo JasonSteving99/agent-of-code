@@ -76,9 +76,12 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
         if pos == end_pos:
             if cost < lowest_cost:
                 lowest_cost = cost
-                best_paths = path.copy()
+                best_paths = set(path)
+                best_paths.add(end_pos)
             elif cost == lowest_cost:
+               
                 best_paths.update(path)
+                best_paths.add(end_pos)
             continue
             
         if cost > lowest_cost:
