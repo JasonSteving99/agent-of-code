@@ -62,7 +62,7 @@ def find_lowest_cost_paths(maze_str: str) -> Tuple[int, Set[Tuple[int, int]]]:
     costs[(start_pos, Direction.EAST)] = 0
     
     lowest_cost = float('inf')
-    best_paths = set()
+    best_paths: Set[Tuple[int, int]] = set()
     
     while pq:
         cost, pos, direction, path = heappop(pq)
