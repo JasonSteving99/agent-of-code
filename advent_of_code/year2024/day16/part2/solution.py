@@ -42,7 +42,7 @@ def get_turns(direction: Direction) -> List[Direction]:
 
 def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> Tuple[int, Set[Tuple[int, int]]]:
     rows, cols = len(maze), len(maze[0])
-    best_tiles: Set[Tuple[int, int]] = set([start_pos, end_pos])
+    best_tiles: Set[Tuple[int, int]] = set()
     min_cost = float('inf')
     
     # Dijkstra's algorithm
