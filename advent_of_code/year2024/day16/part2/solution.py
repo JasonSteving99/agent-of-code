@@ -62,7 +62,7 @@ def find_optimal_paths(maze: List[str], start_pos: Tuple[int, int], end_pos: Tup
         if pos == end_pos:
             if cost < min_cost:
                 min_cost = cost
-                best_tiles = path.copy()
+                best_tiles = set(path)
             elif cost == min_cost:
                 best_tiles.update(path)
             continue
