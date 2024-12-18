@@ -25,6 +25,7 @@ async def main() -> None:
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,
         workflows=[SolveAoCProblemWorkflow, GenerateCelebratoryImageWorkflow],
         activities=[
+            activities.configure_llm_usage_logging_for_workflow,
             activities.extract_problem_part,
             activities.extract_examples,
             activities.get_examples_context,

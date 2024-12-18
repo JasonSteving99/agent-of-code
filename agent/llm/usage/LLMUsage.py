@@ -6,8 +6,8 @@ import duckdb
 import os
 from pathlib import Path
 from pydantic import BaseModel
-from result import Err, Result
-from typing import Callable, Any
+from result import Err, Ok, Result
+from typing import Awaitable, Callable, Literal, ParamSpec, TypeVar, cast
 from functools import wraps
 
 
@@ -34,9 +34,6 @@ def configure_llm_usage_logging(execution_name: str, log_dir: os.PathLike | None
             persisted anywhere for later analysis.
     """
     global _CONFIG
-    if _CONFIG:
-        raise Exception(f"Already configured logging!\n{_CONFIG}")
-
     if log_dir is None:
         _CONFIG = LLMUsageLoggingConfig(
             execution_name=execution_name,
@@ -127,25 +124,78 @@ class LLMError(BaseModel):
     msg: str
 
 
+class Model(enum.StrEnum):
+    DYNAMIC_MODEL_CHOICE = "**DYNAMIC_MODEL_CHOICE**"
+
+
 @dataclass
 class LLMUsage[T]:
     input_tokens: int
     output_tokens: int
     response: Result[T, LLMError]
 
+    def map[U](self, func: Callable[[T], U]) -> "LLMUsage[U]":
+        return LLMUsage[U](
+            input_tokens=self.input_tokens,
+            output_tokens=self.output_tokens,
+            response=(
+                Ok(func(self.response.unwrap()))
+                if self.response.is_ok()
+                else Err(self.response.unwrap_err())
+            ),
+        )
 
-def log_llm_usage(provider: str, model: str):
-    def decorator[T](func: Callable[..., LLMUsage[T]]) -> Callable[..., Result[T, LLMError]]:
+
+def _has_required_str_kwarg(argname: str, func: Callable) -> bool:
+    return argname in func.__annotations__ and (
+        func.__annotations__[argname] is str
+        or (
+            isinstance(func.__annotations__[argname], type)
+            and issubclass(func.__annotations__[argname], enum.StrEnum)
+        )
+    )
+
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def log_llm_usage(provider: str, model: str | Literal[Model.DYNAMIC_MODEL_CHOICE]):
+    def decorator(
+        func: Callable[P, Awaitable[LLMUsage[R]]],
+    ) -> Callable[P, Awaitable[Result[R, LLMError]]]:
+        if model == Model.DYNAMIC_MODEL_CHOICE and (
+            not _has_required_str_kwarg(argname="model", func=func)
+        ):
+            raise ValueError(
+                "If @log_llm_usage(..., model=LLMUsage.Model.DYNAMIC_MODEL_CHOICE), then the function must have a `model` argument of type str or subclass of enum.StrEnum."  # noqa: E501
+            )
+        if not _has_required_str_kwarg(argname="subtask_name", func=func):
+            raise ValueError(
+                "Functions wrapped with @log_llm_usage(...) must take a `subtask_name` argument of type str or subclass of enum.StrEnum."  # noqa: E501
+            )
+
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Result[T, LLMError]:
-            start_timestamp = datetime.now()
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> Result[R, LLMError]:
             if _CONFIG is None:
                 raise ValueError(
                     f"Must call {configure_llm_usage_logging.__name__}(...) to configure LLM usage tracking."  # noqa: E501
                 )
 
-            result = func(*args, **kwargs)
+            start_timestamp = datetime.now()
+            result = await func(*args, **kwargs)
             end_timestamp = datetime.now()
+
+            # If the model is dynamic, then we need to extract it from the arguments.
+            curr_model: str
+            match model:
+                case Model.DYNAMIC_MODEL_CHOICE:
+                    curr_model = cast(str, kwargs["model"])
+                case _:
+                    curr_model = model
+
+            # Get the subtask name.
+            subtask_name = cast(str, kwargs["subtask_name"])
 
             if _CONFIG.persisted_logs_config:
                 with duckdb.connect(_CONFIG.persisted_logs_config.log_file) as conn:
@@ -169,11 +219,11 @@ def log_llm_usage(provider: str, model: str):
                         (
                             _CONFIG.persisted_logs_config.execution_id,
                             _CONFIG.execution_name,
-                            func.__name__,
+                            subtask_name,
                             start_timestamp,
                             end_timestamp,
                             provider,
-                            model,
+                            curr_model,
                             result.input_tokens,
                             result.output_tokens,
                             (
@@ -192,10 +242,10 @@ def log_llm_usage(provider: str, model: str):
     return decorator
 
 
-if __name__ == "__main__":
+async def test() -> None:
     # TESTING
     @log_llm_usage(provider="OpenAI", model="gpt-3.5-turbo")
-    def foo() -> LLMUsage[str]:
+    async def foo(*, subtask_name: str) -> LLMUsage[str]:
         # Simulating LLM usage
         import random
         from time import sleep
@@ -211,12 +261,33 @@ if __name__ == "__main__":
             response=Err(LLMError(err_type=LLMError.ErrType.NO_RESPONSE, msg="No response.")),
         )
 
+    class TestModel(enum.StrEnum):
+        MODEL_A = "model-a"
+        MODEL_B = "model-b"
+
+    @log_llm_usage(provider="FAKE PROVIDER", model=Model.DYNAMIC_MODEL_CHOICE)
+    async def bar[ResType](
+        *, model: TestModel, subtask_name: str, res: ResType
+    ) -> LLMUsage[ResType]:
+        return LLMUsage(
+            input_tokens=50,
+            output_tokens=10,
+            response=Ok(res),
+        )
+
     # Configuring the logging.
     configure_llm_usage_logging(
         execution_name="MyTask",
         log_dir=Path("."),
     )
     # Calling the decorated function
-    foo()
-    result = foo()
+    await foo(subtask_name="foo")
+    result = await foo(subtask_name="foo")
+    await bar(model=TestModel.MODEL_A, subtask_name="bar", res=10)
     print(result)  # Outputs: This is a sample response
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(test())

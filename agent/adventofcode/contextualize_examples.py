@@ -55,18 +55,21 @@ Ignore all HTML tags and focus solely on the input/output data. Do not attempt t
  """ if solve_part_2 else ""}
 You MUST respond with the specified JSON format.
 """  # noqa: E501
-    return await prompt(
-        GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=system_prompt_text,
-        prompt=f"""
+    return (
+        await prompt(
+            model=GeminiModel.GEMINI_1_5_PRO,
+            subtask_name="contextualize-examples",
+            system_prompt=system_prompt_text,
+            prompt=f"""
 ### Problem HTML:
 {problem_html}
 
 ### Input/Output Examples:
 {examples.model_dump_json(indent=2)}
 """,
-        response_type=ExamplesContext,
-    )
+            response_type=ExamplesContext,
+        )
+    ).unwrap()
 
 
 @click.command()

@@ -21,6 +21,7 @@ with workflow.unsafe.imports_passed_through():
     from agent.temporal.activities import (
         AoCProblem,
         CommitChangesArgs,
+        ConfigureLLMUsageLoggingArgs,
         DebugUnitTestFailuresArgs,
         ExtractExamplesArgs,
         ExtractProblemPartArgs,
@@ -35,6 +36,7 @@ with workflow.unsafe.imports_passed_through():
         SubmitSolutionArgs,
         TestResults,
         commit_changes,
+        configure_llm_usage_logging_for_workflow,
         debug_unit_test_failures,
         extract_examples,
         extract_problem_part,
@@ -63,6 +65,7 @@ class SolveAoCProblemWorkflowArgs(BaseModel):
     year: int
     day: int
     solutions_dir: str
+    log_dir: str
     dry_run: bool
 
 
@@ -82,6 +85,17 @@ class SolveAoCProblemWorkflowResult(BaseModel):
 class SolveAoCProblemWorkflow:
     @workflow.run
     async def run(self, args: SolveAoCProblemWorkflowArgs) -> SolveAoCProblemWorkflowResult:
+        # Configure logging LLM usage statistics. Note that this technique only works if 100% of
+        # activities run on the same worker & thread.
+        await workflow.execute_activity(
+            configure_llm_usage_logging_for_workflow,
+            ConfigureLLMUsageLoggingArgs(year=args.year, day=args.day, log_dir=args.log_dir),
+            start_to_close_timeout=timedelta(seconds=15),
+            retry_policy=RetryPolicy(
+                maximum_attempts=1,
+            ),
+        )
+
         solve_aoc_part_1_problem_req = AoCProblem(year=args.year, day=args.day, part=1)
         problem_part = await self._scrape_problem_part(
             problem_req=solve_aoc_part_1_problem_req, solutions_dir=args.solutions_dir

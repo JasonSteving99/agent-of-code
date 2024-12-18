@@ -1,6 +1,7 @@
 import os
 
 import asyncclick as click
+import subprocess
 
 from agent import settings
 from agent.temporal.client import get_temporal_client
@@ -31,6 +32,11 @@ async def main(
             f"day{day}",
         )
     )
+    # Need to get the path to the dir where LLM usage logs should be written. For now, let's just
+    # place it at the root level of this repo.
+    llm_usage_log_dir = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], check=True, text=True, capture_output=True
+    ).stdout.strip()
 
     # Create a client.
     client = await get_temporal_client()
@@ -39,7 +45,11 @@ async def main(
     result = await client.execute_workflow(
         SolveAoCProblemWorkflow.run,
         SolveAoCProblemWorkflowArgs(
-            year=year, day=day, solutions_dir=aoc_solutions_dir, dry_run=dry_run
+            year=year,
+            day=day,
+            solutions_dir=aoc_solutions_dir,
+            log_dir=llm_usage_log_dir,
+            dry_run=dry_run,
         ),
         id=f"solve-aoc-problem-{year}-{day}",
         task_queue=settings.TEMPORAL_TASK_QUEUE_NAME,

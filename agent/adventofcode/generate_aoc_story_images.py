@@ -35,12 +35,15 @@ Return the information in the specified JSON format.
 
 
 async def extract_problem_story_summary(problem_html: str) -> ProblemStorySummary:
-    return await prompt(
-        model=GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=EXTRACT_PROBLEM_STORY_SUMMARY_PROMPT,
-        prompt=problem_html,
-        response_type=ProblemStorySummary,
-    )
+    return (
+        await prompt(
+            model=GeminiModel.GEMINI_1_5_PRO,
+            subtask_name="extract-problem-story-summary",
+            system_prompt=EXTRACT_PROBLEM_STORY_SUMMARY_PROMPT,
+            prompt=problem_html,
+            response_type=ProblemStorySummary,
+        )
+    ).unwrap()
 
 
 IMAGE_GENERATION_PROMPT_CREATION_META_PROMPT = """You are an experienced prompt engineer, that knows how to create effective prompts to guide an image generation model.
@@ -82,21 +85,28 @@ The image should be detailed, high-quality, and visually appealing.
 The image should be suitable for a Christmas-time, elf-themed graphic novel.
 """  # noqa: E501
 
-    formatted_image_generation_prompt = await text_prompt(
-        model=GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=IMAGE_GENERATION_PROMPT_CREATION_META_PROMPT,
-        prompt=image_generation_meta_prompt,
-    )
+    _META_IMAGE_GEN_PROMPT_CREATION_SUBTASK_NAME = "meta-image-generation-prompt-creation"
+    formatted_image_generation_prompt = (
+        await text_prompt(
+            model=GeminiModel.GEMINI_1_5_PRO,
+            subtask_name=_META_IMAGE_GEN_PROMPT_CREATION_SUBTASK_NAME,
+            system_prompt=IMAGE_GENERATION_PROMPT_CREATION_META_PROMPT,
+            prompt=image_generation_meta_prompt,
+        )
+    ).unwrap()
 
     # OpenAI's image generation model has an input limit of 1000 characters.
     MAX_ATTEMPTS = 3
     i = 0
     while i < MAX_ATTEMPTS and len(formatted_image_generation_prompt) >= 1000:
-        formatted_image_generation_prompt = await text_prompt(
-            model=GeminiModel.GEMINI_1_5_PRO,
-            system_prompt="You are an expert writer that's able to edit a text while maintaining its original meaning and descriptive power. You will be given text that was a bit too wordy, and you should rewrite it to be a bit shorter.",  # noqa: E501
-            prompt=image_generation_meta_prompt,
-        )
+        formatted_image_generation_prompt = (
+            await text_prompt(
+                model=GeminiModel.GEMINI_1_5_PRO,
+                subtask_name=_META_IMAGE_GEN_PROMPT_CREATION_SUBTASK_NAME,
+                system_prompt="You are an expert writer that's able to edit a text while maintaining its original meaning and descriptive power. You will be given text that was a bit too wordy, and you should rewrite it to be a bit shorter.",  # noqa: E501
+                prompt=image_generation_meta_prompt,
+            )
+        ).unwrap()
 
     if len(formatted_image_generation_prompt) >= 1000:
         raise ValueError("Failed to generate a prompt that is less than 1000 characters.")

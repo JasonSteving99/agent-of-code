@@ -1,3 +1,4 @@
+from pathlib import Path
 import aiohttp
 import os
 from pydantic import BaseModel
@@ -40,6 +41,20 @@ from agent.adventofcode.generate_code.GeneratedUnitTests import GeneratedUnitTes
 from agent.adventofcode.scrape_problems import fetch_input, scrape_aoc
 from agent.adventofcode.submit_solution import submit
 from agent.llm.openai.generate_image import download_image, generate_image_to_url
+from agent.llm.usage.LLMUsage import configure_llm_usage_logging
+
+
+class ConfigureLLMUsageLoggingArgs(BaseModel):
+    year: int
+    day: int
+    log_dir: str
+
+
+@activity.defn
+async def configure_llm_usage_logging_for_workflow(args: ConfigureLLMUsageLoggingArgs) -> None:
+    configure_llm_usage_logging(
+        execution_name=f"AgentOfCode-{args.year}-{args.day}", log_dir=Path(args.log_dir)
+    )
 
 
 class ExtractProblemPartArgs(BaseModel):

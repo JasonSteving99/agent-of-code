@@ -41,26 +41,32 @@ Extract ONLY the example inputs and outputs in the JSON format specified.
  """ if solve_part_2 else ""}
 IMPORTANT! You MUST return examples with a SINGLE input mapping to its SINGLE corresponding output.
 """  # noqa: E501
-    extracted_examples = await prompt(
-        GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=system_prompt_text,
-        prompt=problem_html,
-        response_type=AoCProblemExtractedExamples,
-    )
-
-    if len(extracted_examples.examples) == 0:
-        extracted_examples = await prompt(
-            GeminiModel.GEMINI_1_5_PRO,
+    extracted_examples = (
+        await prompt(
+            model=GeminiModel.GEMINI_1_5_PRO,
+            subtask_name="extract-examples",
             system_prompt=system_prompt_text,
-            prompt=[
-                UserMessage(msg=problem_html),
-                ModelMessage(msg=extracted_examples.model_dump()),
-                UserMessage(
-                    msg="You MUST extract examples! The examples for Part 2 may have been stated in Part 1, make sure you extract ALL applicable examples. If no examples are explicitly given for Part 2 specifically, just return the examples for Part 1."  # noqa: E501
-                ),
-            ],
+            prompt=problem_html,
             response_type=AoCProblemExtractedExamples,
         )
+    ).unwrap()
+
+    if len(extracted_examples.examples) == 0:
+        extracted_examples = (
+            await prompt(
+                model=GeminiModel.GEMINI_1_5_PRO,
+                subtask_name="extract-examples-retry",
+                system_prompt=system_prompt_text,
+                prompt=[
+                    UserMessage(msg=problem_html),
+                    ModelMessage(msg=extracted_examples.model_dump()),
+                    UserMessage(
+                        msg="You MUST extract examples! The examples for Part 2 may have been stated in Part 1, make sure you extract ALL applicable examples. If no examples are explicitly given for Part 2 specifically, just return the examples for Part 1."  # noqa: E501
+                    ),
+                ],
+                response_type=AoCProblemExtractedExamples,
+            )
+        ).unwrap()
         if len(extracted_examples.examples) == 0:
             raise ValueError(f"No examples extracted: {extracted_examples}")
 

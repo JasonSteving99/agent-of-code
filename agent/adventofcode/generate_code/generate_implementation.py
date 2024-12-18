@@ -97,13 +97,17 @@ async def generate_implementation(
     while True:
         attempts += 1
         if debugging_prompt:
-            generated_implementation = await gemini_prompt(
-                # GeminiModel.GEMINI_1_5_PRO,
-                GeminiModel.GEMINI_2_0_FLASH_EXP,
-                system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-                prompt=generate_implementation_prompt,
-                response_type=GeneratedImplementation,
-            )
+            generated_implementation = (
+                await gemini_prompt(
+                    # GeminiModel.GEMINI_1_5_PRO,
+                    model=GeminiModel.GEMINI_2_0_FLASH_EXP,
+                    subtask_name="generate-implementation",
+                    # GeminiModel.GEMINI_EXP_1206,
+                    system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+                    prompt=generate_implementation_prompt,
+                    response_type=GeneratedImplementation,
+                )
+            ).unwrap()
         else:
             assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
             generated_implementation = await anthropic_prompt(
@@ -116,9 +120,11 @@ async def generate_implementation(
         if _implementation_is_updated(generated_implementation, debugging_prompt):
             break
         elif attempts > MAX_RETRIES:
-            raise ValueError(
-                f"Failed to get LLM to generate a NEW implementation after {MAX_RETRIES} retries."
-            )
+            # TODO(steving) DROP THIS... but for now, allow a duplicated generation
+            # raise ValueError(
+            #     f"Failed to get LLM to generate a NEW implementation after {MAX_RETRIES} retries."
+            # )
+            break
 
     return GenerateImplementationOutput(
         prompt_history=[

@@ -62,12 +62,15 @@ IMPORTANT: Only generate unit tests for the given POSITIVE examples of valid inp
     # The initial prompt will use the more capable Clause Sonnet 3.5 model, but subsequent debugging
     # requests will use Gemini 1.5 Pro.
     if debugging_prompt:
-        generated_unit_tests = await gemini_prompt(
-            GeminiModel.GEMINI_1_5_PRO,
-            system_prompt=system_prompt_text,
-            prompt=generate_unit_tests_prompt,
-            response_type=GeneratedUnitTests,
-        )
+        generated_unit_tests = (
+            await gemini_prompt(
+                model=GeminiModel.GEMINI_1_5_PRO,
+                subtask_name="generate-unit-tests",
+                system_prompt=system_prompt_text,
+                prompt=generate_unit_tests_prompt,
+                response_type=GeneratedUnitTests,
+            )
+        ).unwrap()
     else:
         assert isinstance(generate_unit_tests_prompt[0], UserMessage), "Lazy coding"
         generated_unit_tests = await anthropic_prompt(

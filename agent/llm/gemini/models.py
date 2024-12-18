@@ -1,5 +1,7 @@
 from enum import StrEnum
 
+GEMINI_PROVIDER_NAME = "Google"
+
 
 class GeminiModel(StrEnum):
     GEMINI_2_0_FLASH_EXP = "gemini-2.0-flash-exp"

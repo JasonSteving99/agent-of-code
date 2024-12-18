@@ -62,12 +62,15 @@ IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just pri
     MAX_RETRIES = 3
     while True:
         attempts += 1
-        theorized_solution = await prompt(
-            GeminiModel.GEMINI_1_5_PRO,
-            system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
-            prompt=theorize_solution_prompt,
-            response_type=TheorizedSolution,
-        )
+        theorized_solution = (
+            await prompt(
+                model=GeminiModel.GEMINI_1_5_PRO,
+                subtask_name="theorize-solution",
+                system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
+                prompt=theorize_solution_prompt,
+                response_type=TheorizedSolution,
+            )
+        ).unwrap()
 
         if (
             theorized_solution.optional_theorized_unit_test_fix
@@ -108,10 +111,12 @@ async def get_refactoring_plan(
     generated_impl_src: GeneratedImplementation,
     theorized_implementation_fix: str,
 ) -> RefactoringPlan:
-    refactoring_plan = await prompt(
-        GeminiModel.GEMINI_1_5_PRO,
-        system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
-        prompt=f"""
+    refactoring_plan = (
+        await prompt(
+            model=GeminiModel.GEMINI_1_5_PRO,
+            subtask_name="get-refactoring-plan",
+            system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
+            prompt=f"""
 ### Coding Puzzle Summary:
 {examples_context.examples_context}
 
@@ -131,8 +136,9 @@ async def get_refactoring_plan(
 ### Theorized Bug Fix:
 {theorized_implementation_fix}
 """,  # noqa: E501
-        response_type=RefactoringPlan,
-    )
+            response_type=RefactoringPlan,
+        )
+    ).unwrap()
 
     # Ensure that the refactoring plan generates at least one actionable code change.
     if not refactoring_plan.plan:
