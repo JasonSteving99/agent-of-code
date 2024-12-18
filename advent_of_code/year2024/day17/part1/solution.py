@@ -25,20 +25,21 @@ def run_3bit_computer(program_str: str, init_a: int, init_b: int, init_c: int) -
     
     def get_combo_value(operand: int) -> int:
         """Get value for combo operand based on rules."""
-        if 0 <= operand <= 3:
-            return operand
-        elif operand == 4:
+        if operand == 4:
             return registers['A']
         elif operand == 5:
             return registers['B']
         elif operand == 6:
             return registers['C']
-        else:  # operand == 7
-            raise ValueError("Invalid combo operand 7")
+        else:  # operand == 0,1,2,3 are literal values and should not call this
+          raise ValueError(f"Invalid combo operand: {operand}")
+
     
     while ip < len(program):
         opcode = program[ip]
         operand = program[ip + 1] if ip + 1 < len(program) else 0
+
+        print(f"ip: {ip}, opcode: {opcode}, operand: {operand}, A: {registers['A']}, B: {registers['B']}, C: {registers['C']}")
         
         if opcode == 0:  # adv
             power = get_combo_value(operand)
