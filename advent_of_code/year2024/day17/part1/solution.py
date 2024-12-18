@@ -35,8 +35,8 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
             registers['B'] ^= operand
             ip += 2
         elif opcode == 2:  # bst
-             registers['B'] = get_combo_operand(operand) % 8
-             ip += 2
+            registers['B'] = get_combo_operand(operand) % 8
+            ip += 2
         elif opcode == 3:  # jnz
             if registers['A'] != 0:
                 ip = operand
@@ -59,10 +59,7 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
         else:
             raise ValueError(f"Invalid opcode: {opcode}")
 
-    if output_values:
-        return ','.join(map(str,output_values))
-    else:
-        return str(registers['B'])
+    return ','.join(map(str, output_values)) if output_values else str(registers['B'])
 
 
 def solution() -> str:
