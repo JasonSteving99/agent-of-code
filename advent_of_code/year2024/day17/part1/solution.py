@@ -60,7 +60,7 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
         else:
             raise ValueError(f"Invalid opcode: {opcode}")
     
-    return ','.join(str(x) for x in output_values)
+    return ','.join(str(x) for x in output_values) if output_values else str(registers['B'])
 
 
 def solution() -> str:
