@@ -2,7 +2,6 @@
 
 import sys
 from typing import List, Optional, Dict
-import io
 
 
 class VirtualMachine:
