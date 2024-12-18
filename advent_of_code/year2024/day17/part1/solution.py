@@ -1,17 +1,30 @@
-from typing import List, Optional
-import sys
+"""Solution for running a 3-bit computer simulator."""
+from typing import List
 
-
-def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_c: int) -> str:
-    # Parse program string into list of integers
-    program = [int(x) for x in program_str.split(',')]
+def run_3bit_computer(program_str: str, init_a: int, init_b: int, init_c: int) -> str:
+    """Run the 3-bit computer program with given initial register values.
     
-    # Initialize registers and instruction pointer
+    Args:
+        program_str: Comma-separated string of 3-bit numbers representing program instructions
+        init_a: Initial value for register A
+        init_b: Initial value for register B
+        init_c: Initial value for register C
+    
+    Returns:
+        A string of comma-separated values output by the program
+    """
+    # Convert program string to list of integers
+    program = [int(x) for x in program_str.strip().split(',')]
+    
+    # Initialize registers
     registers = {'A': init_a, 'B': init_b, 'C': init_c}
-    ip = 0
-    output_values: List[int] = []
     
-    def get_combo_operand(operand: int) -> int:
+    # Initialize instruction pointer and output list
+    ip = 0
+    outputs: List[int] = []
+    
+    def get_combo_value(operand: int) -> int:
+        """Get value for combo operand based on rules."""
         if 0 <= operand <= 3:
             return operand
         elif operand == 4:
@@ -20,22 +33,22 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
             return registers['B']
         elif operand == 6:
             return registers['C']
-        else:
-            raise ValueError(f"Invalid combo operand {operand}")
+        else:  # operand == 7
+            raise ValueError("Invalid combo operand 7")
     
     while ip < len(program):
         opcode = program[ip]
         operand = program[ip + 1] if ip + 1 < len(program) else 0
-
+        
         if opcode == 0:  # adv
-            divisor = 1 << get_combo_operand(operand)
-            registers['A'] = registers['A'] // divisor
+            power = get_combo_value(operand)
+            registers['A'] = registers['A'] // (2 ** power)
             ip += 2
         elif opcode == 1:  # bxl
             registers['B'] ^= operand
             ip += 2
         elif opcode == 2:  # bst
-            registers['B'] = get_combo_operand(operand) % 8
+            registers['B'] = get_combo_value(operand) % 8
             ip += 2
         elif opcode == 3:  # jnz
             if registers['A'] != 0:
@@ -46,32 +59,40 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
             registers['B'] ^= registers['C']
             ip += 2
         elif opcode == 5:  # out
-            output_values.append(get_combo_operand(operand) % 8)
+            outputs.append(get_combo_value(operand) % 8)
             ip += 2
         elif opcode == 6:  # bdv
-            divisor = 1 << get_combo_operand(operand)
-            registers['B'] = registers['A'] // divisor
+            power = get_combo_value(operand)
+            registers['B'] = registers['A'] // (2 ** power)
             ip += 2
         elif opcode == 7:  # cdv
-            divisor = 1 << get_combo_operand(operand)
-            registers['C'] = registers['A'] // divisor
+            power = get_combo_value(operand)
+            registers['C'] = registers['A'] // (2 ** power)
             ip += 2
         else:
             raise ValueError(f"Invalid opcode: {opcode}")
-
-    return ','.join(map(str, output_values)) if output_values else str(registers['B'])
-
+    
+    return ','.join(str(x) for x in outputs)
 
 def solution() -> str:
-    # Read input from stdin
-    lines = sys.stdin.readlines()
+    """Read input from stdin and return the result as a string."""
+    # Read and parse input
+    lines = []
+    while True:
+        try:
+            line = input().strip()
+            if line:
+                lines.append(line)
+        except EOFError:
+            break
     
-    # Parse register values
-    init_a = int(lines[0].strip().split(': ')[1])
-    init_b = int(lines[1].strip().split(': ')[1])
-    init_c = int(lines[2].strip().split(': ')[1])
+    # Parse initial register values
+    a = int(lines[0].split(': ')[1])
+    b = int(lines[1].split(': ')[1])
+    c = int(lines[2].split(': ')[1])
     
-    # Parse program
-    program = lines[4].strip()
+    # Get program string
+    program = lines[4]
     
-    return run_chronospatial_computer(program, init_a, init_b, init_c)
+    # Run program and return output
+    return run_3bit_computer(program, a, b, c)
