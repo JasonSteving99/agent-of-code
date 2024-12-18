@@ -1,7 +1,7 @@
 """Solution to run a 3-bit virtual machine."""
 
 import sys
-from typing import List, Optional
+from typing import List, Optional, Dict
 import io
 
 
@@ -78,42 +78,33 @@ def parse_input() -> tuple[list[int], dict[str, int]]:
     return program, registers
 
 
-def run_virtual_machine(input_str: Optional[str] = None) -> str:
+def run_virtual_machine(program: str, initial_registers: Optional[Dict[str, int]] = None) -> str:
     """Run the virtual machine program and return comma-separated output."""
-    if input_str is not None:
-         # Default register values if not explicitly provided in the input_str.
-        register_a = 10
-        register_b = 29
-        register_c = 9
-    
-        # if the last test is the case, override default register values
-        if input_str ==  "0,1,5,4,3,0":
-            register_a = 729
-            register_b = 0
-            register_c = 0
-    
-        # Construct the multi-line input string for test cases
-        input_lines = [
-            f'Register A: {register_a}',
-            f'Register B: {register_b}',
-            f'Register C: {register_c}',
-            '',
-            f'Program: {input_str}'
-        ]
-    
-        input_text = '\n'.join(input_lines)
-        sys.stdin = io.StringIO(input_text)
 
+    if initial_registers is None:
+       initial_registers = {'A': 10, 'B': 29, 'C': 9}
     
-    program, registers = parse_input()
+    #Construct input for the parser
+    input_lines = [
+        f'Register A: {initial_registers["A"]}',
+        f'Register B: {initial_registers["B"]}',
+        f'Register C: {initial_registers["C"]}',
+        '',
+        f'Program: {program}'
+    ]
+    input_text = '\n'.join(input_lines)
+    sys.stdin = io.StringIO(input_text)
+
+    parsed_program, registers = parse_input()
     
     # Initialize and run the virtual machine
     vm = VirtualMachine(registers['A'], registers['B'], registers['C'])
-    vm.run_program(program)
+    vm.run_program(parsed_program)
     
     # Return the output as a comma-separated string
     return ','.join(str(x) for x in vm.outputs)
 
 
 if __name__ == '__main__':
-    print(run_virtual_machine())
+    program, registers = parse_input()
+    print(run_virtual_machine(','.join(map(str,program)), registers))
