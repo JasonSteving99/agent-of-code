@@ -55,8 +55,23 @@ class VirtualMachine:
                                   program[self.instruction_pointer + 1])
 
 
-def parse_input() -> tuple[list[int], dict[str, int]]:
-    """Parse the input from stdin."""
+def run_virtual_machine(program_str: str, initial_registers: Optional[Dict[str, int]] = None) -> str:
+    """Run the virtual machine program and return comma-separated output."""
+
+    if initial_registers is None:
+       initial_registers = {'A': 10, 'B': 29, 'C': 9}
+    
+    program = [int(x) for x in program_str.split(',')]
+
+    # Initialize and run the virtual machine
+    vm = VirtualMachine(initial_registers['A'], initial_registers['B'], initial_registers['C'])
+    vm.run_program(program)
+    
+    # Return the output as a comma-separated string
+    return ','.join(str(x) for x in vm.outputs)
+
+
+if __name__ == '__main__':
     registers = {'A': 0, 'B': 0, 'C': 0}
     # Read register values
     for _ in range(3):
@@ -73,38 +88,5 @@ def parse_input() -> tuple[list[int], dict[str, int]]:
     program_line = sys.stdin.readline().strip()
     if program_line.startswith('Program: '):
         program_line = program_line[9:]  # Remove "Program: " prefix
-    
-    program = [int(x) for x in program_line.split(',')]
-    return program, registers
-
-
-def run_virtual_machine(program: str, initial_registers: Optional[Dict[str, int]] = None) -> str:
-    """Run the virtual machine program and return comma-separated output."""
-
-    if initial_registers is None:
-       initial_registers = {'A': 10, 'B': 29, 'C': 9}
-    
-    #Construct input for the parser
-    input_lines = [
-        f'Register A: {initial_registers["A"]}',
-        f'Register B: {initial_registers["B"]}',
-        f'Register C: {initial_registers["C"]}',
-        '',
-        f'Program: {program}'
-    ]
-    input_text = '\n'.join(input_lines)
-    sys.stdin = io.StringIO(input_text)
-
-    parsed_program, registers = parse_input()
-    
-    # Initialize and run the virtual machine
-    vm = VirtualMachine(registers['A'], registers['B'], registers['C'])
-    vm.run_program(parsed_program)
-    
-    # Return the output as a comma-separated string
-    return ','.join(str(x) for x in vm.outputs)
-
-
-if __name__ == '__main__':
-    program, registers = parse_input()
-    print(run_virtual_machine(','.join(map(str,program)), registers))
+    program_str = program_line
+    print(run_virtual_machine(program_str, registers))
