@@ -20,34 +20,33 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
             return registers['B']
         elif operand == 6:
             return registers['C']
-        else:  # operand == 7
-            raise ValueError("Invalid combo operand 7")
+        else:
+            raise ValueError(f"Invalid combo operand {operand}")
     
     while ip < len(program):
         opcode = program[ip]
         operand = program[ip + 1] if ip + 1 < len(program) else 0
-        
+
         if opcode == 0:  # adv
-            divisor = 1 << get_combo_operand(operand)  # 2^operand
+            divisor = 1 << get_combo_operand(operand)
             registers['A'] = registers['A'] // divisor
             ip += 2
         elif opcode == 1:  # bxl
-            registers['B'] ^= operand  # XOR with literal operand
+            registers['B'] ^= operand
             ip += 2
         elif opcode == 2:  # bst
-            registers['B'] = get_combo_operand(operand) % 8
-            ip += 2
+             registers['B'] = get_combo_operand(operand) % 8
+             ip += 2
         elif opcode == 3:  # jnz
             if registers['A'] != 0:
                 ip = operand
             else:
                 ip += 2
         elif opcode == 4:  # bxc
-            registers['B'] ^= registers['C']  # Ignore operand
+            registers['B'] ^= registers['C']
             ip += 2
         elif opcode == 5:  # out
-            output_value = get_combo_operand(operand) % 8
-            output_values.append(output_value)
+            output_values.append(get_combo_operand(operand) % 8)
             ip += 2
         elif opcode == 6:  # bdv
             divisor = 1 << get_combo_operand(operand)
@@ -59,7 +58,7 @@ def run_chronospatial_computer(program_str: str, init_a: int, init_b: int, init_
             ip += 2
         else:
             raise ValueError(f"Invalid opcode: {opcode}")
-    
+
     if output_values:
         return ','.join(map(str,output_values))
     else:
