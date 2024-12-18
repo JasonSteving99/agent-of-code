@@ -50,7 +50,7 @@ def run_3bit_computer(program_str: str, init_a: int, init_b: int, init_c: int) -
             registers['B'] ^= operand
             ip += 2
         elif opcode == 2:  # bst
-            registers['B'] = get_combo_value(operand) % 8
+            registers['B'] = operand % 8
             ip += 2
         elif opcode == 3:  # jnz
             if registers['A'] != 0:
