@@ -38,7 +38,12 @@ def run_3bit_computer(program_str: str, init_a: int, init_b: int, init_c: int) -
     
     while ip < len(program):
         opcode = program[ip]
-        operand = program[ip + 1] if ip + 1 < len(program) else 0
+
+        if ip + 1 < len(program):
+            operand = program[ip + 1]
+        else:
+            print("Halting: No operand found.")
+            break
 
         print(f"ip: {ip}, opcode: {opcode}, operand: {operand}, A: {registers['A']}, B: {registers['B']}, C: {registers['C']}")
         
