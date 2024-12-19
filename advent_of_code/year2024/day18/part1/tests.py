@@ -18,7 +18,7 @@ def test_example_grid_with_12_bytes():
     input_bytes = "5,4\n4,2\n4,5\n3,0\n2,1\n6,3\n2,4\n1,5\n0,6\n3,3\n2,6\n5,1"
     
     # When calculating the minimum steps to reach exit
-    result = min_steps_to_exit(input_bytes)
+    result = min_steps_to_exit(input_bytes, 7) # Add grid_size argument
     
     # Then the shortest path should be 22 steps
     assert result == 22, (
