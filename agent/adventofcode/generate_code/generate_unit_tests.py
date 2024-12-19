@@ -73,12 +73,15 @@ IMPORTANT: Only generate unit tests for the given POSITIVE examples of valid inp
         ).unwrap()
     else:
         assert isinstance(generate_unit_tests_prompt[0], UserMessage), "Lazy coding"
-        generated_unit_tests = await anthropic_prompt(
-            AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
-            system_prompt=system_prompt_text,
-            prompt=generate_unit_tests_prompt[0].msg,
-            response_type=GeneratedUnitTests,
-        )
+        generated_unit_tests = (
+            await anthropic_prompt(
+                model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
+                subtask_name="generate-unit-tests",
+                system_prompt=system_prompt_text,
+                prompt=generate_unit_tests_prompt[0].msg,
+                response_type=GeneratedUnitTests,
+            )
+        ).unwrap()
 
     return GenerateUnitTestsOutput(
         prompt_history=[

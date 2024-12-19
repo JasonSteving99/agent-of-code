@@ -110,12 +110,15 @@ async def generate_implementation(
             ).unwrap()
         else:
             assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
-            generated_implementation = await anthropic_prompt(
-                model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
-                system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-                prompt=generate_implementation_prompt[0].msg,
-                response_type=GeneratedImplementation,
-            )
+            generated_implementation = (
+                await anthropic_prompt(
+                    model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
+                    subtask_name="generate-implementation",
+                    system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+                    prompt=generate_implementation_prompt[0].msg,
+                    response_type=GeneratedImplementation,
+                )
+            ).unwrap()
 
         if _implementation_is_updated(generated_implementation, debugging_prompt):
             break
