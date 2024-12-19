@@ -56,7 +56,7 @@ def find_first_blocking_byte(input_str: str) -> str:
         x, y = map(int, line.split(','))
         corrupted.append((x, y))
     
-    grid_size = 71  # Grid is 71x71 (0 to 70 inclusive)
+    grid_size = 7  # Grid is 7x7 (0 to 6 inclusive) - changed from 71 to 7 for example
     blocked: Set[Tuple[int, int]] = set()
     
     # Check each byte in sequence
