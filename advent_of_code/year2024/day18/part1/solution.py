@@ -53,24 +53,24 @@ def shortest_path_bfs(start: Tuple[int, int], end: Tuple[int, int],
     return -1  # No path found
 
 
-def shortest_path_after_byte_falls(input_str: str) -> int:
+def shortest_path_after_byte_falls(input_str: str, grid_size: int = 70) -> int:
     """
-    Find the shortest path from (0,0) to (70,70) after simulating byte falls.
+    Find the shortest path from (0,0) to (grid_size, grid_size) after simulating byte falls.
     
     Args:
         input_str: String containing coordinates of falling bytes
+        grid_size: Size of the grid (default 70)
         
     Returns:
         Minimum number of steps needed to reach the exit
     """
     # Parse input and create corrupted grid
     coordinates = get_coordinates(input_str)
-    grid_size = 70  # Changed back to 70 to match the problem statement
     corrupted = create_grid(coordinates)
 
-    # Find shortest path from (0,0) to (70,70)
+    # Find shortest path from (0,0) to (grid_size, grid_size)
     start = (0, 0)
-    end = (70, 70) # Changed end point to (70, 70)
+    end = (grid_size, grid_size)
     
     return shortest_path_bfs(start, end, corrupted, grid_size)
 
