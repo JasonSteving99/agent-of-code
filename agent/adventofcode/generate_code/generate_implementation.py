@@ -93,26 +93,28 @@ async def generate_implementation(
         part_1_generated_implementation=part_1_generated_implementation,
     )
 
-    attempts = 0
-    MAX_RETRIES = 3
-
-    def _validate_implementation_is_updated(
-        generated_implementation: GeneratedImplementation,
-    ) -> Result[None, str]:
-        if _implementation_is_updated(generated_implementation, debugging_prompt):
-            return Ok(None)
-        else:
-            return Err("The implementation was not actually updated based on the debugging prompt.")
-
     generated_implementation: GeneratedImplementation
-    while True:
-        attempts += 1
-        if debugging_prompt:
+    if debugging_prompt:
+
+        def _validate_implementation_is_updated(
+            curr_generated_implementation: GeneratedImplementation,
+        ) -> Result[None, str]:
+            if _implementation_is_updated(curr_generated_implementation, debugging_prompt):
+                return Ok(None)
+            else:
+                return Err(
+                    "The implementation was not actually updated based on the debugging prompt."
+                )
+
+        attempts = 0
+        MAX_RETRIES = 3
+        while True:
+            attempts += 1
             match await gemini_prompt(
-                # GeminiModel.GEMINI_1_5_PRO,
+                # model=GeminiModel.GEMINI_1_5_PRO,
+                # model=GeminiModel.GEMINI_EXP_1206,
                 model=GeminiModel.GEMINI_2_0_FLASH_EXP,
                 subtask_name="generate-implementation",
-                # GeminiModel.GEMINI_EXP_1206,
                 system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
                 prompt=generate_implementation_prompt,
                 response_type=GeneratedImplementation,
@@ -125,20 +127,23 @@ async def generate_implementation(
                     if attempts >= MAX_RETRIES:
                         # TODO(steving) DROP THIS... but for now, allow a duplicated generation
                         generated_implementation = _get_prev_generated_impl(debugging_prompt)
+                        break
                         # raise ValueError(
                         #     f"Failed to get LLM to generate a NEW implementation after {MAX_RETRIES} retries."  # noqa: E501
                         # )
-        else:
-            assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
-            generated_implementation = (
-                await anthropic_prompt(
-                    model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
-                    subtask_name="generate-implementation",
-                    system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-                    prompt=generate_implementation_prompt[0].msg,
-                    response_type=GeneratedImplementation,
-                )
-            ).unwrap()
+                    else:
+                        continue  # Just being explicit here that this is when we loop.
+    else:
+        assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
+        generated_implementation = (
+            await anthropic_prompt(
+                model=AnthropicModel.CLAUDE_SONNET_3_5_OCT_2024,
+                subtask_name="generate-implementation",
+                system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+                prompt=generate_implementation_prompt[0].msg,
+                response_type=GeneratedImplementation,
+            )
+        ).unwrap()
 
     return GenerateImplementationOutput(
         prompt_history=[
