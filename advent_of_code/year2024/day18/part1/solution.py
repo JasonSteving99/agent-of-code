@@ -3,12 +3,13 @@ from collections import deque
 from typing import Deque, List, Set, Tuple
 
 
-def min_steps_to_exit(input_str: str) -> int:
+def min_steps_to_exit(input_str: str, grid_size: int) -> int:
     """
     Calculate minimum steps needed to reach exit in memory grid.
     
     Args:
         input_str: String containing coordinates of falling bytes
+        grid_size: Size of the grid
         
     Returns:
         Minimum number of steps needed to reach exit
@@ -18,9 +19,6 @@ def min_steps_to_exit(input_str: str) -> int:
     for line in input_str.strip().splitlines():
         x, y = map(int, line.split(','))
         corrupted.append((x, y))
-    
-    # Set grid size to 71x71 (coordinates 0-70)
-    SIZE = 71
     
     # Take only first 1024 bytes
     corrupted = corrupted[:1024]
@@ -39,7 +37,7 @@ def min_steps_to_exit(input_str: str) -> int:
         x, y, steps = queue.popleft()
         
         # Check if reached exit
-        if x == SIZE-1 and y == SIZE-1:
+        if x == grid_size-1 and y == grid_size-1:
             return steps
         
         # Try all possible moves
@@ -50,8 +48,8 @@ def min_steps_to_exit(input_str: str) -> int:
             # - Within grid bounds
             # - Not visited
             # - Not corrupted
-            if (0 <= new_x < SIZE and 
-                0 <= new_y < SIZE and 
+            if (0 <= new_x < grid_size and 
+                0 <= new_y < grid_size and 
                 (new_x, new_y) not in visited and 
                 (new_x, new_y) not in blocked):
                 
@@ -66,4 +64,4 @@ def solution() -> int:
     """Read input from stdin and return the solution."""
     import sys
     input_data = sys.stdin.read()
-    return min_steps_to_exit(input_data)
+    return min_steps_to_exit(input_data, 71)
