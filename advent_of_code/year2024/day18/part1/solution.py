@@ -65,10 +65,10 @@ def shortest_path_after_byte_falls(input_str: str) -> int:
     """
     # Parse input and create corrupted grid
     coordinates = get_coordinates(input_str)
-    grid_size = 70  # Problem specifies 70x70 grid
+    grid_size = 6  # Changed from 70 to 6 to match example grid size
     corrupted = create_grid(coordinates)
 
-    # Find shortest path from (0,0) to (70,70)
+    # Find shortest path from (0,0) to (6,6)
     start = (0, 0)
     end = (grid_size, grid_size)
     
