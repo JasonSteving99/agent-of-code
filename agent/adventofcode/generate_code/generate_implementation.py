@@ -4,6 +4,7 @@ from typing import cast
 import aiohttp
 import asyncclick as click
 from pydantic import BaseModel
+from result import Err, Ok, Result
 
 from agent.adventofcode.contextualize_examples import (
     ExamplesContext,
@@ -94,20 +95,39 @@ async def generate_implementation(
 
     attempts = 0
     MAX_RETRIES = 3
+
+    def _validate_implementation_is_updated(
+        generated_implementation: GeneratedImplementation,
+    ) -> Result[None, str]:
+        if _implementation_is_updated(generated_implementation, debugging_prompt):
+            return Ok(None)
+        else:
+            return Err("The implementation was not actually updated based on the debugging prompt.")
+
+    generated_implementation: GeneratedImplementation
     while True:
         attempts += 1
         if debugging_prompt:
-            generated_implementation = (
-                await gemini_prompt(
-                    # GeminiModel.GEMINI_1_5_PRO,
-                    model=GeminiModel.GEMINI_2_0_FLASH_EXP,
-                    subtask_name="generate-implementation",
-                    # GeminiModel.GEMINI_EXP_1206,
-                    system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
-                    prompt=generate_implementation_prompt,
-                    response_type=GeneratedImplementation,
-                )
-            ).unwrap()
+            match await gemini_prompt(
+                # GeminiModel.GEMINI_1_5_PRO,
+                model=GeminiModel.GEMINI_2_0_FLASH_EXP,
+                subtask_name="generate-implementation",
+                # GeminiModel.GEMINI_EXP_1206,
+                system_prompt=INITIAL_ATTEMPT_SYSTEM_PROMPT_TEXT,
+                prompt=generate_implementation_prompt,
+                response_type=GeneratedImplementation,
+                extra_validation_fn=_validate_implementation_is_updated,
+            ):
+                case Ok(generated_implementation):
+                    generated_implementation = generated_implementation
+                    break
+                case Err(_):
+                    if attempts >= MAX_RETRIES:
+                        # TODO(steving) DROP THIS... but for now, allow a duplicated generation
+                        generated_implementation = _get_prev_generated_impl(debugging_prompt)
+                        # raise ValueError(
+                        #     f"Failed to get LLM to generate a NEW implementation after {MAX_RETRIES} retries."  # noqa: E501
+                        # )
         else:
             assert isinstance(generate_implementation_prompt[0], UserMessage), "Lazy coding"
             generated_implementation = (
@@ -120,21 +140,23 @@ async def generate_implementation(
                 )
             ).unwrap()
 
-        if _implementation_is_updated(generated_implementation, debugging_prompt):
-            break
-        elif attempts > MAX_RETRIES:
-            # TODO(steving) DROP THIS... but for now, allow a duplicated generation
-            # raise ValueError(
-            #     f"Failed to get LLM to generate a NEW implementation after {MAX_RETRIES} retries."
-            # )
-            break
-
     return GenerateImplementationOutput(
         prompt_history=[
             *generate_implementation_prompt,
             ModelMessage(msg=generated_implementation.model_dump()),
         ],
         generated_implementation=generated_implementation,
+    )
+
+
+def _get_prev_generated_impl(debugging_prompt: DebuggingPrompt) -> GeneratedImplementation:
+    return GeneratedImplementation.model_validate(
+        # The last ModelMessage in the prompt history is the previous implementation.
+        next(
+            part
+            for part in reversed(debugging_prompt.prior_msg_history)
+            if isinstance(part, ModelMessage)
+        ).msg
     )
 
 
@@ -147,14 +169,7 @@ def _implementation_is_updated(
     if debugging_prompt is None:
         return True
 
-    prev_impl = GeneratedImplementation.model_validate(
-        # The last ModelMessage in the prompt history is the previous implementation.
-        next(
-            part
-            for part in reversed(debugging_prompt.prior_msg_history)
-            if isinstance(part, ModelMessage)
-        ).msg
-    )
+    prev_impl = _get_prev_generated_impl(debugging_prompt)
     return (
         generated_impl.generated_implementation_file_content
         != prev_impl.generated_implementation_file_content

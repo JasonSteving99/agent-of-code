@@ -82,13 +82,24 @@ async def prompt[ResponseType: BaseModel](
         if extra_validation_fn:
             match extra_validation_fn(response.response.unwrap()):
                 case Err(err_msg):
-                    raise ValueError(err_msg)
+                    response = LLMUsage(
+                        input_tokens=response.input_tokens,
+                        output_tokens=response.output_tokens,
+                        response=Err(
+                            LLMError(
+                                err_type=LLMError.ErrType.LOGICAL_VALIDATION_FAILED,
+                                msg=str(err_msg),
+                            )
+                        ),
+                    )
         return response
     except Exception as e:
         return LLMUsage(
             input_tokens=response.input_tokens,
             output_tokens=response.output_tokens,
-            response=Err(LLMError(err_type=LLMError.ErrType.VALIDATION_FAILED, msg=str(e))),
+            response=Err(
+                LLMError(err_type=LLMError.ErrType.RESPONSE_SCHEMA_VALIDATION_FAILED, msg=str(e))
+            ),
         )
 
 
@@ -136,7 +147,7 @@ async def _prompt(
         return LLMUsage(
             input_tokens=res.usage_metadata.prompt_token_count,
             output_tokens=output_tokens,
-            response=Err(LLMError(err_type=LLMError.ErrType.NO_RESPONSE, msg=str(e))),
+            response=Err(LLMError(err_type=LLMError.ErrType.UNEXPECTED_RESPONSE, msg=str(e))),
         )
 
 

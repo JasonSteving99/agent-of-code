@@ -59,11 +59,13 @@ async def prompt[ResponseType: BaseModel](
         try:
             response = Ok(response_type.model_validate(raw_response.content[0].input))
         except Exception as e:
-            response = Err(LLMError(err_type=LLMError.ErrType.VALIDATION_FAILED, msg=str(e)))
+            response = Err(
+                LLMError(err_type=LLMError.ErrType.RESPONSE_SCHEMA_VALIDATION_FAILED, msg=str(e))
+            )
     else:
         response = Err(
             LLMError(
-                err_type=LLMError.ErrType.VALIDATION_FAILED,
+                err_type=LLMError.ErrType.UNEXPECTED_RESPONSE,
                 msg=f"Unexpected response: {raw_response}",
             )
         )
@@ -107,7 +109,7 @@ async def text_prompt(
     else:
         response = Err(
             LLMError(
-                err_type=LLMError.ErrType.VALIDATION_FAILED,
+                err_type=LLMError.ErrType.UNEXPECTED_RESPONSE,
                 msg=f"Unexpected response: {raw_response}",
             )
         )

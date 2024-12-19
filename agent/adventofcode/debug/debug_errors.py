@@ -1,3 +1,4 @@
+from result import Err, Ok, Result
 from agent.adventofcode.contextualize_examples import ExamplesContext
 from agent.adventofcode.debug.RefactoringPlan import RefactoringPlan
 from agent.adventofcode.debug.TheorizedSolution import TheorizedSolution
@@ -60,29 +61,37 @@ IMPORTANT: The solution() function MUST RETURN THE RESULT VALUE. Do not just pri
     # Ensure that the theorized solution generates at least one actionable code change.
     attempts = 0
     MAX_RETRIES = 3
-    while True:
-        attempts += 1
-        theorized_solution = (
-            await prompt(
-                model=GeminiModel.GEMINI_1_5_PRO,
-                subtask_name="theorize-solution",
-                system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
-                prompt=theorize_solution_prompt,
-                response_type=TheorizedSolution,
-            )
-        ).unwrap()
 
+    def _validate_theorized_solution(theorized_solution: TheorizedSolution) -> Result[None, str]:
         if (
             theorized_solution.optional_theorized_unit_test_fix
             or theorized_solution.optional_theorized_implementation_fix
         ):
-            break
-        elif attempts > MAX_RETRIES:
-            raise ValueError(
+            return Ok(None)
+        else:
+            return Err(
                 f"Invalid TheorizedSolution should come up with at least one actionable code change.\n{theorized_solution}"  # noqa: E501
             )
 
-    return theorized_solution
+    while True:
+        attempts += 1
+        theorized_solution = await prompt(
+            model=GeminiModel.GEMINI_1_5_PRO,
+            subtask_name="theorize-solution",
+            system_prompt=THEORIZING_SYSTEM_PROMPT_TEXT,
+            prompt=theorize_solution_prompt,
+            response_type=TheorizedSolution,
+            extra_validation_fn=_validate_theorized_solution,
+        )
+
+        match theorized_solution:
+            case Ok(_):
+                break
+            case Err(_):
+                if attempts > MAX_RETRIES:
+                    raise Exception(f"Failed to theorize a solution after {MAX_RETRIES} attempts.")
+
+    return theorized_solution.ok_value
 
 
 PLANNING_SYSTEM_PROMPT_TEXT = """
