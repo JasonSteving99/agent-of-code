@@ -1,85 +1,69 @@
-from typing import List, Set, Tuple
+"""Solution for finding minimum steps to exit in corrupted memory grid."""
 from collections import deque
-import sys
+from typing import Deque, List, Set, Tuple
 
 
-def get_coordinates(input_str: str) -> List[Tuple[int, int]]:
-    """Parse input string into list of x,y coordinates."""
-    coordinates = []
-    for line in input_str.strip().splitlines():
-        x, y = map(int, line.split(','))
-        coordinates.append((x, y))
-    return coordinates
-
-
-def create_grid(coordinates: List[Tuple[int, int]], max_bytes: int = 1024) -> Set[Tuple[int, int]]:
-    """Create a set of corrupted coordinates after simulating byte falls."""
-    corrupted = set()
-    for i, (x, y) in enumerate(coordinates):
-        if i >= max_bytes:
-            break
-        corrupted.add((x, y))
-    return corrupted
-
-
-def get_valid_moves(pos: Tuple[int, int], grid_size: int) -> List[Tuple[int, int]]:
-    """Get valid adjacent positions from current position."""
-    x, y = pos
-    moves = [
-        (x + 1, y),
-        (x - 1, y),
-        (x, y + 1),
-        (x, y - 1)
-    ]
-    return [(x, y) for x, y in moves if 0 <= x <= grid_size and 0 <= y <= grid_size]
-
-
-def shortest_path_bfs(start: Tuple[int, int], end: Tuple[int, int], 
-                     corrupted: Set[Tuple[int, int]], grid_size: int) -> int:
-    """Find shortest path from start to end avoiding corrupted positions using BFS."""
-    queue = deque([(start, 0)])  # (position, steps)
-    visited = {start}
-
-    while queue:
-        pos, steps = queue.popleft()
-        if pos == end:
-            return steps
-
-        for next_pos in get_valid_moves(pos, grid_size):
-            if next_pos not in visited and next_pos not in corrupted:
-                visited.add(next_pos)
-                queue.append((next_pos, steps + 1))
-
-    return -1  # No path found
-
-
-def shortest_path_after_byte_falls(input_str: str, grid_size: int = 70) -> int:
+def min_steps_to_exit(input_str: str) -> int:
     """
-    Find the shortest path from (0,0) to (grid_size, grid_size) after simulating byte falls.
+    Calculate minimum steps needed to reach exit in memory grid.
     
     Args:
         input_str: String containing coordinates of falling bytes
-        grid_size: Size of the grid (default 70)
         
     Returns:
-        Minimum number of steps needed to reach the exit
+        Minimum number of steps needed to reach exit
     """
-    # Parse input and create corrupted grid
-    coordinates = get_coordinates(input_str)
-    corrupted = create_grid(coordinates)
-
-    # Find shortest path from (0,0) to (grid_size, grid_size)
-    start = (0, 0)
-    end = (grid_size, grid_size)
+    # Convert input to list of coordinates
+    corrupted: List[Tuple[int, int]] = []
+    for line in input_str.strip().splitlines():
+        x, y = map(int, line.split(','))
+        corrupted.append((x, y))
     
-    return shortest_path_bfs(start, end, corrupted, grid_size)
+    # Set grid size to 71x71 (coordinates 0-70)
+    SIZE = 71
+    
+    # Take only first 1024 bytes
+    corrupted = corrupted[:1024]
+    
+    # Create set of corrupted coordinates for O(1) lookup
+    blocked: Set[Tuple[int, int]] = set(corrupted)
+    
+    # BFS to find shortest path
+    queue: Deque[Tuple[int, int, int]] = deque([(0, 0, 0)])  # (x, y, steps)
+    visited: Set[Tuple[int, int]] = {(0, 0)}
+    
+    # Possible moves: right, down, left, up
+    directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    
+    while queue:
+        x, y, steps = queue.popleft()
+        
+        # Check if reached exit
+        if x == SIZE-1 and y == SIZE-1:
+            return steps
+        
+        # Try all possible moves
+        for dx, dy in directions:
+            new_x, new_y = x + dx, y + dy
+            
+            # Check if move is valid:
+            # - Within grid bounds
+            # - Not visited
+            # - Not corrupted
+            if (0 <= new_x < SIZE and 
+                0 <= new_y < SIZE and 
+                (new_x, new_y) not in visited and 
+                (new_x, new_y) not in blocked):
+                
+                queue.append((new_x, new_y, steps + 1))
+                visited.add((new_x, new_y))
+    
+    # If no path found, return -1 (though problem guarantees solution exists)
+    return -1
 
 
 def solution() -> int:
-    """Read from stdin and return the solution."""
+    """Read input from stdin and return the solution."""
+    import sys
     input_data = sys.stdin.read()
-    return shortest_path_after_byte_falls(input_data)
-
-
-if __name__ == "__main__":
-    print(solution())
+    return min_steps_to_exit(input_data)

@@ -1,48 +1,27 @@
 """
-This test suite validates the shortest_path_after_byte_falls function which:
-1. Takes a string input representing coordinates of falling bytes (x,y format, one per line)
-2. Simulates these bytes "corrupting" those positions in a 7x7 grid
-3. Calculates the shortest path from (0,0) to (6,6) that avoids corrupted positions
-4. Returns the length of this shortest path as an integer
+Unit tests for min_steps_to_exit function that calculates the minimum number of steps
+needed to reach the exit point (6,6) from the starting position (0,0) in a 7x7 grid,
+where certain grid positions are blocked by falling bytes represented as coordinate pairs.
 
-The test focuses on a case with 25 byte falls, validating that the correct shortest
-path length of 22 steps is calculated after simulating the corruption pattern.
+The tests validate:
+1. The function correctly processes a string input containing coordinate pairs of fallen bytes
+2. The function returns the correct minimum number of steps (22) for the given example
+3. The coordinate pairs are properly interpreted as obstacles in the grid
+4. The function finds the shortest possible path avoiding all obstacles
 """
 
-from solution import shortest_path_after_byte_falls
+from solution import min_steps_to_exit
 
-def test_shortest_path_with_25_bytes():
-    # Example input with 25 byte falls in x,y coordinate format
-    byte_falls = """5,4
-4,2
-4,5
-3,0
-2,1
-6,3
-2,4
-1,5
-0,6
-3,3
-2,6
-5,1
-1,2
-5,5
-2,5
-6,5
-1,4
-0,4
-6,4
-1,1
-6,1
-1,0
-0,5
-1,6
-2,0"""
+
+def test_example_grid_with_12_bytes():
+    # Given a 7x7 grid with 12 fallen bytes at specific coordinates
+    input_bytes = "5,4\n4,2\n4,5\n3,0\n2,1\n6,3\n2,4\n1,5\n0,6\n3,3\n2,6\n5,1"
     
-    # After simulating these bytes falling and corrupting the grid,
-    # the shortest path from (0,0) to (6,6) should be 22 steps long
-    result = shortest_path_after_byte_falls(byte_falls)
+    # When calculating the minimum steps to reach exit
+    result = min_steps_to_exit(input_bytes)
     
-    # Assert that the shortest path length matches expected
-    assert result == 22, \
-        f"Expected shortest path length of 22 after simulating byte falls, but got {result}. Input:\n{byte_falls}"
+    # Then the shortest path should be 22 steps
+    assert result == 22, (
+        f"Expected 22 steps for input:\n{input_bytes}\n"
+        f"but got {result} steps instead"
+    )
