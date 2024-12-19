@@ -73,6 +73,7 @@ async def prompt[ResponseType: BaseModel](
 
 @log_llm_usage(provider=ANTHROPIC_PROVIDER_NAME, model=Model.DYNAMIC_MODEL_CHOICE)
 async def text_prompt(
+    *,
     model: AnthropicModel,
     subtask_name: str,
     system_prompt: str,
