@@ -1,108 +1,114 @@
-from collections import deque
 from dataclasses import dataclass
-from typing import List, Set, Tuple, Dict, Optional
+from typing import Set, List, Dict, Tuple, Optional
+from collections import defaultdict, deque
+import sys
+import heapq
 
 @dataclass(frozen=True)
-class Point:
+class Position:
     row: int
     col: int
-
-def parse_maze(maze_str: str) -> Tuple[List[List[str]], Point, Point]:
-    """Parse the maze string into a 2D list and find start/end positions."""
-    maze = [list(line) for line in maze_str.strip().splitlines()]
-    start = end = None
-    for i, row in enumerate(maze):
-        for j, cell in enumerate(row):
-            if cell == 'S':
-                start = Point(i, j)
-                maze[i][j] = '.'  # Replace S with . for easier processing
-            elif cell == 'E':
-                end = Point(i, j)
-                maze[i][j] = '.'  # Replace E with . for easier processing
-    return maze, start, end
-
-def get_normal_distance(maze: List[List[str]], start: Point, end: Point) -> Dict[Point, int]:
-    """Calculate distances to all reachable points using normal movement."""
-    distances: Dict[Point, int] = {start: 0}
-    queue = deque([start])
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     
+    def __add__(self, other: 'Position') -> 'Position':
+        return Position(self.row + other.row, self.col + other.col)
+
+def find_start_end(grid: List[str]) -> Tuple[Position, Position]:
+    start, end = None, None
+    for i, row in enumerate(grid):
+        for j, char in enumerate(row):
+            if char == 'S':
+                start = Position(i, j)
+            elif char == 'E':
+                end = Position(i, j)
+    return start, end
+
+def get_neighbors(pos: Position, grid: List[str]) -> List[Position]:
+    directions = [Position(-1, 0), Position(1, 0), Position(0, -1), Position(0, 1)]
+    neighbors = []
+    for direction in directions:
+        new_pos = pos + direction
+        if (0 <= new_pos.row < len(grid) and 
+            0 <= new_pos.col < len(grid[0]) and 
+            grid[new_pos.row][new_pos.col] != '#'):
+            neighbors.append(new_pos)
+    return neighbors
+
+def shortest_path(start: Position, end: Position, grid: List[str]) -> Optional[int]:
+    visited = set()
+    queue = [(0, start)]
     while queue:
-        current = queue.popleft()
-        for dr, dc in directions:
-            new_row, new_col = current.row + dr, current.col + dc
-            new_point = Point(new_row, new_col)
-            
-            if (0 <= new_row < len(maze) and 
-                0 <= new_col < len(maze[0]) and 
-                maze[new_row][new_col] == '.' and 
-                new_point not in distances):
-                distances[new_point] = distances[current] + 1
-                queue.append(new_point)
-    
-    return distances
+        dist, pos = heapq.heappop(queue)
+        if pos == end:
+            return dist
+        if pos in visited:
+            continue
+        visited.add(pos)
+        for neighbor in get_neighbors(pos, grid):
+            if neighbor not in visited:
+                heapq.heappush(queue, (dist + 1, neighbor))
+    return None
 
-def try_cheat(maze: List[List[str]], start: Point, end: Point, base_distance: int) -> int:
-    """Calculate number of cheats that save at least 100 picoseconds."""
-    height, width = len(maze), len(maze[0])
-    valid_cheats = 0
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+def try_cheat(start_pos: Position, duration: int, grid: List[str], end: Position) -> List[Position]:
+    """Returns list of possible positions after cheating for given duration"""
+    directions = [Position(-1, 0), Position(1, 0), Position(0, -1), Position(0, 1)]
+    positions = {start_pos}
+    for _ in range(duration):
+        new_positions = set()
+        for pos in positions:
+            for direction in directions:
+                new_pos = pos + direction
+                if (0 <= new_pos.row < len(grid) and 
+                    0 <= new_pos.col < len(grid[0])):
+                    new_positions.add(new_pos)
+        positions = new_positions
+    # Filter to only valid ending positions (not in walls)
+    return [pos for pos in positions if grid[pos.row][pos.col] != '#']
+
+def count_effective_cheats(input_str: str) -> int:
+    grid = input_str.strip().split('\n')
+    start, end = find_start_end(grid)
     
-    # Calculate distances from both start and end for normal movement
-    start_distances = get_normal_distance(maze, start, end)
-    end_distances = get_normal_distance(maze, end, start)
+    # Find normal shortest path length
+    normal_path_length = shortest_path(start, end, grid)
+    if normal_path_length is None:
+        return 0
     
-    # Try all possible cheat start positions
-    for row in range(height):
-        for col in range(width):
-            if maze[row][col] != '.':
+    # Try all possible cheat positions and durations
+    cheat_savings = set()
+    
+    # For each possible cheat start position
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            start_pos = Position(row, col)
+            if grid[row][col] == '#':
                 continue
-            start_pos = Point(row, col)
-            if start_pos not in start_distances:
+                
+            # Get path length to this position
+            path_to_cheat = shortest_path(start, start_pos, grid)
+            if path_to_cheat is None:
                 continue
-            
-            # Try all possible cheat end positions within 2 steps
-            seen = set()
-            to_check = deque([(start_pos, 0)])
-            
-            while to_check:
-                pos, steps = to_check.popleft()
-                if steps > 2:
-                    continue
                 
-                if pos in seen:
-                    continue
-                seen.add(pos)
+            # Try cheating for 1 and 2 moves
+            for cheat_duration in range(1, 3):
+                # Get possible positions after cheating
+                end_positions = try_cheat(start_pos, cheat_duration, grid, end)
                 
-                # If we can reach the end from here normally
-                if pos in end_distances:
+                for cheat_end in end_positions:
+                    # Get path from cheat end to finish
+                    remaining_path = shortest_path(cheat_end, end, grid)
+                    if remaining_path is None:
+                        continue
+                        
                     # Calculate total path length with cheat
-                    total_distance = (start_distances[start_pos] +  # Distance to cheat start
-                                   steps +                         # Cheat length
-                                   end_distances[pos])            # Distance from cheat end to finish
+                    total_length = path_to_cheat + cheat_duration + remaining_path
+                    savings = normal_path_length - total_length
                     
-                    # If this cheat saves at least 100 picoseconds
-                    if base_distance - total_distance >= 100:
-                        valid_cheats += 1
-                
-                # Try moving in all directions (through walls)
-                for dr, dc in directions:
-                    new_row, new_col = pos.row + dr, pos.col + dc
-                    if 0 <= new_row < height and 0 <= new_col < width:
-                        to_check.append((Point(new_row, new_col), steps + 1))
+                    if savings > 0:
+                        cheat_savings.add(savings)
     
-    return valid_cheats
+    # Count cheats that save at least 100 picoseconds
+    return sum(1 for saving in cheat_savings if saving >= 100)
 
-def solve_maze(maze_str: str) -> int:
-    """
-    Solve the maze and return the shortest path length, or -1 if no path exists.
-    """
-    # Parse the maze
-    maze, start, end = parse_maze(maze_str)
-    
-    # Get the base distance (without cheating)
-    base_distances = get_normal_distance(maze, start, end)
-    if end not in base_distances:
-      return -1
-    
-    return base_distances[end]
+def solution() -> int:
+    input_str = sys.stdin.read()
+    return count_effective_cheats(input_str)

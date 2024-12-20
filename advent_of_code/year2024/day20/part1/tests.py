@@ -1,22 +1,23 @@
 """
-This test suite verifies the `solve_maze` function which:
-1. Takes a string representation of a maze where:
-   - '#' represents walls
-   - '.' represents traversable track
-   - 'S' represents the starting position
-   - 'E' represents the ending position
-2. Returns an integer representing the minimum number of steps needed to get from 'S' to 'E'
-   using only valid track spaces (no going through walls).
+Tests for counting effective cheating shortcuts in a race track map.
 
-The test covers a basic maze navigation scenario where the function should find the shortest
-path from start to end while avoiding walls.
+The tests verify that the solution correctly identifies the number of wall shortcuts 
+that would save at least 100 picoseconds compared to the fastest legal path from start (S) 
+to end (E) on a race track map where:
+- '#' represents walls
+- '.' represents valid track
+- 'S' represents the starting position
+- 'E' represents the end position
+
+A "cheat" involves breaking through a wall, and must save at least 100 picoseconds
+compared to the fastest legal path to be counted.
 """
 
-from solution import solve_maze
-import pytest
+from solution import count_effective_cheats
 
-def test_basic_maze_navigation():
-    maze = (
+
+def test_no_effective_cheats_available():
+    race_map = (
         "###############\n"
         "#...#...#.....#\n"
         "#.#.#.#.#.###.#\n"
@@ -34,10 +35,9 @@ def test_basic_maze_navigation():
         "###############"
     )
     
-    result = solve_maze(maze)
+    result = count_effective_cheats(race_map)
     
-    # For this specific maze layout, the shortest path from S to E requires 84 steps
-    assert result == 84, (
-        f"Expected solve_maze to find path of 84 steps in maze:\n{maze}\n"
-        f"but got {result} steps instead"
+    assert result == 0, (
+        f"Expected 0 effective cheats in map with no shortcuts that save ≥100 picoseconds, "
+        f"but got {result}.\nMap used:\n{race_map}"
     )
