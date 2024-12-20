@@ -29,73 +29,66 @@ def count_effective_cheats(input_map: str) -> int:
                     neighbors.append((nr, nc))
         return neighbors
 
-    def bfs(start_pos: Tuple[int, int], end_pos: Tuple[int, int], allow_walls:bool = False) -> Dict[Tuple[int, int], int]:
+    def bfs(start_pos: Tuple[int, int], allow_walls: bool = False) -> Dict[Tuple[int, int], int]:
         distances = {start_pos: 0}
         queue = deque([(start_pos, 0)])
         visited = {start_pos}
-        
+
         while queue:
-            pos, cheat_count = queue.popleft()
-            for next_pos in get_neighbors(pos, allow_walls):
+            pos, cheat_steps = queue.popleft()
+            for next_pos in get_neighbors(pos, allow_walls and cheat_steps < 2):
                 if next_pos not in visited:
-                    distances[next_pos] = distances[pos] + 1
-                    visited.add(next_pos)
-                    queue.append((next_pos, cheat_count+1 if allow_walls else 0))
+                  distances[next_pos] = distances[pos] + 1
+                  visited.add(next_pos)
+                  queue.append((next_pos, cheat_steps+1 if allow_walls else 0))
         return distances
 
-    # Calculate normal path distances from start and end
-    start_distances = bfs(start, end)
-    end_distances = bfs(end, start)
-
+    # Calculate normal path distances from start to end
+    start_distances = bfs(start)
     if end not in start_distances:
-        return 0  # No valid path exists
-
+        return 0
     normal_path_length = start_distances[end]
+
     effective_cheats = 0
+    visited_cheats = set()
+    queue = deque([(start,0)])
+    visited_positions = {start}
+    
+    while queue:
+        current_pos, current_dist = queue.popleft()
+        for next_pos in get_neighbors(current_pos):
+          if next_pos not in visited_positions:
+            visited_positions.add(next_pos)
+            queue.append((next_pos, current_dist+1))
 
-    # For each possible cheat start position
-    for r1 in range(height):
-        for c1 in range(width):
-            if grid[r1][c1] != '.':
+        for r2 in range(height):
+          for c2 in range(width):
+            if abs(r2 - current_pos[0]) + abs(c2 - current_pos[1]) > 2:
                 continue
-            start_pos = (r1, c1)
-            if start_pos not in start_distances:
+            if (r2,c2) == current_pos:
                 continue
 
-            # Try all possible cheat end positions within 2 moves
-            for r2 in range(height):
-              for c2 in range(width):
-                if abs(r2 - r1) + abs(c2 - c1) > 2:
-                  continue
-                if (r2,c2) == (r1, c1):
-                    continue
-                
-                cheat_start = (r1,c1)
-                cheat_end = (r2,c2)
+            cheat_start = current_pos
+            cheat_end = (r2,c2)
 
-                queue = deque([(cheat_start,0, 0)])
-                visited = {cheat_start}
-                min_cheat_dist = float('inf')
-                
-                while queue:
-                  pos, cheat_count, dist = queue.popleft()
-                  if cheat_count > 2:
-                      continue
-                  if grid[pos[0]][pos[1]] == '.' and cheat_count > 0:
-                    min_cheat_dist = min(min_cheat_dist, dist + end_distances.get(pos, float('inf')))
-                  
-                  for next_pos in get_neighbors(pos, cheat_count < 2):
-                    if next_pos not in visited:
-                      visited.add(next_pos)
-                      queue.append((next_pos, cheat_count +1, dist + 1))
+            cheat_distances = bfs(cheat_start, True)
 
-                if min_cheat_dist == float('inf'):
-                  continue
-                  
-                cheat_path_length = start_distances[cheat_start] + min_cheat_dist
-
-                if normal_path_length - cheat_path_length >= 100:
-                  effective_cheats += 1
+            if cheat_end not in cheat_distances:
+                continue
+            
+            min_dist_end = float('inf')
+            for p, dist in cheat_distances.items():
+              if dist <=2 and grid[p[0]][p[1]]=='.':
+                remaining_dist_to_end = bfs(p).get(end, float('inf'))
+                min_dist_end = min(min_dist_end, dist + remaining_dist_to_end)
+            
+            if min_dist_end == float('inf'):
+                continue
+            
+            cheat_path_length = current_dist + min_dist_end
+            if normal_path_length - cheat_path_length >= 100 and (cheat_start, cheat_end) not in visited_cheats:
+              effective_cheats += 1
+              visited_cheats.add((cheat_start, cheat_end))
 
     return effective_cheats
 
