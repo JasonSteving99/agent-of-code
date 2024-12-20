@@ -16,7 +16,7 @@ def get_start_end_positions(grid: List[str]) -> Tuple[Tuple[int, int], Tuple[int
 def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, int], cheating: bool = False) -> int:
     rows, cols = len(grid), len(grid[0])
     queue: deque[Tuple[int, int, int, int]] = deque([(start[0], start[1], 0, 0)]) # r, c, steps, cheat_steps
-    visited: Set[Tuple[int, int, int]] = {(start[0], start[1], 0)}
+    visited: Set[Tuple[int, int]] = {start}
     
     while queue:
         r, c, steps, cheat_steps = queue.popleft()
@@ -26,13 +26,15 @@ def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, 
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
+                if (nr, nc) in visited:
+                   continue
+
                 if cheating:
-                     if cheat_steps < 2 and grid[nr][nc] in '.#SE':
-                         if (nr, nc, cheat_steps + 1) not in visited:
-                            visited.add((nr, nc, cheat_steps+1))
-                            queue.append((nr, nc, steps + 1, cheat_steps+1))
-                elif  grid[nr][nc] in '.SE' and (nr, nc, 0) not in visited:
-                    visited.add((nr, nc, 0))
+                    if cheat_steps < 2 and grid[nr][nc] in '.#SE':
+                        visited.add((nr, nc))
+                        queue.append((nr, nc, steps + 1, cheat_steps+1))
+                elif  grid[nr][nc] in '.SE':
+                    visited.add((nr, nc))
                     queue.append((nr, nc, steps + 1, 0))
 
     return float('inf')
