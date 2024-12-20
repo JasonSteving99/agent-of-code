@@ -1,4 +1,3 @@
-```python
 from collections import deque
 from typing import Dict, List, Set, Tuple
 
@@ -101,5 +100,3 @@ def solution() -> int:
         pass
     
     return count_effective_cheats(input_data.rstrip())
-
-```
