@@ -4,7 +4,7 @@ from collections import defaultdict, deque
 import sys
 import heapq
 
-@dataclass(frozen=True, order=True)
+@dataclass(frozen=True)
 class Position:
     row: int
     col: int
