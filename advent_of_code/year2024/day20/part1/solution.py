@@ -31,15 +31,16 @@ def count_effective_cheats(input_map: str) -> int:
 
     def bfs(start_pos: Tuple[int, int], end_pos: Tuple[int, int], allow_walls:bool = False) -> Dict[Tuple[int, int], int]:
         distances = {start_pos: 0}
-        queue = deque([start_pos])
+        queue = deque([(start_pos, 0)])
+        visited = {start_pos}
         
         while queue:
-            pos = queue.popleft()
+            pos, cheat_count = queue.popleft()
             for next_pos in get_neighbors(pos, allow_walls):
-                if next_pos not in distances:
+                if next_pos not in visited:
                     distances[next_pos] = distances[pos] + 1
-                    queue.append(next_pos)
-        
+                    visited.add(next_pos)
+                    queue.append((next_pos, cheat_count+1 if allow_walls else 0))
         return distances
 
     # Calculate normal path distances from start and end
@@ -71,27 +72,28 @@ def count_effective_cheats(input_map: str) -> int:
                 
                 cheat_start = (r1,c1)
                 cheat_end = (r2,c2)
-                
-                cheat_distances = bfs(cheat_start, (0,0), True)  # Calculate distance with wall pass
-                
-                reachable_tracks_during_cheat = {}
-                for pos, dist in cheat_distances.items():
-                  if dist <=2:
-                    if grid[pos[0]][pos[1]] == '.':
-                      reachable_tracks_during_cheat[pos] = dist
 
-                if not reachable_tracks_during_cheat:
-                  continue
-                
+                queue = deque([(cheat_start,0, 0)])
+                visited = {cheat_start}
                 min_cheat_dist = float('inf')
-                for track_pos, cheat_dist in reachable_tracks_during_cheat.items():
-                  min_cheat_dist = min(min_cheat_dist, cheat_dist + end_distances.get(track_pos, float('inf')))
                 
+                while queue:
+                  pos, cheat_count, dist = queue.popleft()
+                  if cheat_count > 2:
+                      continue
+                  if grid[pos[0]][pos[1]] == '.' and cheat_count > 0:
+                    min_cheat_dist = min(min_cheat_dist, dist + end_distances.get(pos, float('inf')))
+                  
+                  for next_pos in get_neighbors(pos, cheat_count < 2):
+                    if next_pos not in visited:
+                      visited.add(next_pos)
+                      queue.append((next_pos, cheat_count +1, dist + 1))
+
                 if min_cheat_dist == float('inf'):
                   continue
                   
                 cheat_path_length = start_distances[cheat_start] + min_cheat_dist
-                
+
                 if normal_path_length - cheat_path_length >= 100:
                   effective_cheats += 1
 
