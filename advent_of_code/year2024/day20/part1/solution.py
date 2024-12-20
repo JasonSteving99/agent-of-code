@@ -13,7 +13,7 @@ def get_start_end_positions(grid: List[str]) -> Tuple[Tuple[int, int], Tuple[int
                 break
     return start, end
 
-def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, int]) -> int:
+def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, int], valid_cells: str = '.SE') -> int:
     rows, cols = len(grid), len(grid[0])
     queue: deque[Tuple[int, int, int]] = deque([(start[0], start[1], 0)])
     visited: Set[Tuple[int, int]] = {start}
@@ -27,7 +27,7 @@ def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, 
             nr, nc = r + dr, c + dc
             if (0 <= nr < rows and 0 <= nc < cols and 
                 (nr, nc) not in visited and 
-                grid[nr][nc] in '.SE'):
+                grid[nr][nc] in valid_cells):
                 visited.add((nr, nc))
                 queue.append((nr, nc, steps + 1))
     return float('inf')
@@ -76,15 +76,16 @@ def count_effective_cheats(racetrack: str) -> int:
     
     for r1 in range(rows):
         for c1 in range(cols):
-            if grid[r1][c1] == '#':
-                continue
-            for r2 in range(rows):
-                for c2 in range(cols):
-                    if grid[r2][c2] == '#':
-                        continue
-                    time_saved = try_cheat(grid, start, end, (r1, c1), (r2, c2), normal_time)
-                    if time_saved is not None and time_saved >= 100:
-                        cheats_saving.add(time_saved)
+            for dr1, dc1 in [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]:
+                r2, c2 = r1 + dr1, c1 + dc1
+                if 0 <= r2 < rows and 0 <= c2 < cols:
+                    for dr2, dc2 in [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]:
+                        r3, c3 = r2 + dr2, c2 + dc2
+                        if 0 <= r3 < rows and 0 <= c3 < cols:
+                            time_saved = try_cheat(grid, start, end, (r1, c1), (r3, c3), normal_time)
+                            if time_saved is not None and time_saved >= 100:
+                                cheats_saving.add(time_saved)
+
     
     return len(cheats_saving)
 
