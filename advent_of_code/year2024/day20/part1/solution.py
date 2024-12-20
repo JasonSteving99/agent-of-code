@@ -95,7 +95,7 @@ def try_cheat(maze: List[List[str]], start: Point, end: Point, base_distance: in
 
 def solve_maze(maze_str: str) -> int:
     """
-    Solve the maze and return the number of cheats that would save at least 100 picoseconds.
+    Solve the maze and return the shortest path length, or -1 if no path exists.
     """
     # Parse the maze
     maze, start, end = parse_maze(maze_str)
@@ -103,9 +103,6 @@ def solve_maze(maze_str: str) -> int:
     # Get the base distance (without cheating)
     base_distances = get_normal_distance(maze, start, end)
     if end not in base_distances:
-        return 0  # No solution possible
+      return -1
     
-    base_distance = base_distances[end]
-    
-    # Find all possible cheats that save at least 100 picoseconds
-    return try_cheat(maze, start, end, base_distance)
+    return base_distances[end]
