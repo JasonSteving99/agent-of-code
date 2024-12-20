@@ -1,97 +1,105 @@
+```python
 from collections import deque
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Set, Tuple
 
-def get_start_end_positions(grid: List[str]) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+
+def count_effective_cheats(input_map: str) -> int:
+    # Parse the map
+    grid = [list(line) for line in input_map.splitlines()]
+    height = len(grid)
+    width = len(grid[0])
+
+    # Find start and end positions
     start = end = None
-    for i, row in enumerate(grid):
-        for j, cell in enumerate(row):
-            if cell == 'S':
+    for i in range(height):
+        for j in range(width):
+            if grid[i][j] == 'S':
                 start = (i, j)
-            elif cell == 'E':
+                grid[i][j] = '.'  # Convert to normal track
+            elif grid[i][j] == 'E':
                 end = (i, j)
-            if start and end:
-                break
-    return start, end
+                grid[i][j] = '.'  # Convert to normal track
 
-def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, int], cheating: bool = False) -> int:
-    rows, cols = len(grid), len(grid[0])
-    queue: deque[Tuple[int, int, int, int]] = deque([(start[0], start[1], 0, 0)]) # r, c, steps, cheat_steps
-    visited: Set[Tuple[int, int]] = {start}
-    
-    while queue:
-        r, c, steps, cheat_steps = queue.popleft()
-        if (r, c) == end:
-            return steps
-        
+    def get_neighbors(pos: Tuple[int, int], allow_walls: bool = False) -> List[Tuple[int, int]]:
+        r, c = pos
+        neighbors = []
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                if (nr, nc) in visited:
-                   continue
+            if 0 <= nr < height and 0 <= nc < width:
+                if allow_walls or grid[nr][nc] == '.':
+                    neighbors.append((nr, nc))
+        return neighbors
 
-                if cheating:
-                    if cheat_steps < 2 and grid[nr][nc] in '.#SE':
-                        visited.add((nr, nc))
-                        queue.append((nr, nc, steps + 1, cheat_steps+1))
-                elif  grid[nr][nc] in '.SE':
-                    visited.add((nr, nc))
-                    queue.append((nr, nc, steps + 1, 0))
+    def bfs(start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> Dict[Tuple[int, int], int]:
+        distances = {start_pos: 0}
+        queue = deque([start_pos])
+        
+        while queue:
+            pos = queue.popleft()
+            for next_pos in get_neighbors(pos):
+                if next_pos not in distances:
+                    distances[next_pos] = distances[pos] + 1
+                    queue.append(next_pos)
+        
+        return distances
 
-    return float('inf')
+    # Calculate normal path distances from start and end
+    start_distances = bfs(start, end)
+    end_distances = bfs(end, start)
 
-def try_cheat(grid: List[str], start: Tuple[int, int], end: Tuple[int, int], 
-              cheat_start: Tuple[int, int], cheat_end: Tuple[int, int],
-              normal_time: int) -> Optional[int]:
-    # Validate cheat positions
-    if not (0 <= cheat_start[0] < len(grid) and 0 <= cheat_start[1] < len(grid[0])):
-        return None
-    if not (0 <= cheat_end[0] < len(grid) and 0 <= cheat_end[1] < len(grid[0])):
-        return None
-    
-    time_to_cheat_start = find_shortest_path(grid, start, cheat_start)
-    if time_to_cheat_start == float('inf'):
-        return None
-    
-    time_with_cheat = find_shortest_path(grid, cheat_start, end, cheating=True)
-    
-    if time_with_cheat == float('inf'):
-        return None
+    if end not in start_distances:
+        return 0  # No valid path exists
 
-    total_time = time_to_cheat_start + time_with_cheat
-    time_saved = normal_time - total_time
-    return time_saved if time_saved > 0 else None
+    normal_path_length = start_distances[end]
+    effective_cheats = 0
 
-def count_effective_cheats(racetrack: str) -> int:
-    # Convert string to grid
-    grid = racetrack.strip().split('\n')
-    
-    # Find start and end positions
-    start, end = get_start_end_positions(grid)
-    
-    # Find normal shortest path time
-    normal_time = find_shortest_path(grid, start, end)
-    
-    # Try all possible cheat combinations
-    rows, cols = len(grid), len(grid[0])
-    cheats_saving: Set[int] = set()
-    
-    for r1 in range(rows):
-        for c1 in range(cols):
-            for dr1, dc1 in [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]:
-                r2, c2 = r1 + dr1, c1 + dc1
-                if 0 <= r2 < rows and 0 <= c2 < cols:
-                    time_saved = try_cheat(grid, start, end, (r1, c1), (r2, c2), normal_time)
-                    if time_saved is not None and time_saved >= 100:
-                         cheats_saving.add(time_saved)
-    
-    return len(cheats_saving)
+    # For each possible cheat start position
+    for r1 in range(height):
+        for c1 in range(width):
+            if grid[r1][c1] != '.':
+                continue
+            start_pos = (r1, c1)
+            if start_pos not in start_distances:
+                continue
+
+            # Try all possible cheat end positions within 2 moves
+            for r2 in range(max(0, r1-2), min(height, r1+3)):
+                for c2 in range(max(0, c1-2), min(width, c1+3)):
+                    end_pos = (r2, c2)
+                    if abs(r2-r1) + abs(c2-c1) > 2:  # Manhattan distance check
+                        continue
+
+                    # Check if this is a valid cheat (ends on track)
+                    if grid[r2][c2] != '.':
+                        continue
+
+                    if end_pos not in end_distances:
+                        continue
+
+                    # Calculate total path length with this cheat
+                    cheat_path_length = (
+                        start_distances[start_pos] +  # Path to cheat start
+                        abs(r2-r1) + abs(c2-c1) +    # Cheat length (Manhattan distance)
+                        end_distances[end_pos]        # Path from cheat end to goal
+                    )
+
+                    # Check if this cheat saves at least 100 picoseconds
+                    if normal_path_length - cheat_path_length >= 100:
+                        effective_cheats += 1
+
+    return effective_cheats
+
 
 def solution() -> int:
-    racetrack = input().strip()
-    while True:
-        try:
-            line = input().strip()
-            racetrack += '\n' + line
-        except EOFError:
-            break
-    return count_effective_cheats(racetrack)
+    # Read input from stdin
+    input_data = ""
+    try:
+        while True:
+            line = input()
+            input_data += line + "\n"
+    except EOFError:
+        pass
+    
+    return count_effective_cheats(input_data.rstrip())
+
+```
