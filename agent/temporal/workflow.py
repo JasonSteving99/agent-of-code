@@ -290,7 +290,14 @@ class SolveAoCProblemWorkflow:
                     if is_correct_solution:
                         # If the solution is correct, then we're done!
                         break
-                    # Otherwise, potentially try again.
+                    else:
+                        # Otherwise, potentially try again. But first hacky check to ensure that we
+                        # don't misconstrue this as a success just because we exceeded max retries.
+                        problem_solution_result = GeneratedSolutionRes(
+                            result=GeneratedSolutionRes.Failure(
+                                exit_code=-1, std_err="INCORRECT SOLUTION"
+                            )
+                        )
                 case _:
                     raise ValueError("Unexpected result type!")
 

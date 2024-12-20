@@ -16,6 +16,11 @@ async def submit(
     base_dir: str,
 ) -> bool:
     """Submit solution to Advent of Code"""
+    # If answer is empty there is nothing to submit.
+    if not answer:
+        click.echo("No answer provided 😢")
+        return False
+
     # Check existence of cached solution to check against first.
     cached_solution_path = os.path.join(base_dir, "solution.txt")
     if os.path.isfile(cached_solution_path):
