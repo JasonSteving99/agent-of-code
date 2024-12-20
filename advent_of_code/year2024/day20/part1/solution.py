@@ -27,10 +27,11 @@ def find_shortest_path(grid: List[str], start: Tuple[int, int], end: Tuple[int, 
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
                 if cheating:
-                    if grid[nr][nc] in '.#SE' and (nr, nc, min(cheat_steps +1, 2)) not in visited and cheat_steps < 2:
-                      visited.add((nr, nc, min(cheat_steps + 1, 2)))
-                      queue.append((nr, nc, steps + 1, cheat_steps + 1))
-                elif grid[nr][nc] in '.SE' and (nr, nc, 0) not in visited:
+                     if cheat_steps < 2 and grid[nr][nc] in '.#SE':
+                         if (nr, nc, cheat_steps + 1) not in visited:
+                            visited.add((nr, nc, cheat_steps+1))
+                            queue.append((nr, nc, steps + 1, cheat_steps+1))
+                elif  grid[nr][nc] in '.SE' and (nr, nc, 0) not in visited:
                     visited.add((nr, nc, 0))
                     queue.append((nr, nc, steps + 1, 0))
 
@@ -44,16 +45,16 @@ def try_cheat(grid: List[str], start: Tuple[int, int], end: Tuple[int, int],
         return None
     if not (0 <= cheat_end[0] < len(grid) and 0 <= cheat_end[1] < len(grid[0])):
         return None
-
+    
     time_to_cheat_start = find_shortest_path(grid, start, cheat_start)
     if time_to_cheat_start == float('inf'):
-      return None
-    
-    time_with_cheat = find_shortest_path(grid, cheat_start, end, cheating=True)
-
-    if time_with_cheat == float('inf'):
         return None
     
+    time_with_cheat = find_shortest_path(grid, cheat_start, end, cheating=True)
+    
+    if time_with_cheat == float('inf'):
+        return None
+
     total_time = time_to_cheat_start + time_with_cheat
     time_saved = normal_time - total_time
     return time_saved if time_saved > 0 else None
@@ -77,9 +78,9 @@ def count_effective_cheats(racetrack: str) -> int:
             for dr1, dc1 in [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]:
                 r2, c2 = r1 + dr1, c1 + dc1
                 if 0 <= r2 < rows and 0 <= c2 < cols:
-                      time_saved = try_cheat(grid, start, end, (r1, c1), (r2, c2), normal_time)
-                      if time_saved is not None and time_saved >= 100:
-                          cheats_saving.add(time_saved)
+                    time_saved = try_cheat(grid, start, end, (r1, c1), (r2, c2), normal_time)
+                    if time_saved is not None and time_saved >= 100:
+                         cheats_saving.add(time_saved)
     
     return len(cheats_saving)
 
