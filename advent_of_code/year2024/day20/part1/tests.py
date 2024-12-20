@@ -1,17 +1,22 @@
 """
-This test suite covers the functionality of finding the shortest valid path in a racing track from start 'S' to end 'E'.
-Key test aspects:
-- Navigation through a maze-like track represented as a string with '#' as walls and '.' as valid paths
-- Start position marked with 'S' and end position marked with 'E'
-- Validation of the shortest possible time/distance without passing through walls
+This test suite verifies the `solve_maze` function which:
+1. Takes a string representation of a maze where:
+   - '#' represents walls
+   - '.' represents traversable track
+   - 'S' represents the starting position
+   - 'E' represents the ending position
+2. Returns an integer representing the minimum number of steps needed to get from 'S' to 'E'
+   using only valid track spaces (no going through walls).
+
+The test covers a basic maze navigation scenario where the function should find the shortest
+path from start to end while avoiding walls.
 """
 
-from solution import shortest_path_without_cheats
+from solution import solve_maze
+import pytest
 
-
-def test_basic_race_track_shortest_path():
-    # A complex race track layout with multiple possible paths
-    test_track = (
+def test_basic_maze_navigation():
+    maze = (
         "###############\n"
         "#...#...#.....#\n"
         "#.#.#.#.#.###.#\n"
@@ -29,12 +34,10 @@ def test_basic_race_track_shortest_path():
         "###############"
     )
     
-    expected_time = 84
-    actual_time = shortest_path_without_cheats(test_track)
+    result = solve_maze(maze)
     
-    assert actual_time == expected_time, (
-        f"Failed to find correct shortest path time.\n"
-        f"Input track:\n{test_track}\n"
-        f"Expected time: {expected_time}\n"
-        f"Actual time: {actual_time}"
+    # For this specific maze layout, the shortest path from S to E requires 84 steps
+    assert result == 84, (
+        f"Expected solve_maze to find path of 84 steps in maze:\n{maze}\n"
+        f"but got {result} steps instead"
     )
