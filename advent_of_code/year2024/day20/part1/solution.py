@@ -29,13 +29,13 @@ def count_effective_cheats(input_map: str) -> int:
                     neighbors.append((nr, nc))
         return neighbors
 
-    def bfs(start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> Dict[Tuple[int, int], int]:
+    def bfs(start_pos: Tuple[int, int], end_pos: Tuple[int, int], allow_walls:bool = False) -> Dict[Tuple[int, int], int]:
         distances = {start_pos: 0}
         queue = deque([start_pos])
         
         while queue:
             pos = queue.popleft()
-            for next_pos in get_neighbors(pos):
+            for next_pos in get_neighbors(pos, allow_walls):
                 if next_pos not in distances:
                     distances[next_pos] = distances[pos] + 1
                     queue.append(next_pos)
@@ -62,29 +62,38 @@ def count_effective_cheats(input_map: str) -> int:
                 continue
 
             # Try all possible cheat end positions within 2 moves
-            for r2 in range(max(0, r1-2), min(height, r1+3)):
-                for c2 in range(max(0, c1-2), min(width, c1+3)):
-                    end_pos = (r2, c2)
-                    if abs(r2-r1) + abs(c2-c1) > 2:  # Manhattan distance check
-                        continue
+            for r2 in range(height):
+              for c2 in range(width):
+                if abs(r2 - r1) + abs(c2 - c1) > 2:
+                  continue
+                if (r2,c2) == (r1, c1):
+                    continue
+                
+                cheat_start = (r1,c1)
+                cheat_end = (r2,c2)
+                
+                cheat_distances = bfs(cheat_start, (0,0), True)  # Calculate distance with wall pass
+                
+                reachable_tracks_during_cheat = {}
+                for pos, dist in cheat_distances.items():
+                  if dist <=2:
+                    if grid[pos[0]][pos[1]] == '.':
+                      reachable_tracks_during_cheat[pos] = dist
 
-                    # Check if this is a valid cheat (ends on track)
-                    if grid[r2][c2] != '.':
-                        continue
-
-                    if end_pos not in end_distances:
-                        continue
-
-                    # Calculate total path length with this cheat
-                    cheat_path_length = (
-                        start_distances[start_pos] +  # Path to cheat start
-                        abs(r2-r1) + abs(c2-c1) +    # Cheat length (Manhattan distance)
-                        end_distances[end_pos]        # Path from cheat end to goal
-                    )
-
-                    # Check if this cheat saves at least 100 picoseconds
-                    if normal_path_length - cheat_path_length >= 100:
-                        effective_cheats += 1
+                if not reachable_tracks_during_cheat:
+                  continue
+                
+                min_cheat_dist = float('inf')
+                for track_pos, cheat_dist in reachable_tracks_during_cheat.items():
+                  min_cheat_dist = min(min_cheat_dist, cheat_dist + end_distances.get(track_pos, float('inf')))
+                
+                if min_cheat_dist == float('inf'):
+                  continue
+                  
+                cheat_path_length = start_distances[cheat_start] + min_cheat_dist
+                
+                if normal_path_length - cheat_path_length >= 100:
+                  effective_cheats += 1
 
     return effective_cheats
 
