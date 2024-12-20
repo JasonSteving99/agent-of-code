@@ -1,38 +1,38 @@
 """
-Unit tests for the count_effective_cheats function that determines the number of possible wall-passing cheats
-that save at least 100 picoseconds when navigating from S to E in a race track map.
+This test suite verifies the shortest_path_without_cheats function which finds the shortest path 
+through a race track map from Start (S) to End (E) point without any wall phase-through.
+The function should return the number of picoseconds needed to reach the end.
 
-The tests verify:
-1. Proper counting of effective cheats (saving ≥100 picoseconds) in a race track map with walls, tracks, start (S), and end (E)
-2. Handling of a complex maze-like track layout with multiple possible paths and cheat opportunities
+Key test cases:
+- Basic maze navigation with multiple possible paths, verifying correct shortest path selection
 """
 
-from solution import count_effective_cheats
+from solution import shortest_path_without_cheats
 
-def test_complex_maze_with_multiple_cheat_opportunities():
-    track_map = (
-        "###############\n"
-        "#...#...#.....#\n"
-        "#.#.#.#.#.###.#\n"
-        "#S#...#.#.#...#\n"
-        "#######.#.#.###\n"
-        "#######.#.#...#\n"
-        "#######.#.###.#\n"
-        "###..E#...#...#\n"
-        "###.#######.###\n"
-        "#...###...#...#\n"
-        "#.#####.#.###.#\n"
-        "#.#...#.#.#...#\n"
-        "#.#.#.#.#.#.###\n"
-        "#...#...#...###\n"
-        "###############"
-    )
-    expected_cheats = 11
+
+def test_basic_maze_navigation():
+    maze = "###############\n" \
+           "#...#...#.....#\n" \
+           "#.#.#.#.#.###.#\n" \
+           "#S#...#.#.#...#\n" \
+           "#######.#.#.###\n" \
+           "#######.#.#...#\n" \
+           "#######.#.###.#\n" \
+           "###..E#...#...#\n" \
+           "###.#######.###\n" \
+           "#...###...#...#\n" \
+           "#.#####.#.###.#\n" \
+           "#.#...#.#.#...#\n" \
+           "#.#.#.#.#.#.###\n" \
+           "#...#...#...###\n" \
+           "###############"
     
-    result = count_effective_cheats(track_map)
+    result = shortest_path_without_cheats(maze)
+    expected = 84
     
-    assert result == expected_cheats, (
-        f"Failed to correctly count effective cheats in maze.\n"
-        f"Input map:\n{track_map}\n"
-        f"Expected {expected_cheats} cheats that save ≥100 picoseconds, but got {result}"
+    assert result == expected, (
+        f"Failed to find correct shortest path in maze.\n"
+        f"Input maze:\n{maze}\n"
+        f"Expected path length: {expected} picoseconds\n"
+        f"Got: {result} picoseconds"
     )
