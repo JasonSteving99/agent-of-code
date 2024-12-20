@@ -36,11 +36,14 @@ def count_effective_cheats(input_map: str) -> int:
 
         while queue:
             pos, cheat_steps = queue.popleft()
-            for next_pos in get_neighbors(pos, allow_walls and cheat_steps < 2):
+            for next_pos in get_neighbors(pos, allow_walls):
                 if next_pos not in visited:
-                  distances[next_pos] = distances[pos] + 1
-                  visited.add(next_pos)
-                  queue.append((next_pos, cheat_steps+1 if allow_walls else 0))
+                    distances[next_pos] = distances[pos] + 1
+                    visited.add(next_pos)
+                    new_cheat_steps = cheat_steps
+                    if allow_walls and grid[next_pos[0]][next_pos[1]] == '#':
+                      new_cheat_steps +=1
+                    queue.append((next_pos, new_cheat_steps))
         return distances
 
     # Calculate normal path distances from start to end
