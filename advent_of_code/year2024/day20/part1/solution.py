@@ -1,4 +1,3 @@
-```python
 from collections import deque
 from dataclasses import dataclass
 from typing import List, Set, Tuple, Dict, Optional
@@ -110,4 +109,3 @@ def solve_maze(maze_str: str) -> int:
     
     # Find all possible cheats that save at least 100 picoseconds
     return try_cheat(maze, start, end, base_distance)
-```
