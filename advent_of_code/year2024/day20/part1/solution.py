@@ -1,61 +1,68 @@
-"""Solution for Race Condition puzzle."""
-from typing import List, Tuple, Set, Dict, Optional
 from collections import deque
-from heapq import heappush, heappop
+from typing import List, Set, Tuple
 import sys
 
-def shortest_path_without_cheats(racetrack: str) -> int:
-    """Find the shortest path from start to end without cheating."""
-    # Parse the racetrack into a 2D grid
-    grid = [list(line) for line in racetrack.strip().split('\n')]
+
+def find_start_end(grid: List[str]) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+    """Find start and end positions in the grid."""
+    start = end = None
+    for i, row in enumerate(grid):
+        for j, cell in enumerate(row):
+            if cell == 'S':
+                start = (i, j)
+            elif cell == 'E':
+                end = (i, j)
+    assert start is not None and end is not None
+    return start, end
+
+
+def shortest_path_without_cheats(input_map: str) -> int:
+    """
+    Find the shortest path from start to end without using any cheats.
+    
+    Args:
+        input_map: String representing the racetrack map.
+        
+    Returns:
+        The number of picoseconds needed to reach the end.
+    """
+    # Convert input string to grid
+    grid = input_map.strip().split('\n')
     rows, cols = len(grid), len(grid[0])
     
     # Find start and end positions
-    start = end = None
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == 'S':
-                start = (i, j)
-            elif grid[i][j] == 'E':
-                end = (i, j)
+    start, end = find_start_end(grid)
     
-    # Dijkstra's algorithm
-    def get_neighbors(pos: Tuple[int, int]) -> List[Tuple[int, int]]:
-        r, c = pos
-        neighbors = []
-        for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-            new_r, new_c = r + dr, c + dc
-            if (0 <= new_r < rows and 
-                0 <= new_c < cols and 
-                grid[new_r][new_c] in ['.', 'E']):
-                neighbors.append((new_r, new_c))
-        return neighbors
+    # BFS for shortest path
+    queue = deque([(start, 0)])  # (position, steps)
+    visited: Set[Tuple[int, int]] = {start}
     
-    # Priority queue for Dijkstra's [(distance, position)]
-    pq = [(0, start)]
-    distances = {start: 0}
+    # Possible moves: up, down, left, right
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     
-    while pq:
-        dist, pos = heappop(pq)
-        if pos == end:
-            return dist
+    while queue:
+        (row, col), steps = queue.popleft()
         
-        if dist > distances[pos]:
-            continue
+        if (row, col) == end:
+            return steps
+        
+        # Try all possible moves
+        for dr, dc in directions:
+            new_row, new_col = row + dr, col + dc
             
-        for next_pos in get_neighbors(pos):
-            new_dist = dist + 1
-            if next_pos not in distances or new_dist < distances[next_pos]:
-                distances[next_pos] = new_dist
-                heappush(pq, (new_dist, next_pos))
+            # Check bounds and if the new position is valid
+            if (0 <= new_row < rows and 
+                0 <= new_col < cols and 
+                grid[new_row][new_col] != '#' and 
+                (new_row, new_col) not in visited):
+                
+                visited.add((new_row, new_col))
+                queue.append(((new_row, new_col), steps + 1))
     
-    # If no path found
-    return -1
+    return -1  # No path found
+
 
 def solution() -> int:
-    """Read input from stdin and solve the problem."""
-    input_text = sys.stdin.read()
-    return shortest_path_without_cheats(input_text)
-
-if __name__ == "__main__":
-    print(solution())
+    """Read from stdin and return the answer."""
+    input_data = sys.stdin.read()
+    return shortest_path_without_cheats(input_data)

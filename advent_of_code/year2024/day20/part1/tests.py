@@ -1,38 +1,40 @@
 """
-This test suite verifies the shortest_path_without_cheats function which finds the shortest path 
-through a race track map from Start (S) to End (E) point without any wall phase-through.
-The function should return the number of picoseconds needed to reach the end.
-
-Key test cases:
-- Basic maze navigation with multiple possible paths, verifying correct shortest path selection
+This test suite covers the functionality of finding the shortest valid path in a racing track from start 'S' to end 'E'.
+Key test aspects:
+- Navigation through a maze-like track represented as a string with '#' as walls and '.' as valid paths
+- Start position marked with 'S' and end position marked with 'E'
+- Validation of the shortest possible time/distance without passing through walls
 """
 
 from solution import shortest_path_without_cheats
 
 
-def test_basic_maze_navigation():
-    maze = "###############\n" \
-           "#...#...#.....#\n" \
-           "#.#.#.#.#.###.#\n" \
-           "#S#...#.#.#...#\n" \
-           "#######.#.#.###\n" \
-           "#######.#.#...#\n" \
-           "#######.#.###.#\n" \
-           "###..E#...#...#\n" \
-           "###.#######.###\n" \
-           "#...###...#...#\n" \
-           "#.#####.#.###.#\n" \
-           "#.#...#.#.#...#\n" \
-           "#.#.#.#.#.#.###\n" \
-           "#...#...#...###\n" \
-           "###############"
+def test_basic_race_track_shortest_path():
+    # A complex race track layout with multiple possible paths
+    test_track = (
+        "###############\n"
+        "#...#...#.....#\n"
+        "#.#.#.#.#.###.#\n"
+        "#S#...#.#.#...#\n"
+        "#######.#.#.###\n"
+        "#######.#.#...#\n"
+        "#######.#.###.#\n"
+        "###..E#...#...#\n"
+        "###.#######.###\n"
+        "#...###...#...#\n"
+        "#.#####.#.###.#\n"
+        "#.#...#.#.#...#\n"
+        "#.#.#.#.#.#.###\n"
+        "#...#...#...###\n"
+        "###############"
+    )
     
-    result = shortest_path_without_cheats(maze)
-    expected = 84
+    expected_time = 84
+    actual_time = shortest_path_without_cheats(test_track)
     
-    assert result == expected, (
-        f"Failed to find correct shortest path in maze.\n"
-        f"Input maze:\n{maze}\n"
-        f"Expected path length: {expected} picoseconds\n"
-        f"Got: {result} picoseconds"
+    assert actual_time == expected_time, (
+        f"Failed to find correct shortest path time.\n"
+        f"Input track:\n{test_track}\n"
+        f"Expected time: {expected_time}\n"
+        f"Actual time: {actual_time}"
     )
