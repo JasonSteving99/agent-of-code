@@ -40,18 +40,19 @@ def get_price_changes(initial: int, count: int = 2000) -> List[Tuple[int, int]]:
     Returns:
         List of tuples (price, price_change)
     """
+    prev_secret = initial
     prev_price = initial % 10
-    result = [(prev_price, 0)]
+    result = []
     
     current = initial
     for _ in range(count):
         current = generate_next_secret(current)
         price = current % 10
-        change = price - prev_price
+        change = (price - prev_price)  # Price changes are not modulo 10 here
         result.append((price, change))
         prev_price = price
         
-    return result[1:]  # Skip the first element as it has no meaningful change
+    return result
 
 def find_sequence_value(price_changes: List[Tuple[int, int]], target_sequence: Tuple[int, ...]) -> Optional[int]:
     """Find the price at which the target sequence first appears."""
