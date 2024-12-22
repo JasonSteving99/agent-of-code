@@ -111,7 +111,7 @@ def generate_keypad_sequence(target: str) -> str:
     for action in robot_sequence:
         path = find_path(second_robot_start, action, directional_keypad)
         final_sequence.extend(path)
-        second_robot_start = directional_keypad.button_positions[action]
+        second_robot_start = directional_keypad.button_positions[action] # Corrected line
 
     return ''.join(final_sequence)
 
