@@ -1,9 +1,9 @@
 """
 Solutions for Monkey Market part 2 puzzle.
 """
-import itertools
 import sys
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
+from collections import defaultdict
 
 def mix_number(secret: int, value: int) -> int:
     """Mix a value into the secret number using XOR."""
@@ -48,19 +48,11 @@ def get_price_changes(initial: int, count: int = 2000) -> List[Tuple[int, int]]:
     for _ in range(count):
         current = generate_next_secret(current)
         price = current % 10
-        change = (price - prev_price)  # Price changes are not modulo 10 here
+        change = (price - prev_price)
         result.append((price, change))
         prev_price = price
         
     return result
-
-def find_sequence_value(price_changes: List[Tuple[int, int]], target_sequence: Tuple[int, ...]) -> Optional[int]:
-    """Find the price at which the target sequence first appears."""
-    seq_len = len(target_sequence)
-    for i in range(len(price_changes) - seq_len + 1):
-        if tuple(pc[1] for pc in price_changes[i:i+seq_len]) == target_sequence:
-            return price_changes[i+seq_len-1][0]
-    return None
 
 def calculate_max_bananas(initial_numbers: List[int]) -> int:
     """
@@ -72,24 +64,21 @@ def calculate_max_bananas(initial_numbers: List[int]) -> int:
     Returns:
         Maximum total bananas obtainable
     """
-    # Generate all price changes for each initial number
     all_price_changes = [get_price_changes(num) for num in initial_numbers]
     
-    # Try all possible sequences of 4 changes from -9 to 9
-    possible_changes = range(-9, 10)
+    # Collect all possible sequences of 4 changes
+    sequence_map: Dict[Tuple[int, ...], List[int]] = defaultdict(list)
+    for price_changes in all_price_changes:
+        for i in range(len(price_changes) - 3):
+            seq = tuple(pc[1] for pc in price_changes[i:i+4])
+            price = price_changes[i+3][0]
+            sequence_map[seq].append(price) # store price along with seq
+    
     max_bananas = 0
-    
-    for seq in itertools.product(possible_changes, repeat=4):
-        total_bananas = 0
-        
-        # For each buyer, find when this sequence first appears
-        for price_changes in all_price_changes:
-            price = find_sequence_value(price_changes, seq)
-            if price is not None:
-                total_bananas += price
-        
+    for seq, prices in sequence_map.items():
+        total_bananas = sum(prices)
         max_bananas = max(max_bananas, total_bananas)
-    
+            
     return max_bananas
 
 def solution() -> int:
