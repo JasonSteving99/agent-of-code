@@ -44,14 +44,15 @@ class Keypad:
             '<': (0, -1),  # left
             '>': (0, 1)    # right
         }
+
     def get_valid_moves(self, pos: Tuple[int, int]) -> List[Tuple[str, Tuple[int, int]]]:
-        """Get all valid moves from current position."""
-        moves = []
-        for dir_symbol, (dy, dx) in self.directions.items():
-            new_pos = (pos[0] + dy, pos[1] + dx)
-            if new_pos in self.valid_positions:
-                moves.append((dir_symbol, new_pos))
-        return moves
+      """Get all valid moves from current position."""
+      moves = []
+      for dir_symbol, (dy, dx) in self.directions.items():
+        new_pos = (pos[0] + dy, pos[1] + dx)
+        if new_pos in self.valid_positions:
+          moves.append((dir_symbol, new_pos))
+      return moves
 
     def solve_code(self, target_code: str) -> str:
         """Perform BFS to find shortest path to type the code."""
@@ -85,13 +86,14 @@ class Keypad:
                     new_code_idx
                 ))
 
-            for dir_symbol, new_pos in self.get_valid_moves(state.current_pos):
-                queue.append(State(
-                    new_pos,
-                    state.sequence + dir_symbol,
-                    state.target_code,
-                    state.current_code_idx
-                ))
+            valid_moves = self.get_valid_moves(state.current_pos)
+            for dir_symbol, new_pos in valid_moves:
+              queue.append(State(
+                  new_pos,
+                  state.sequence + dir_symbol,
+                  state.target_code,
+                  state.current_code_idx
+              ))
         return ""
 
 def solve_keypad(numeric_code: str) -> str:
