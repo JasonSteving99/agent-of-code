@@ -73,6 +73,7 @@ class Keypad:
             seen.add(state_key)
 
             current_target = state.target_code[state.current_code_idx]
+            
             if self.layout.get(state.current_pos) == current_target:
                 new_sequence = state.sequence + 'A'
                 new_code_idx = state.current_code_idx + 1
@@ -85,15 +86,15 @@ class Keypad:
                     state.target_code,
                     new_code_idx
                 ))
-
-            valid_moves = self.get_valid_moves(state.current_pos)
-            for dir_symbol, new_pos in valid_moves:
-              queue.append(State(
-                  new_pos,
-                  state.sequence + dir_symbol,
-                  state.target_code,
-                  state.current_code_idx
-              ))
+            else:
+                valid_moves = self.get_valid_moves(state.current_pos)
+                for dir_symbol, new_pos in valid_moves:
+                    queue.append(State(
+                        new_pos,
+                        state.sequence + dir_symbol,
+                        state.target_code,
+                        state.current_code_idx
+                    ))
         return ""
 
 def solve_keypad(numeric_code: str) -> str:
