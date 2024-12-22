@@ -27,7 +27,7 @@ def get_shortest_button_sequence(target_code: str) -> str:
         return neighbors
     
     def bfs(start:Tuple[int,int], end: Tuple[int, int]) -> str:
-        queue = deque([(start, "")]
+        queue = deque([(start, "")] )
         visited = {start}
         while queue:
             current_pos, path = queue.popleft()
