@@ -1,131 +1,138 @@
-"""Solves the keypad control sequence challenge."""
-from dataclasses import dataclass
-from collections import deque
-from typing import Dict, List, Set, Tuple
+"""
+Solution for the Keypad Conundrum problem.
 
-@dataclass
-class State:
-    """Represents a state in the keypad traversal."""
-    current_pos: Tuple[int, int]
-    sequence: str
-    target_code: str
-    current_code_idx: int
+This module contains functionality to generate the shortest sequence of directional
+keypad presses needed to enter various numeric codes.
+"""
+from typing import Dict, List, Set, Tuple
+import sys
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Position:
+    """Represents a position on a keypad."""
+    row: int
+    col: int
+
 
 class Keypad:
-    """Represents a directional keypad.
-    The numeric keypad has coordinates, but a mapping to characters.
-    The directional keypads use coordinates that map to direction symbols.
+    """Represents a keypad with buttons and movement controls."""
+    def __init__(self, layout: List[List[str]]):
+        self.layout = layout
+        self.height = len(layout)
+        self.width = len(layout[0]) if layout else 0
+        self.button_positions: Dict[str, Position] = {}
+        
+        for i, row in enumerate(layout):
+            for j, button in enumerate(row):
+                if button != ' ':
+                    self.button_positions[button] = Position(i, j)
+    
+    def get_button(self, pos: Position) -> str:
+        """Get the button at a given position."""
+        if (0 <= pos.row < self.height and 
+            0 <= pos.col < self.width and 
+            self.layout[pos.row][pos.col] != ' '):
+            return self.layout[pos.row][pos.col]
+        return ' '
+
+
+def generate_keypad_sequence(target: str) -> str:
     """
-
-    def __init__(self, keypad_type: str):
-        self.keypad_type = keypad_type
-        if keypad_type == "numeric":
-            self.layout: Dict[Tuple[int, int], str] = {
-                (0, 0): '7', (0, 1): '8', (0, 2): '9',
-                (1, 0): '4', (1, 1): '5', (1, 2): '6',
-                (2, 0): '1', (2, 1): '2', (2, 2): '3',
-                (3, 0): ' ', (3, 1): '0', (3, 2): 'A'
-            }
-            self.valid_positions = set(self.layout.keys())
-            self.valid_positions.remove((3,0))
-
-        elif keypad_type == "directional":
-            self.layout: Dict[Tuple[int, int], str] = {
-                 (0, 1): '^', (0, 2): 'A',
-                 (1, 0): '<', (1, 1): 'v', (1, 2): '>'
-             }
-            self.valid_positions = set(self.layout.keys())
-        else:
-            raise ValueError(f"Invalid keypad type: {keypad_type}")
-
-        self.directions = {
-            '^': (-1, 0),  # up
-            'v': (1, 0),   # down
-            '<': (0, -1),  # left
-            '>': (0, 1)    # right
-        }
-
-    def get_valid_moves(self, pos: Tuple[int, int]) -> List[Tuple[str, Tuple[int, int]]]:
-      """Get all valid moves from current position."""
-      moves = []
-      for dir_symbol, (dy, dx) in self.directions.items():
-        new_pos = (pos[0] + dy, pos[1] + dx)
-        if new_pos in self.valid_positions:
-          moves.append((dir_symbol, new_pos))
-      return moves
-
-    def solve_code(self, target_code: str) -> str:
-        """Perform BFS to find shortest path to type the code."""
-        if self.keypad_type == "numeric":
-            start_pos = (3, 2)  # Starting at 'A'
-        else:
-            start_pos = (0,2)
-
-        queue = deque([State(start_pos, "", target_code, 0)])
-        seen = set()
-
-        while queue:
-            state = queue.popleft()
-            # Skip if this state has been seen
-            state_key = (state.current_pos, state.current_code_idx)
-            if state_key in seen:
-                continue
-            seen.add(state_key)
-
-            current_target = state.target_code[state.current_code_idx]
-            
-            if self.layout.get(state.current_pos) == current_target:
-                new_sequence = state.sequence + 'A'
-                new_code_idx = state.current_code_idx + 1
-                if new_code_idx == len(state.target_code):
-                    return new_sequence
-
-                queue.append(State(
-                    state.current_pos,
-                    new_sequence,
-                    state.target_code,
-                    new_code_idx
-                ))
-            else:
-                valid_moves = self.get_valid_moves(state.current_pos)
-                for dir_symbol, new_pos in valid_moves:
-                    queue.append(State(
-                        new_pos,
-                        state.sequence + dir_symbol,
-                        state.target_code,
-                        state.current_code_idx
-                    ))
-        return ""
-
-def solve_keypad(numeric_code: str) -> str:
-    """Calculates the shortest sequence of button presses for the given numeric code.
-
+    Generate the shortest sequence of directional keypad presses to type the target code.
+    
     Args:
-        numeric_code: The numeric code to input into the keypad
-
+        target: The numeric code to be typed.
+        
     Returns:
-        str: The shortest sequence of button presses
+        The shortest sequence of directional keypad button presses.
     """
-    numeric_keypad = Keypad("numeric")
-    second_directional_keypad = Keypad("directional")
-    first_directional_keypad = Keypad("directional")
+    # Define the keypads
+    numeric_keypad = Keypad([
+        ['7', '8', '9'],
+        ['4', '5', '6'],
+        ['1', '2', '3'],
+        [' ', '0', 'A']
+    ])
+    
+    directional_keypad = Keypad([
+        [' ', '^', 'A'],
+        ['<', 'v', '>']
+    ])
+    
+    moves = {
+        '^': Position(-1, 0),
+        'v': Position(1, 0),
+        '<': Position(0, -1),
+        '>': Position(0, 1)
+    }
 
-    second_level_code = numeric_keypad.solve_code(numeric_code)
-    first_level_code = second_directional_keypad.solve_code(second_level_code)
-    sequence = first_directional_keypad.solve_code(first_level_code)
+    def find_path(start: Position, target_button: str, keypad: Keypad) -> List[str]:
+        """Find shortest path from start position to target button."""
+        visited: Set[Tuple[int, int]] = set()
+        queue: List[Tuple[Position, List[str]]] = [(start, [])]
+        visited.add((start.row, start.col))
+        
+        while queue:
+            pos, path = queue.pop(0)
+            if keypad.get_button(pos) == target_button:
+                return path + ['A']  # Add press action
+                
+            for direction, move in moves.items():
+                new_pos = Position(pos.row + move.row, pos.col + move.col)
+                pos_tuple = (new_pos.row, new_pos.col)
+                
+                if (pos_tuple not in visited and 
+                    keypad.get_button(new_pos) != ' '):
+                    queue.append((new_pos, path + [direction]))
+                    visited.add(pos_tuple)
+        
+        return []  # No path found
 
-    return sequence
+    def generate_robot_sequence(code: str) -> str:
+        """Generate sequence for robot to type the numeric code."""
+        start_pos = numeric_keypad.button_positions['A']
+        sequence = []
+        
+        for digit in code:
+            path = find_path(start_pos, digit, numeric_keypad)
+            sequence.extend(path)
+            start_pos = numeric_keypad.button_positions[digit]
+            
+        return ''.join(sequence)
+
+    # Start with directional keypad 'A' position
+    robot_sequence = generate_robot_sequence(target)
+    second_robot_start = directional_keypad.button_positions['A']
+    final_sequence = []
+
+    # Generate sequence for second robot
+    for action in robot_sequence:
+        path = find_path(second_robot_start, action, directional_keypad)
+        final_sequence.extend(path)
+        second_robot_start = directional_keypad.button_positions[action]
+
+    return ''.join(final_sequence)
+
 
 def solution() -> int:
     """
-    Read input codes from stdin and return the sum of their complexities.
+    Read input codes and return sum of their complexities.
+    
+    Returns:
+        The sum of complexities for all input codes.
     """
-    codes = [line.strip() for line in input().split('\n') if line.strip()]
     total_complexity = 0
-
-    for code in codes:
-        sequence = solve_keypad(code)
+    
+    for line in sys.stdin:
+        code = line.strip()
+        if not code:
+            continue
+            
+        sequence = generate_keypad_sequence(code)
         numeric_part = int(''.join(c for c in code if c.isdigit()))
-        total_complexity += len(sequence) * numeric_part
-
+        complexity = len(sequence) * numeric_part
+        total_complexity += complexity
+    
     return total_complexity
