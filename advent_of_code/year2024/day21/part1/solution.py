@@ -104,15 +104,14 @@ def generate_keypad_sequence(target: str) -> str:
 
     # Start with directional keypad 'A' position
     robot_sequence = generate_robot_sequence(target)
-    second_robot_start = directional_keypad.button_positions['A']
     final_sequence = []
-
+    current_pos = directional_keypad.button_positions['A']
     # Generate sequence for second robot
     for action in robot_sequence:
-        path = find_path(second_robot_start, action, directional_keypad)
+        path = find_path(current_pos, action, directional_keypad)
         final_sequence.extend(path)
         if action in directional_keypad.button_positions:
-            second_robot_start = directional_keypad.button_positions[action]
+            current_pos = directional_keypad.button_positions[action]
 
     return ''.join(final_sequence)
 
