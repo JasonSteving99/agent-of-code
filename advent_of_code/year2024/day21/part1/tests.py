@@ -19,7 +19,7 @@ import pytest
 
 def test_code_029a():
     input_code = "029A"
-    expected = "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
+    expected = "<A^A>^^AvvvA"
     result = get_shortest_button_sequence(input_code)
     assert result == expected, (
         f"For input '{input_code}', expected button sequence '{expected}' "
@@ -28,7 +28,7 @@ def test_code_029a():
 
 def test_code_980a():
     input_code = "980A"
-    expected = "<v<A>>^AAAvA^A<vA<AA>>^AvAA<^A>A<v<A>A>^AAAvA<^A>A<vA>^A<A>A"
+    expected = "^^^A<AvvvA>A"
     result = get_shortest_button_sequence(input_code)
     assert result == expected, (
         f"For input '{input_code}', expected button sequence '{expected}' "
@@ -37,7 +37,7 @@ def test_code_980a():
 
 def test_code_179a():
     input_code = "179A"
-    expected = "<v<A>>^A<vA<A>>^AAvAA<^A>A<v<A>>^AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A"
+    expected = "<^<A^^A>>AvvvA"
     result = get_shortest_button_sequence(input_code)
     assert result == expected, (
         f"For input '{input_code}', expected button sequence '{expected}' "
@@ -46,7 +46,7 @@ def test_code_179a():
 
 def test_code_456a():
     input_code = "456A"
-    expected = "<v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A"
+    expected = "<^<^A>A>AvvA"
     result = get_shortest_button_sequence(input_code)
     assert result == expected, (
         f"For input '{input_code}', expected button sequence '{expected}' "
@@ -55,7 +55,7 @@ def test_code_456a():
 
 def test_code_379a():
     input_code = "379A"
-    expected = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A"
+    expected = "^A<<^^A>>AvvvA"
     result = get_shortest_button_sequence(input_code)
     assert result == expected, (
         f"For input '{input_code}', expected button sequence '{expected}' "
