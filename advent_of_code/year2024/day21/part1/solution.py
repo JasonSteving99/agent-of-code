@@ -26,11 +26,11 @@ def solve_keypad(numeric_code: str) -> str:
         (0, 0): '7', (0, 1): '8', (0, 2): '9',
         (1, 0): '4', (1, 1): '5', (1, 2): '6',
         (2, 0): '1', (2, 1): '2', (2, 2): '3',
-        (3, 1): '0', (3, 2): 'A'
+        (3, 0): ' ', (3, 1): '0', (3, 2): 'A'
     }
     
     valid_positions: Set[Tuple[int, int]] = set(numeric_keypad.keys())
-    
+    valid_positions.remove((3,0))
     # Directional mappings
     directions = {
         '^': (-1, 0),  # up
