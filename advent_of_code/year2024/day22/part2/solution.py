@@ -65,20 +65,24 @@ def calculate_max_bananas(initial_numbers: List[int]) -> int:
         Maximum total bananas obtainable
     """
     all_price_changes = [get_price_changes(num) for num in initial_numbers]
-    
-    # Collect all possible sequences of 4 changes
-    sequence_map: Dict[Tuple[int, ...], List[int]] = defaultdict(list)
-    for price_changes in all_price_changes:
+
+    # Collect all possible sequences of 4 changes and their corresponding prices for each buyer
+    sequence_map: Dict[Tuple[int, ...], List[List[int]]] = defaultdict(lambda: [[] for _ in initial_numbers])
+
+    for buyer_index, price_changes in enumerate(all_price_changes):
         for i in range(len(price_changes) - 3):
             seq = tuple(pc[1] for pc in price_changes[i:i+4])
             price = price_changes[i+3][0]
-            sequence_map[seq].append(price) # store price along with seq
-    
+            sequence_map[seq][buyer_index].append(price) # store price per buyer
+
     max_bananas = 0
-    for seq, prices in sequence_map.items():
-        total_bananas = sum(prices)
+    for seq, buyer_prices in sequence_map.items():
+        total_bananas = 0
+        for prices in buyer_prices:
+            if prices:
+                total_bananas += prices[0] # take the first price for each buyer
         max_bananas = max(max_bananas, total_bananas)
-            
+
     return max_bananas
 
 def solution() -> int:
