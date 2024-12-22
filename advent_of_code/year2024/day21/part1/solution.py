@@ -90,28 +90,27 @@ def generate_keypad_sequence(target: str) -> str:
         
         return []  # No path found
 
-    def generate_robot_sequence(code: str) -> str:
+    def generate_robot_sequence(code: str) -> Tuple[str, Position]:
         """Generate sequence for robot to type the numeric code."""
         start_pos = numeric_keypad.button_positions['A']
         sequence = []
-        
+        current_pos = directional_keypad.button_positions['A']
         for digit in code:
             path = find_path(start_pos, digit, numeric_keypad)
             sequence.extend(path)
             start_pos = numeric_keypad.button_positions[digit]
-            
-        return ''.join(sequence)
+        return ''.join(sequence), current_pos
 
     # Start with directional keypad 'A' position
-    robot_sequence = generate_robot_sequence(target)
+    robot_sequence, current_pos = generate_robot_sequence(target)
     final_sequence = []
-    current_pos = directional_keypad.button_positions['A']
+    
     # Generate sequence for second robot
     for action in robot_sequence:
         path = find_path(current_pos, action, directional_keypad)
         final_sequence.extend(path)
         if action in directional_keypad.button_positions:
-            current_pos = directional_keypad.button_positions[action]
+             current_pos = directional_keypad.button_positions[action]
 
     return ''.join(final_sequence)
 
