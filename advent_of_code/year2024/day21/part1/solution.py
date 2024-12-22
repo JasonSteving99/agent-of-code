@@ -94,24 +94,35 @@ class Keypad:
                 ))
         return ""
 
+def solve_keypad(numeric_code: str) -> str:
+    """Calculates the shortest sequence of button presses for the given numeric code.
+
+    Args:
+        numeric_code: The numeric code to input into the keypad
+
+    Returns:
+        str: The shortest sequence of button presses
+    """
+    numeric_keypad = Keypad("numeric")
+    second_directional_keypad = Keypad("directional")
+    first_directional_keypad = Keypad("directional")
+
+    second_level_code = numeric_keypad.solve_code(numeric_code)
+    first_level_code = second_directional_keypad.solve_code(second_level_code)
+    sequence = first_directional_keypad.solve_code(first_level_code)
+
+    return sequence
+
 def solution() -> int:
     """
     Read input codes from stdin and return the sum of their complexities.
     """
     codes = [line.strip() for line in input().split('\n') if line.strip()]
     total_complexity = 0
-    
-    numeric_keypad = Keypad("numeric")
-    second_directional_keypad = Keypad("directional")
-    first_directional_keypad = Keypad("directional")
-    
-    for code in codes:
-       
-        second_level_code = second_directional_keypad.solve_code(code)
-        first_level_code = first_directional_keypad.solve_code(second_level_code)
-        sequence = first_level_code
 
+    for code in codes:
+        sequence = solve_keypad(code)
         numeric_part = int(''.join(c for c in code if c.isdigit()))
         total_complexity += len(sequence) * numeric_part
-        
+
     return total_complexity
