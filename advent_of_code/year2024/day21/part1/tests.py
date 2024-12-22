@@ -1,59 +1,63 @@
 """
-This test suite validates the generation of directional keypad sequences for producing numeric codes.
-The tested function `generate_keypad_sequence` takes a string representing a numeric code (with 'A' representing
-a special character) and returns a string of directional commands ('<', '>', '^', 'v') and 'A's that represent
-the shortest sequence of keypad presses needed to generate that code.
+Test suite for the `get_shortest_button_sequence` function.
 
-The tests verify that:
-1. The function correctly generates the expected sequence for different numeric codes
-2. Each sequence contains valid directional commands and 'A' characters
-3. The function handles different combinations of digits and the 'A' character
+This function takes a target numeric code as input and returns the shortest sequence 
+of directional button presses needed to produce that code using a robot arm on a 
+numeric keypad. The robot arm starts at position 'A' and can move using:
+- < (left)
+- > (right)
+- ^ (up)
+- v (down)
+- A (activate/press current button)
+
+The tests validate that the function returns the correct minimal sequence of 
+button presses that will produce each target code.
 """
 
-from solution import generate_keypad_sequence
+from solution import get_shortest_button_sequence
 import pytest
 
-def test_generate_sequence_for_029A():
-    code = "029A"
+def test_code_029a():
+    input_code = "029A"
     expected = "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
-    result = generate_keypad_sequence(code)
+    result = get_shortest_button_sequence(input_code)
     assert result == expected, (
-        f"Input code '{code}' produced sequence '{result}' "
-        f"but expected '{expected}'"
+        f"For input '{input_code}', expected button sequence '{expected}' "
+        f"but got '{result}'"
     )
 
-def test_generate_sequence_for_980A():
-    code = "980A"
+def test_code_980a():
+    input_code = "980A"
     expected = "<v<A>>^AAAvA^A<vA<AA>>^AvAA<^A>A<v<A>A>^AAAvA<^A>A<vA>^A<A>A"
-    result = generate_keypad_sequence(code)
+    result = get_shortest_button_sequence(input_code)
     assert result == expected, (
-        f"Input code '{code}' produced sequence '{result}' "
-        f"but expected '{expected}'"
+        f"For input '{input_code}', expected button sequence '{expected}' "
+        f"but got '{result}'"
     )
 
-def test_generate_sequence_for_179A():
-    code = "179A"
+def test_code_179a():
+    input_code = "179A"
     expected = "<v<A>>^A<vA<A>>^AAvAA<^A>A<v<A>>^AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A"
-    result = generate_keypad_sequence(code)
+    result = get_shortest_button_sequence(input_code)
     assert result == expected, (
-        f"Input code '{code}' produced sequence '{result}' "
-        f"but expected '{expected}'"
+        f"For input '{input_code}', expected button sequence '{expected}' "
+        f"but got '{result}'"
     )
 
-def test_generate_sequence_for_456A():
-    code = "456A"
+def test_code_456a():
+    input_code = "456A"
     expected = "<v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A"
-    result = generate_keypad_sequence(code)
+    result = get_shortest_button_sequence(input_code)
     assert result == expected, (
-        f"Input code '{code}' produced sequence '{result}' "
-        f"but expected '{expected}'"
+        f"For input '{input_code}', expected button sequence '{expected}' "
+        f"but got '{result}'"
     )
 
-def test_generate_sequence_for_379A():
-    code = "379A"
+def test_code_379a():
+    input_code = "379A"
     expected = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A"
-    result = generate_keypad_sequence(code)
+    result = get_shortest_button_sequence(input_code)
     assert result == expected, (
-        f"Input code '{code}' produced sequence '{result}' "
-        f"but expected '{expected}'"
+        f"For input '{input_code}', expected button sequence '{expected}' "
+        f"but got '{result}'"
     )

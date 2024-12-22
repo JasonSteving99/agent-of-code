@@ -1,137 +1,83 @@
-"""
-Solution for the Keypad Conundrum problem.
+```python
+from typing import List, Dict, Set, Tuple
+from queue import Queue
 
-This module contains functionality to generate the shortest sequence of directional
-keypad presses needed to enter various numeric codes.
-"""
-from typing import Dict, List, Set, Tuple
-import sys
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class Position:
-    """Represents a position on a keypad."""
-    row: int
-    col: int
-
-
-class Keypad:
-    """Represents a keypad with buttons and movement controls."""
-    def __init__(self, layout: List[List[str]]):
-        self.layout = layout
-        self.height = len(layout)
-        self.width = len(layout[0]) if layout else 0
-        self.button_positions: Dict[str, Position] = {}
-        
-        for i, row in enumerate(layout):
-            for j, button in enumerate(row):
-                if button != ' ':
-                    self.button_positions[button] = Position(i, j)
-    
-    def get_button(self, pos: Position) -> str:
-        """Get the button at a given position."""
-        if (0 <= pos.row < self.height and 
-            0 <= pos.col < self.width and 
-            self.layout[pos.row][pos.col] != ' '):
-            return self.layout[pos.row][pos.col]
-        return ' '
-
-
-def generate_keypad_sequence(target: str) -> str:
+def get_shortest_button_sequence(target_code: str) -> str:
     """
-    Generate the shortest sequence of directional keypad presses to type the target code.
-    
+    Find shortest sequence of directional keypad presses to type target code on numeric keypad.
     Args:
-        target: The numeric code to be typed.
-        
+        target_code: String containing the target numeric code (e.g. "029A")
     Returns:
-        The shortest sequence of directional keypad button presses.
+        Shortest sequence of directional button presses (<,>,^,v,A)
     """
-    # Define the keypads
-    numeric_keypad = Keypad([
-        ['7', '8', '9'],
-        ['4', '5', '6'],
-        ['1', '2', '3'],
-        [' ', '0', 'A']
-    ])
-    
-    directional_keypad = Keypad([
-        [' ', '^', 'A'],
-        ['<', 'v', '>']
-    ])
-    
-    moves = {
-        '^': Position(-1, 0),
-        'v': Position(1, 0),
-        '<': Position(0, -1),
-        '>': Position(0, 1)
+    # Define keypad layouts
+    numeric_keypad = {
+        '7': (0,0), '8': (0,1), '9': (0,2),
+        '4': (1,0), '5': (1,1), '6': (1,2), 
+        '1': (2,0), '2': (2,1), '3': (2,2),
+        '0': (3,1), 'A': (3,2)
     }
-
-    def find_path(start: Position, target_button: str, keypad: Keypad) -> List[str]:
-        """Find shortest path from start position to target button."""
-        visited: Set[Tuple[int, int]] = set()
-        queue: List[Tuple[Position, List[str]]] = [(start, [])]
-        visited.add((start.row, start.col))
-        
-        while queue:
-            pos, path = queue.pop(0)
-            if keypad.get_button(pos) == target_button:
-                return path + ['A']  # Add press action
-                
-            for direction, move in moves.items():
-                new_pos = Position(pos.row + move.row, pos.col + move.col)
-                pos_tuple = (new_pos.row, new_pos.col)
-                
-                if (pos_tuple not in visited and 
-                    keypad.get_button(new_pos) != ' '):
-                    queue.append((new_pos, path + [direction]))
-                    visited.add(pos_tuple)
-        
-        return []  # No path found
-
-    def generate_robot_sequence(code: str) -> Tuple[str, Position]:
-        """Generate sequence for robot to type the numeric code."""
-        start_pos = numeric_keypad.button_positions['A']
-        sequence = []
-        current_pos = directional_keypad.button_positions['A']
-        for digit in code:
-            path = find_path(start_pos, digit, numeric_keypad)
-            sequence.extend(path)
-            start_pos = numeric_keypad.button_positions[digit]
-        return ''.join(sequence), current_pos
-
-    # Start with directional keypad 'A' position
-    robot_sequence, current_pos = generate_robot_sequence(target)
-    final_sequence = []
     
-    # Generate sequence for second robot
-    for action in robot_sequence:
-        path = find_path(current_pos, action, directional_keypad)
-        final_sequence.extend(path)
-        if action in directional_keypad.button_positions:
-             current_pos = directional_keypad.button_positions[action]
+    # Helper function to get valid moves from current position
+    def get_valid_moves(pos: Tuple[int, int]) -> List[Tuple[str, Tuple[int, int]]]:
+        row, col = pos
+        moves = []
+        # Check all possible moves (up, down, left, right)
+        for direction, (dr, dc) in {'<':(0,-1), '>':(0,1), '^':(-1,0), 'v':(1,0)}.items():
+            new_row, new_col = row + dr, col + dc
+            # Verify new position exists on numeric keypad
+            for digit, coords in numeric_keypad.items():
+                if coords == (new_row, new_col):
+                    moves.append((direction, (new_row, new_col)))
+                    break
+        return moves
 
-    return ''.join(final_sequence)
+    def bfs(target_digit: str, start_pos: Tuple[int, int]) -> Tuple[str, Tuple[int, int]]:
+        queue = Queue()
+        queue.put((start_pos, ""))
+        visited = {start_pos}
+        target_pos = numeric_keypad[target_digit]
+        
+        while not queue.empty():
+            current_pos, path = queue.get()
+            if current_pos == target_pos:
+                return path + "A", current_pos
+            
+            for direction, next_pos in get_valid_moves(current_pos):
+                if next_pos not in visited:
+                    visited.add(next_pos)
+                    queue.put((next_pos, path + direction))
+                    
+        return "", start_pos  # Should never happen with valid input
 
+    # Start at 'A' position
+    current_pos = numeric_keypad['A']
+    result = ""
+    
+    # Process each digit in target code
+    for digit in target_code:
+        sequence, current_pos = bfs(digit, current_pos)
+        result += sequence
+        
+    return result
 
 def solution() -> int:
     """
-    Read input codes and return sum of their complexities.
-    
+    Read codes from stdin and return sum of complexities.
     Returns:
-        The sum of complexities for all input codes.
+        Sum of the complexities of all codes
     """
     total_complexity = 0
     
-    for line in sys.stdin:
-        code = line.strip()
-        if not code:
-            continue
-            
-        sequence = generate_keypad_sequence(code)
+    # Read the five codes
+    for _ in range(5):
+        code = input().strip()
+        # Get shortest sequence for this code
+        sequence = get_shortest_button_sequence(code)
+        # Calculate numeric part (ignoring leading zeros)
         numeric_part = int(''.join(c for c in code if c.isdigit()))
-        complexity = len(sequence) * numeric_part
-        total_complexity += complexity
-    
+        # Add complexity for this code
+        total_complexity += len(sequence) * numeric_part
+        
     return total_complexity
+```
