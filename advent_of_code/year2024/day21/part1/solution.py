@@ -1,4 +1,3 @@
-```python
 from typing import List, Dict, Set, Tuple
 from queue import Queue
 
@@ -80,4 +79,3 @@ def solution() -> int:
         total_complexity += len(sequence) * numeric_part
         
     return total_complexity
-```
