@@ -69,13 +69,13 @@ def simulate_logic_gates(input_data: str) -> int:
     
     # Collect all z-wires and their values
     z_wires: List[tuple[str, int]] = []
-    for wire in sorted(wires.keys()):
+    for wire in wires.keys():
         if wire.startswith('z'):
             z_wires.append((wire, wires[wire]))
     
     # Convert binary to decimal
     result = 0
-    z_wires.sort()  # Ensure z-wires are in order
+    z_wires.sort(key=lambda x: int(x[0][1:]))  # Ensure z-wires are in order
     for wire, value in z_wires:
         result = (result << 1) | value
     
