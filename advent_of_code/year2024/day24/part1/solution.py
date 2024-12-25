@@ -46,13 +46,19 @@ def simulate_logic_gates(input_data: str) -> int:
         gates.append((in1, gate_type, in2, out))
 
     # Process gates until no more changes happen
+    available_wires: Set[str] = set()
     while True:
-        changes = False
+        available_wires.update(wires.keys())
+        gates_to_process: list[tuple[str, str, str, str]] = []
         for in1, gate_type, in2, out in gates:
-            # Skip if output already computed or inputs not ready
-            if out in wires or in1 not in wires or in2 not in wires:
-                continue
-                
+            if in1 in available_wires and in2 in available_wires and out not in wires:
+                gates_to_process.append((in1, gate_type, in2, out))
+
+        if not gates_to_process:
+            break
+
+        changes = False
+        for in1, gate_type, in2, out in gates_to_process:
             # Compute gate output
             if gate_type == 'AND':
                 wires[out] = 1 if wires[in1] and wires[in2] else 0
@@ -60,8 +66,10 @@ def simulate_logic_gates(input_data: str) -> int:
                 wires[out] = 1 if wires[in1] or wires[in2] else 0
             else:  # XOR
                 wires[out] = 1 if wires[in1] != wires[in2] else 0
-            changes = True
             
+            available_wires.add(out)
+            changes = True
+        
         if not changes:
             break
 
