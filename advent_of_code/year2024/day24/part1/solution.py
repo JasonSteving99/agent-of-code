@@ -45,33 +45,17 @@ def simulate_logic_gates(input_data: str) -> int:
         in1, gate_type, in2, out = match.groups()
         gates.append((in1, gate_type, in2, out))
 
-    # Process gates until no more changes happen
-    available_wires: Set[str] = set()
-    while True:
-        available_wires.update(wires.keys())
-        gates_to_process: list[tuple[str, str, str, str]] = []
+    # Process gates until all z wires have values
+    while any(wire.startswith('z') and wire not in wires for wire in [out for _, _, _, out in gates]):
         for in1, gate_type, in2, out in gates:
-            if in1 in available_wires and in2 in available_wires and out not in wires:
-                gates_to_process.append((in1, gate_type, in2, out))
-
-        if not gates_to_process:
-            break
-
-        changes = False
-        for in1, gate_type, in2, out in gates_to_process:
-            # Compute gate output
-            if gate_type == 'AND':
-                wires[out] = 1 if wires[in1] and wires[in2] else 0
-            elif gate_type == 'OR':
-                wires[out] = 1 if wires[in1] or wires[in2] else 0
-            else:  # XOR
-                wires[out] = 1 if wires[in1] != wires[in2] else 0
-            
-            available_wires.add(out)
-            changes = True
-        
-        if not changes:
-            break
+            if in1 in wires and in2 in wires and out not in wires:
+                # Compute gate output
+                if gate_type == 'AND':
+                    wires[out] = 1 if wires[in1] and wires[in2] else 0
+                elif gate_type == 'OR':
+                    wires[out] = 1 if wires[in1] or wires[in2] else 0
+                else:  # XOR
+                    wires[out] = 1 if wires[in1] != wires[in2] else 0
 
     # Collect z-wire values in order
     z_wires = sorted(wire for wire in wires if wire.startswith('z'))
