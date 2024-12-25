@@ -1,90 +1,79 @@
-"""Solution module to simulate logic gates."""
-from typing import Dict, Set, List
+"""Solution module for boolean logic gate simulator."""
+from typing import Dict, Set, Tuple
 import re
-import sys
-
-
-def apply_gate(op: str, a: int, b: int) -> int:
-    """Apply logic gate operation on two inputs."""
-    if op == "AND":
-        return a & b
-    elif op == "OR":
-        return a | b
-    else:  # XOR
-        return a ^ b
 
 
 def simulate_logic_gates(input_data: str) -> int:
     """
-    Simulate a system of logic gates and wires to produce a decimal number.
+    Simulate a system of logic gates and return the decimal number from z wires.
     
     Args:
         input_data: String containing initial wire values and gate connections
-    
+        
     Returns:
-        int: Decimal number produced by combining bits on z-wires
+        int: Decimal number produced by combining bits on z wires
     """
-    # Parse input
+    # Parse input into initial values and gate connections
     lines = input_data.strip().split('\n')
     
-    # Find where gate definitions start (after initial values)
-    gate_start = 0
-    for i, line in enumerate(lines):
-        if not ':' in line and line.strip():
-            gate_start = i
-            break
+    # Find split between initial values and gate connections
+    split_idx = lines.index('') if '' in lines else len([l for l in lines if ':' in l])
     
-    # Parse initial wire values
+    # Parse initial values
     wires: Dict[str, int] = {}
-    for line in lines[:gate_start]:
-        if line.strip():
-            wire, value = line.split(':')
-            wires[wire.strip()] = int(value.strip())
-    
-    # Parse and store gate definitions
-    gates = []
-    for line in lines[gate_start:]:
-        if not line.strip():
+    for line in lines[:split_idx]:
+        if not line:
             continue
-        # Parse gate definition line
-        match = re.match(r'(\w+)\s+(AND|OR|XOR)\s+(\w+)\s+->\s+(\w+)', line.strip())
-        if match:
-            in1, op, in2, out = match.groups()
-            gates.append((in1, op, in2, out))
+        wire, value = line.split(': ')
+        wires[wire] = int(value)
     
-    # Track which wires have values
-    evaluated_wires = set(wires.keys())
-    
-    # Keep evaluating gates until no new wires are evaluated
+    # Parse gate connections
+    gates: list[tuple[str, str, str, str]] = []
+    for line in lines[split_idx:]:
+        if not line:
+            continue
+        # Extract gate type and wire names
+        match = re.match(r'(\w+)\s+(AND|OR|XOR)\s+(\w+)\s+->\s+(\w+)', line)
+        if not match:
+            continue
+        in1, gate_type, in2, out = match.groups()
+        gates.append((in1, gate_type, in2, out))
+
+    # Process gates until no more changes happen
     while True:
-        progress = False
-        for in1, op, in2, out in gates:
-            if out not in evaluated_wires and in1 in evaluated_wires and in2 in evaluated_wires:
-                wires[out] = apply_gate(op, wires[in1], wires[in2])
-                evaluated_wires.add(out)
-                progress = True
-        if not progress:
+        changes = False
+        for in1, gate_type, in2, out in gates:
+            # Skip if output already computed or inputs not ready
+            if out in wires or in1 not in wires or in2 not in wires:
+                continue
+                
+            # Compute gate output
+            if gate_type == 'AND':
+                wires[out] = 1 if wires[in1] and wires[in2] else 0
+            elif gate_type == 'OR':
+                wires[out] = 1 if wires[in1] or wires[in2] else 0
+            else:  # XOR
+                wires[out] = 1 if wires[in1] != wires[in2] else 0
+            changes = True
+            
+        if not changes:
             break
-    
-    # Collect all z-wires and their values
-    z_wires: List[tuple[str, int]] = []
-    for wire in wires.keys():
-        if wire.startswith('z'):
-            z_wires.append((wire, wires[wire]))
+
+    # Collect z-wire values in order
+    z_wires = sorted(wire for wire in wires if wire.startswith('z'))
     
     # Convert binary to decimal
     result = 0
-    z_wires.sort(key=lambda x: int(x[0][1:]))  # Ensure z-wires are in order
-    for wire, value in z_wires:
-        result = (result << 1) | value
-    
+    for z_wire in z_wires:
+        result = (result << 1) | wires[z_wire]
+        
     return result
 
 
 def solution() -> int:
-    """Read from stdin and solve the problem."""
-    input_data = sys.stdin.read()
-    return simulate_logic_gates(input_data)
+    """Read from stdin and return result."""
+    import sys
+    return simulate_logic_gates(sys.stdin.read())
 
 
 if __name__ == "__main__":
