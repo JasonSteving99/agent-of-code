@@ -17,12 +17,18 @@ def simulate_logic_gates(input_data: str) -> int:
     lines = input_data.strip().split('\n')
     
     # Find split between initial values and gate connections
-    split_idx = lines.index('') if '' in lines else len([l for l in lines if ':' in l])
+    split_idx = 0
+    for i, line in enumerate(lines):
+        if not line.strip():
+            split_idx = i
+            break
+    else:
+        split_idx = len(lines)
     
     # Parse initial values
     wires: Dict[str, int] = {}
     for line in lines[:split_idx]:
-        if not line:
+        if not line.strip():
             continue
         wire, value = line.split(': ')
         wires[wire] = int(value)
@@ -30,10 +36,10 @@ def simulate_logic_gates(input_data: str) -> int:
     # Parse gate connections
     gates: list[tuple[str, str, str, str]] = []
     for line in lines[split_idx:]:
-        if not line:
+        if not line.strip():
             continue
         # Extract gate type and wire names
-        match = re.match(r'(\w+)\s+(AND|OR|XOR)\s+(\w+)\s+->\s+(\w+)', line)
+        match = re.match(r'^(\w+)\s+(AND|OR|XOR)\s+(\w+)\s+->\s+(\w+)$', line)
         if not match:
             continue
         in1, gate_type, in2, out = match.groups()
