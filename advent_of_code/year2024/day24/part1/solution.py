@@ -28,7 +28,7 @@ def simulate_logic_gates(input_data: str) -> int:
     
     # Initialize dictionaries for wire values and gate definitions
     wire_values: Dict[str, int] = {}
-    gates: List[Tuple[str, str, str, str]] = []
+    gates: Dict[str, Tuple[str, str, str]] = {}
     
     # Parse input
     reading_initial_values = True
@@ -48,14 +48,14 @@ def simulate_logic_gates(input_data: str) -> int:
         if not reading_initial_values:
             try:
                 wire1, op, wire2, output = extract_wire_parts(line)
-                gates.append((wire1, op, wire2, output))
+                gates[output] = (wire1, op, wire2)
             except ValueError:
                 continue
 
     # Evaluate gates until all z-wires have values
     while True:
         changes = False
-        for wire1, op, wire2, output in gates:
+        for output, (wire1, op, wire2) in gates.items():
             if output not in wire_values:
                 if wire1 in wire_values and wire2 in wire_values:
                     wire_values[output] = evaluate_gate(wire_values[wire1], op, wire_values[wire2])
