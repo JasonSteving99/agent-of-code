@@ -65,7 +65,7 @@ def simulate_logic_gates(input_data: str) -> int:
             break
     
     # Collect z-wire values and convert to decimal
-    z_wires = sorted([wire for wire in wire_values.keys() if wire.startswith('z')])
+    z_wires = sorted([wire for wire in wire_values if wire.startswith('z')], key=lambda x: int(x[1:]))
     binary = ''.join('1' if wire_values[wire] else '0' for wire in reversed(z_wires))
     return int(binary, 2)
 
