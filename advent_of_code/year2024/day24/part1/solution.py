@@ -48,8 +48,7 @@ def simulate_logic_gates(input_data: str) -> int:
         if not reading_initial_values:
             try:
                 wire1, op, wire2, output = extract_wire_parts(line)
-                if output not in gates:
-                    gates[output] = (wire1, op, wire2)
+                gates[output] = (wire1, op, wire2)
             except ValueError:
                 continue
 
