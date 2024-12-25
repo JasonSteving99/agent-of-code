@@ -1,53 +1,55 @@
-"""Solution for counting interconnected sets containing computers with 't' prefixed names."""
+"""Solution for finding sets of three interconnected computers."""
 from collections import defaultdict
 from itertools import combinations
-from typing import List, Dict, Set
 
-def count_interconnected_sets_starting_with_t(network_map: str) -> int:
+
+def count_interconnected_groups_starting_with_t(network_map: str) -> int:
     """
-    Counts the number of sets of three interconnected computers where at least one
-    computer's name starts with 't'.
-    
+    Count the number of sets of three interconnected computers where at least
+    one computer name starts with 't'.
+
     Args:
-        network_map: A string where each line represents a connection between two computers.
-                    Format: 'computer1-computer2\ncomputer3-computer4\n...'
-    
+        network_map: String containing the network connections, one per line.
+
     Returns:
-        The number of sets of three interconnected computers where at least one starts with 't'.
+        Number of three-computer sets where at least one computer starts with 't'.
     """
-    # Create adjacency list representation of the network
-    adjacency: Dict[str, Set[str]] = defaultdict(set)
-    
-    # Parse network map and build the graph
+    # Build an adjacency list representation of the network
+    graph = defaultdict(set)
     for line in network_map.strip().split('\n'):
+        if not line:
+            continue
         comp1, comp2 = line.strip().split('-')
-        adjacency[comp1].add(comp2)
-        adjacency[comp2].add(comp1)
-    
-    # Get list of all computers
-    computers: List[str] = list(adjacency.keys())
-    valid_sets: Set[frozenset] = set()
-    
-    # Check all possible combinations of three computers
-    for comp1, comp2, comp3 in combinations(computers, 3):
-        # Check if they form a triangle (all interconnected)
-        if (comp2 in adjacency[comp1] and
-            comp3 in adjacency[comp1] and
-            comp3 in adjacency[comp2]):
-            # Add as frozenset to avoid duplicates and ensure order doesn't matter
-            computer_set = frozenset([comp1, comp2, comp3])
-            # Check if any computer in the set starts with 't'
-            if any(computer.startswith('t') for computer in computer_set):
-                valid_sets.add(computer_set)
-    
-    return len(valid_sets)
+        graph[comp1].add(comp2)
+        graph[comp2].add(comp1)
+
+    # Find all possible combinations of three computers
+    all_computers = list(graph.keys())
+    groups_of_three = combinations(all_computers, 3)
+
+    # Count valid interconnected groups with at least one 't' computer
+    count = 0
+    for group in groups_of_three:
+        # Check if all computers in the group are interconnected
+        is_interconnected = all(
+            other in graph[computer]
+            for computer, other in combinations(group, 2)
+        )
+        
+        # Check if at least one computer starts with 't'
+        has_t_computer = any(computer.startswith('t') for computer in group)
+        
+        if is_interconnected and has_t_computer:
+            count += 1
+
+    return count
 
 
 def solution() -> int:
-    """Read from stdin and solve the problem."""
+    """Read from stdin and return the answer."""
     import sys
-    network_map = sys.stdin.read()
-    return count_interconnected_sets_starting_with_t(network_map)
+    input_data = sys.stdin.read()
+    return count_interconnected_groups_starting_with_t(input_data)
 
 if __name__ == "__main__":
     print(solution())
