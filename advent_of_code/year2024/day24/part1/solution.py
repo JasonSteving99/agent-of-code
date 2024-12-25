@@ -54,7 +54,7 @@ def simulate_logic_gates(input_data: str) -> int:
             for dep in node_deps:
                 if dep in in_degree:
                     in_degree[dep] += 1
-        
+
         queue: List[str] = [node for node in in_degree if in_degree[node] == 0]
         sorted_nodes: List[str] = []
         while queue:
@@ -62,9 +62,9 @@ def simulate_logic_gates(input_data: str) -> int:
             sorted_nodes.append(node)
             for dependent, node_deps in deps.items():
                 if node in node_deps:
-                   in_degree[dependent] -= 1
-                   if in_degree[dependent] == 0:
-                       queue.append(dependent)
+                    in_degree[dependent] -= 1
+                    if in_degree[dependent] == 0:
+                        queue.append(dependent)
         return sorted_nodes
 
     sorted_gates_output_wires = topological_sort(dependencies)
@@ -72,14 +72,16 @@ def simulate_logic_gates(input_data: str) -> int:
     # Process gates in topological order
     for out in sorted_gates_output_wires:
         for in1, gate_type, in2, gate_out in gates:
-             if gate_out == out:
-                if in1 in wires and in2 in wires:
+            if gate_out == out:
+                val1 = wires.get(in1)
+                val2 = wires.get(in2)
+                if val1 is not None and val2 is not None:
                      if gate_type == 'AND':
-                        wires[out] = 1 if wires[in1] and wires[in2] else 0
+                        wires[out] = 1 if val1 and val2 else 0
                      elif gate_type == 'OR':
-                        wires[out] = 1 if wires[in1] or wires[in2] else 0
+                        wires[out] = 1 if val1 or val2 else 0
                      else:  # XOR
-                        wires[out] = 1 if wires[in1] != wires[in2] else 0
+                        wires[out] = 1 if val1 != val2 else 0
 
 
     # Collect z-wire values in order
