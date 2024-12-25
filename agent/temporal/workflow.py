@@ -4,7 +4,7 @@ from datetime import timedelta
 from pydantic import BaseModel
 from temporalio import workflow
 from temporalio.common import RetryPolicy
-from temporalio.exceptions import ApplicationError
+from temporalio.exceptions import ApplicationError, TimeoutError
 
 
 # Imports passed through Temporal's sandbox without overriding stdlib.
@@ -257,13 +257,18 @@ class SolveAoCProblemWorkflow:
                     continue
                 raise e
 
-            problem_solution_result = await workflow.execute_activity(
-                run_generated_solution,
-                solve_aoc_problem_req,
-                start_to_close_timeout=timedelta(minutes=4),
-                # Don't allow any retries for execution of the actual problem solution.
-                retry_policy=RetryPolicy(maximum_attempts=1),
-            )
+            try:
+                problem_solution_result = await workflow.execute_activity(
+                    run_generated_solution,
+                    solve_aoc_problem_req,
+                    start_to_close_timeout=timedelta(minutes=4),
+                    # Don't allow any retries for execution of the actual problem solution.
+                    retry_policy=RetryPolicy(maximum_attempts=1),
+                )
+            except TimeoutError:
+                # Timeouts here are ok, we just retry. We should've hooked this into the agent's
+                # debugging path so it can try to make it more efficient.
+                continue
 
             match problem_solution_result.result:
                 case GeneratedSolutionRes.Failure:
