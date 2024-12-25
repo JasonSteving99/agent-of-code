@@ -1,5 +1,5 @@
 """Solution module for boolean logic gate simulator."""
-from typing import Dict, Set, Tuple
+from typing import Dict, Set, Tuple, List
 import re
 
 
@@ -35,6 +35,7 @@ def simulate_logic_gates(input_data: str) -> int:
     
     # Parse gate connections
     gates: list[tuple[str, str, str, str]] = []
+    dependencies: Dict[str, Set[str]] = {}
     for line in lines[split_idx:]:
         if not line.strip():
             continue
@@ -44,18 +45,42 @@ def simulate_logic_gates(input_data: str) -> int:
             continue
         in1, gate_type, in2, out = match.groups()
         gates.append((in1, gate_type, in2, out))
+        dependencies[out] = {in1, in2}
 
-    # Process gates until all z wires have values
-    while any(wire.startswith('z') and wire not in wires for wire in [out for _, _, _, out in gates]):
-        for in1, gate_type, in2, out in gates:
-            if in1 in wires and in2 in wires and out not in wires:
-                # Compute gate output
-                if gate_type == 'AND':
-                    wires[out] = 1 if wires[in1] and wires[in2] else 0
-                elif gate_type == 'OR':
-                    wires[out] = 1 if wires[in1] or wires[in2] else 0
-                else:  # XOR
-                    wires[out] = 1 if wires[in1] != wires[in2] else 0
+    # Topological Sort
+    def topological_sort(deps: Dict[str, Set[str]]) -> List[str]:
+        in_degree: Dict[str, int] = {node: 0 for node in deps.keys()}
+        for node_deps in deps.values():
+            for dep in node_deps:
+                if dep in in_degree:
+                    in_degree[dep] += 1
+        
+        queue: List[str] = [node for node in in_degree if in_degree[node] == 0]
+        sorted_nodes: List[str] = []
+        while queue:
+            node = queue.pop(0)
+            sorted_nodes.append(node)
+            for dependent, node_deps in deps.items():
+                if node in node_deps:
+                   in_degree[dependent] -= 1
+                   if in_degree[dependent] == 0:
+                       queue.append(dependent)
+        return sorted_nodes
+
+    sorted_gates_output_wires = topological_sort(dependencies)
+
+    # Process gates in topological order
+    for out in sorted_gates_output_wires:
+        for in1, gate_type, in2, gate_out in gates:
+             if gate_out == out:
+                if in1 in wires and in2 in wires:
+                     if gate_type == 'AND':
+                        wires[out] = 1 if wires[in1] and wires[in2] else 0
+                     elif gate_type == 'OR':
+                        wires[out] = 1 if wires[in1] or wires[in2] else 0
+                     else:  # XOR
+                        wires[out] = 1 if wires[in1] != wires[in2] else 0
+
 
     # Collect z-wire values in order
     z_wires = sorted(wire for wire in wires if wire.startswith('z'))
