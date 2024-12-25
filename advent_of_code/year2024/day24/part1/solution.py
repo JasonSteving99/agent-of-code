@@ -55,16 +55,22 @@ def simulate_logic_gates(input_data: str) -> int:
     # Track which wires have values
     evaluated_wires = set(wires.keys())
     
-    # Keep evaluating gates until no more changes
+    # Keep evaluating gates until all z-wires have values
     while True:
         progress = False
         for in1, op, in2, out in gates:
-            if out not in evaluated_wires and in1 in evaluated_wires and in2 in evaluated_wires:
+           if out not in evaluated_wires and in1 in evaluated_wires and in2 in evaluated_wires:
                 wires[out] = apply_gate(op, wires[in1], wires[in2])
                 evaluated_wires.add(out)
                 progress = True
         
-        if not progress:
+        z_wires_evaluated = True
+        for wire in wires:
+            if wire.startswith('z') and wire not in evaluated_wires:
+                z_wires_evaluated = False
+                break
+        
+        if z_wires_evaluated or not progress:
             break
     
     # Collect all z-wires and their values
