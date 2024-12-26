@@ -20,12 +20,14 @@ def get_heights(grid: List[List[str]], is_lock: bool) -> List[int]:
             for row in range(rows):
                 if grid[row][col] == '#':
                     height = rows - row - 1
+                    break
         else:
-            # For keys, count from bottom up
-            for row in range(rows-1, -1, -1):
+             #For keys, count from bottom up
+            for row in range(rows -1, -1, -1):
                 if grid[row][col] == '#':
                     height = row
                     break
+
         heights.append(height)
     
     return heights
