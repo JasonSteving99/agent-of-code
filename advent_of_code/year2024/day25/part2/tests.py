@@ -1,18 +1,22 @@
+"""Unit tests for count_fitting_lock_key_pairs function.
+
+The function should analyze a string input containing ASCII art representations of locks and keys,
+where:
+- '#' represents solid material
+- '.' represents empty space
+- Each lock/key is a 7x5 grid
+- Input contains multiple patterns separated by newlines
+- Function counts how many unique lock/key pairs can fit together
+
+Key patterns need to be rotated and inverted to check if they fit with lock patterns.
+The example demonstrates determining fitting pairs from multiple lock and key patterns.
 """
-Tests for `check_fit` function that validates lock and key fitting patterns.
 
-The tests cover:
-- Each lock must have '#' in top row and '.' in bottom row
-- Each key must have '.' in top row and '#' in bottom row
-- Locks and keys must fit without pin overlaps in any column
-- Returns count of unique fitting lock/key pairs
-"""
+from solution import count_fitting_lock_key_pairs
 
-from solution import check_fit
 
-def test_complex_lock_and_key_patterns():
-    # Input contains 2 locks and 3 keys in a specific pattern format
-    input_str = """#####
+def test_sample_lock_key_patterns():
+    input_schematic = """#####
 .####
 .####
 .####
@@ -52,6 +56,13 @@ def test_complex_lock_and_key_patterns():
 #.#.#
 #####"""
     
-    # Function should return 3 as there are 3 valid lock/key combinations that fit
-    result = check_fit(input_str)
-    assert result == 3, f"Expected 3 valid lock/key combinations, but got {result} for input:\n{input_str}"
+    result = count_fitting_lock_key_pairs(input_schematic)
+    
+    # Validate that for the given complex set of lock/key patterns,
+    # exactly 3 unique fitting pairs are found after considering all
+    # possible rotations and transformations
+    assert result == 3, (
+        f"Expected 3 fitting lock/key pairs for the sample input, "
+        f"but got {result}. Input was a multi-pattern schematic with "
+        "5 different 7x5 grids of locks and keys."
+    )
