@@ -19,13 +19,13 @@ def get_heights(grid: List[List[str]], is_lock: bool) -> List[int]:
             # For locks, count from top down
             for row in range(rows):
                 if grid[row][col] == '#':
-                    height = rows - row
+                    height = rows - 1 - row
                     break
         else:
             # For keys, count from bottom up
             for row in range(rows - 1, -1, -1):
                 if grid[row][col] == '#':
-                    height = row + 1
+                    height = row
                     break
 
         heights.append(height)
