@@ -41,9 +41,9 @@ def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
     
     for schematic in schematics:
         grid = parse_schematic(schematic)
-        if all(c == '#' for c in grid[0]):
+        if all(c == '#' for c in grid[-1]):
              locks.append(get_heights(grid, True))
-        elif all(c == '#' for c in grid[-1]):
+        elif all(c == '#' for c in grid[0]):
              keys.append(get_heights(grid, False))
     
     return locks, keys
