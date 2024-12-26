@@ -83,8 +83,7 @@ def parse_schematics(input_data: str) -> list[LockKeyPair]:
     valid_pairs: list[LockKeyPair] = []
     for lock in locks:
         for key in keys:
-            if check_fit(lock, key):
-                valid_pairs.append((lock, key))
+            valid_pairs.append((lock, key))
     
     return valid_pairs
 
