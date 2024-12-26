@@ -25,8 +25,7 @@ class PinDefinition:
             height = 0
             for row in range(rows):
                 if self.matrix[row][col] == '#':
-                    height = max(height, rows - row - 1)
-                else:
+                  height = rows - row -1
                   break
             heights.append(height)
 
