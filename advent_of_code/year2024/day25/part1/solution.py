@@ -17,7 +17,9 @@ def get_first_filled_index(col: str, reverse: bool = False) -> int | None:
 def get_column_height(col: str, is_lock: bool = True) -> int:
     """Calculate height of a column in the grid."""
     first_filled = get_first_filled_index(col, not is_lock)
-    return len(col) - 1 - first_filled if first_filled is not None and is_lock else first_filled if first_filled is not None else 0
+    if first_filled is None:
+        return 0
+    return len(col) - 1 - first_filled if is_lock else first_filled
 
 def transpose_grid(grid: Grid) -> Generator[str, None, None]:
     """Transpose a grid to get columns."""
@@ -57,9 +59,8 @@ def parse_schematic_group(lines: list[str]) -> tuple[list[HeightList], list[Heig
 
     return locks, keys
 
-def check_fit(lock: HeightList, key: HeightList) -> bool:
+def check_fit(lock: HeightList, key: HeightList, grid_height: int) -> bool:
     """Check if a key fits a lock without overlapping."""
-    grid_height = 5  # Based on the problem description
     return all(l + k <= grid_height for l, k in zip(lock, key))
 
 def parse_schematics(input_data: str) -> list[LockKeyPair]:
@@ -78,7 +79,11 @@ def parse_schematics(input_data: str) -> list[LockKeyPair]:
     locks, keys = parse_schematic_group(lines)
     
     # Find all valid pairs
-    valid_pairs: list[LockKeyPair] = list(zip(locks,keys))
+    valid_pairs: list[LockKeyPair] = []
+    for lock, key in zip(locks, keys):
+         grid_height = len(lines[0]) -1
+         if check_fit(lock, key, grid_height):
+              valid_pairs.append((lock, key))
     
     return valid_pairs
 
