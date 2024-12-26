@@ -30,9 +30,10 @@ def parse_grid(grid: Grid, is_lock: bool = True) -> HeightList:
     """Parse grid into list of heights."""
     return [get_column_height(col, is_lock) for col in transpose_grid(grid)]
 
-def parse_schematic_group(lines: list[str]) -> list[HeightList]:
-    """Parse a group of schematics into height lists."""
-    result = []
+def parse_schematic_group(lines: list[str]) -> tuple[list[HeightList], list[HeightList]]:
+    """Parse a group of schematics into height lists and separate into locks and keys."""
+    locks: list[HeightList] = []
+    keys: list[HeightList] = []
     current_grid: Grid = []
     
     for line in lines:
@@ -41,14 +42,22 @@ def parse_schematic_group(lines: list[str]) -> list[HeightList]:
         elif current_grid:
             # Check if it's a lock (top row filled) or key (bottom row filled)
             is_lock = '#' in current_grid[0]
-            result.append(parse_grid(current_grid, is_lock))
+            heights = parse_grid(current_grid, is_lock)
+            if is_lock:
+                locks.append(heights)
+            else:
+                keys.append(heights)
             current_grid = []
     
     if current_grid:  # Handle last grid if no trailing newline
         is_lock = '#' in current_grid[0]
-        result.append(parse_grid(current_grid, is_lock))
-    
-    return result
+        heights = parse_grid(current_grid, is_lock)
+        if is_lock:
+           locks.append(heights)
+        else:
+            keys.append(heights)
+
+    return locks, keys
 
 def check_fit(lock: HeightList, key: HeightList) -> bool:
     """Check if a key fits a lock without overlapping."""
@@ -68,11 +77,7 @@ def parse_schematics(input_data: str) -> list[LockKeyPair]:
     lines = [line for line in input_data.strip().split('\n')]
     
     # Parse all schematics
-    height_lists = parse_schematic_group(lines)
-    
-    # Separate locks and keys
-    locks = [h for h in height_lists if h[0] == 0]  # Locks have pin at top
-    keys = [h for h in height_lists if h[0] != 0]   # Keys build from bottom
+    locks, keys = parse_schematic_group(lines)
     
     # Find all valid pairs
     valid_pairs: list[LockKeyPair] = []
