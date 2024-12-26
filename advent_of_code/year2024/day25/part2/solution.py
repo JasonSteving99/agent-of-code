@@ -16,18 +16,18 @@ def get_heights(grid: List[List[str]], is_lock: bool) -> List[int]:
     for col in range(cols):
         height = 0
         if is_lock:
-            # For locks, count from top down
+            # For locks, count empty spaces from top
             for row in range(rows):
-                if grid[row][col] == '#':
-                    height = rows - row - 1
-                    break
+              if grid[row][col] == '#':
+                height = row
+                break
+            
         else:
-             #For keys, count from bottom up
-            for row in range(rows -1, -1, -1):
+            # For keys, count empty spaces from bottom
+            for row in range(rows-1,-1,-1):
                 if grid[row][col] == '#':
-                    height = row
+                    height = rows - 1 - row
                     break
-
         heights.append(height)
     
     return heights
@@ -51,7 +51,7 @@ def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
 
 def is_compatible(lock: List[int], key: List[int], total_height: int = 6) -> bool:
     """Check if a lock and key pair are compatible."""
-    return all(lock_height + key_height <= total_height - 1 for lock_height, key_height in zip(lock, key))
+    return all(lock_height + key_height < 6 for lock_height, key_height in zip(lock, key))
 
 
 def count_fitting_lock_key_pairs(input_text: str) -> int:
