@@ -20,14 +20,16 @@ class PinDefinition:
         rows = len(self.matrix)
         if rows == 0: return []
         cols = len(self.matrix[0])
-        
+
         for col in range(cols):
             height = 0
             for row in range(rows):
                 if self.matrix[row][col] == '#':
                     height = max(height, rows - row - 1)
+                else:
+                  break
             heights.append(height)
-            
+
         return heights
 
 
