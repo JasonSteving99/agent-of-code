@@ -9,9 +9,9 @@ class PinDefinition:
     matrix: List[List[str]]
 
     @classmethod
-    def parse(cls, definition: str) -> "PinDefinition":
+    def parse(cls, definition: List[str]) -> "PinDefinition":
         """Parse a pin definition string into a matrix."""
-        matrix = [list(line) for line in definition.strip().split('\n')]
+        matrix = [list(line.strip()) for line in definition]
         return cls(matrix)
 
     def get_heights(self) -> List[int]:
@@ -98,7 +98,7 @@ def solution() -> int:
     valid_pairs = 0
     for lock in locks:
         for key in keys:
-            if check_fit(lock, key) == "fit":
+            if check_fit(lock, key).endswith("all columns fit!"):
                 valid_pairs += 1
     
     return valid_pairs
