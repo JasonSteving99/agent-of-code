@@ -1,5 +1,5 @@
-"""Solution for counting compatible lock and key pairs."""
-from typing import List, Tuple
+"""Solution for counting compatible lock and key pairs with modified constraints."""
+from typing import List, Tuple, Set
 
 
 def parse_schematic(schematic: str) -> List[List[str]]:
@@ -7,83 +7,78 @@ def parse_schematic(schematic: str) -> List[List[str]]:
     return [list(line) for line in schematic.strip().split('\n')]
 
 
-def rotate_grid(grid: List[List[str]]) -> List[List[str]]:
-    """Rotate a grid 90 degrees clockwise."""
+def get_pin_heights(grid: List[List[str]], is_lock: bool) -> List[int]:
+    """Get pin heights for a lock or key from its grid representation."""
+    heights = []
     rows = len(grid)
     cols = len(grid[0])
-    rotated_grid = [['' for _ in range(rows)] for _ in range(cols)]
-    for r in range(rows):
-        for c in range(cols):
-            rotated_grid[c][rows - 1 - r] = grid[r][c]
-    return rotated_grid
+    
+    for col in range(cols):
+        height = 0
+        if is_lock:
+            # For locks, count from top down
+            for row in range(rows):
+                if grid[row][col] == '#':
+                    height = rows - row - 1
+                    break
+        else:
+            # For keys, count from bottom up
+            for row in range(rows - 1, -1, -1):
+                if grid[row][col] == '#':
+                    height = row
+                    break
+        heights.append(height)
+    
+    return heights
 
 
-def get_heights(grid: List[List[str]], is_lock: bool) -> List[List[int]]:
-    """Get heights for a lock or key (and its rotations) from its grid representation."""
-    heights_list = []
-    original_grid = [row[:] for row in grid] #Create a copy to prevent modification of the original
-    for _ in range(4):
-        heights = []
-        rows = len(grid)
-        cols = len(grid[0])
-        for col in range(cols):
-            height = 0
-            if is_lock:
-                for row in range(rows):
-                    if grid[row][col] == '#':
-                        height = row
-                        break
-            else:
-                for row in range(rows-1,-1,-1):
-                    if grid[row][col] == '#':
-                         height = rows - 1 - row
-                         break
-            heights.append(height)
-        heights_list.append(heights)
-        grid = rotate_grid(grid)
-    grid = original_grid #reset the original grid
-    return heights_list
-
-
-def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[List[int]]]]:
-    """Parse input text into lists of lock and key heights."""
+def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
+    """Parse input text into lists of lock and key pin heights."""
     schematics = input_text.strip().split('\n\n')
     locks = []
     keys = []
     
     for schematic in schematics:
         grid = parse_schematic(schematic)
+        # Locks have filled top row, keys have filled bottom row
         if all(c == '#' for c in grid[0]):
-            locks.append(get_heights(grid, True)[0])  #Locks need only 1 representation
+            locks.append(get_pin_heights(grid, True))
         elif all(c == '#' for c in grid[-1]):
-            keys.append(get_heights(grid, False))
+            keys.append(get_pin_heights(grid, False))
     
     return locks, keys
 
 
-def is_compatible(lock: List[int], key: List[int], total_height: int = 6) -> bool:
-    """Check if a lock and key pair are compatible."""
-    return all(lock_height + key_height < total_height for lock_height, key_height in zip(lock, key))
+def is_compatible(lock: List[int], key: List[int], total_height: int = 7) -> bool:
+    """Check if a lock and key pair are compatible.
+    
+    In Part 2, the total height has increased to 7 units and we need to ensure
+    the key fits exactly with no gaps or overlaps with the lock pins.
+    """
+    # In Part 2, we want exact fits - the sum of lock and key heights should equal total_height - 1
+    return all(lock_height + key_height == total_height - 1 for lock_height, key_height in zip(lock, key))
 
 
-def count_fitting_lock_key_pairs(input_text: str) -> int:
-    """Count the number of compatible lock and key pairs."""
+def count_valid_lock_key_combinations(input_text: str) -> int:
+    """Count the number of valid lock and key combinations that fit exactly."""
     locks, keys = parse_input(input_text)
     
-    compatible_pairs = 0
-    for lock in locks:
-        for key_rotations in keys:
-          if any(is_compatible(lock, key) for key in key_rotations):
-             compatible_pairs += 1
-
-    return compatible_pairs
+    # Track valid combinations using a set of tuples to avoid duplicates
+    valid_combinations = set()
+    
+    for i, lock in enumerate(locks):
+        for j, key in enumerate(keys):
+            if is_compatible(lock, key):
+                valid_combinations.add((i, j))
+                
+    return len(valid_combinations)
 
 
 def solution() -> int:
     """Read from stdin and return the result."""
     import sys
     input_text = sys.stdin.read()
-    return count_fitting_lock_key_pairs(input_text)
+    return count_valid_lock_key_combinations(input_text)
 
 
 if __name__ == "__main__":
