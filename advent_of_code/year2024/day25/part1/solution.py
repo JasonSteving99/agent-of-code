@@ -18,6 +18,7 @@ class PinDefinition:
         """Calculate heights for each column (pin)."""
         heights = []
         rows = len(self.matrix)
+        if rows == 0: return []
         cols = len(self.matrix[0])
         
         for col in range(cols):
@@ -32,8 +33,12 @@ class PinDefinition:
 
 def check_fit(lock_str: str, key_str: str) -> str:
     """Check if a key fits a lock without any column overlaps."""
-    lock = PinDefinition.parse(lock_str)
-    key = PinDefinition.parse(key_str)
+    
+    lock_lines = lock_str.strip().split('\n')
+    key_lines = key_str.strip().split('\n')
+
+    lock = PinDefinition.parse('\n'.join(lock_lines[:len(lock_lines)//2]))
+    key = PinDefinition.parse('\n'.join(key_lines[len(key_lines)//2:]))
     
     lock_heights = lock.get_heights()
     key_heights = key.get_heights()

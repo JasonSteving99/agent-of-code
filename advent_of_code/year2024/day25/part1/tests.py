@@ -29,7 +29,8 @@ def test_overlap_in_last_column():
 #.#.#
 #.###
 #####"""
-    assert check_fit(key_lock_pattern, key_lock_pattern) == "0,5,3,4,3 and 5,0,2,1,3: overlap in the last column", \
+    lock_str, key_str = key_lock_pattern.split('\n\n')
+    assert check_fit(lock_str, key_str) == "0,5,3,4,3 and 5,0,2,1,3: overlap in the last column", \
         f"Expected overlap detection in last column for pattern:\n{key_lock_pattern}"
 
 
@@ -49,7 +50,8 @@ def test_overlap_in_second_column():
 ###.#
 ###.#
 #####"""
-    assert check_fit(key_lock_pattern, key_lock_pattern) == "0,5,3,4,3 and 4,3,4,0,2: overlap in the second column", \
+    lock_str, key_str = key_lock_pattern.split('\n\n')
+    assert check_fit(lock_str, key_str) == "0,5,3,4,3 and 4,3,4,0,2: overlap in the second column", \
         f"Expected overlap detection in second column for pattern:\n{key_lock_pattern}"
 
 
@@ -69,7 +71,8 @@ def test_successful_fit_first_key():
 #.#..
 #.#.#
 #####"""
-    assert check_fit(key_lock_pattern, key_lock_pattern) == "0,5,3,4,3 and 3,0,2,0,1: all columns fit!", \
+    lock_str, key_str = key_lock_pattern.split('\n\n')
+    assert check_fit(lock_str, key_str) == "0,5,3,4,3 and 3,0,2,0,1: all columns fit!", \
         f"Expected successful fit for pattern:\n{key_lock_pattern}"
 
 
@@ -89,7 +92,8 @@ def test_overlap_in_first_column():
 #.#.#
 #.###
 #####"""
-    assert check_fit(key_lock_pattern, key_lock_pattern) == "1,2,0,5,3 and 5,0,2,1,3: overlap in the first column", \
+    lock_str, key_str = key_lock_pattern.split('\n\n')
+    assert check_fit(lock_str, key_str) == "1,2,0,5,3 and 5,0,2,1,3: overlap in the first column", \
         f"Expected overlap detection in first column for pattern:\n{key_lock_pattern}"
 
 
@@ -109,7 +113,8 @@ def test_successful_fit_second_key():
 ###.#
 ###.#
 #####"""
-    assert check_fit(key_lock_pattern, key_lock_pattern) == "1,2,0,5,3 and 4,3,4,0,2: all columns fit!", \
+    lock_str, key_str = key_lock_pattern.split('\n\n')
+    assert check_fit(lock_str, key_str) == "1,2,0,5,3 and 4,3,4,0,2: all columns fit!", \
         f"Expected successful fit for pattern:\n{key_lock_pattern}"
 
 
@@ -129,5 +134,6 @@ def test_successful_fit_third_key():
 #.#..
 #.#.#
 #####"""
-    assert check_fit(key_lock_pattern, key_lock_pattern) == "1,2,0,5,3 and 3,0,2,0,1: all columns fit!", \
+    lock_str, key_str = key_lock_pattern.split('\n\n')
+    assert check_fit(lock_str, key_str) == "1,2,0,5,3 and 3,0,2,0,1: all columns fit!", \
         f"Expected successful fit for pattern:\n{key_lock_pattern}"
