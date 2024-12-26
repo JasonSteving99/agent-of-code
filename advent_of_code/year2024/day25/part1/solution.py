@@ -39,13 +39,13 @@ def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
     
     for schematic in schematics:
         grid = parse_schematic(schematic)
-        # If top row is filled, it's a lock
-        if all(c == '#' for c in grid[0]):
-            locks.append(get_heights(grid, True))
-        # If bottom row is filled, it's a key
-        elif all(c == '#' for c in grid[-1]):
-            keys.append(get_heights(grid, False))
-            
+        top_count = sum(1 for c in grid[0] if c == '#')
+        bottom_count = sum(1 for c in grid[-1] if c == '#')
+        if top_count > bottom_count:
+             locks.append(get_heights(grid, True))
+        elif bottom_count > top_count:
+             keys.append(get_heights(grid, False))
+    
     return locks, keys
 
 
