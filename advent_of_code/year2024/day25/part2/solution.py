@@ -48,7 +48,6 @@ def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
     
     return locks, keys
 
-
 def is_compatible(lock: List[int], key: List[int], total_height: int = 7) -> bool:
     """Check if a lock and key pair are compatible.
     
