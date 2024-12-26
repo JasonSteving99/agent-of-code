@@ -48,14 +48,14 @@ def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
     
     return locks, keys
 
-def is_compatible(lock: List[int], key: List[int], total_height: int = 6) -> bool:
+def is_compatible(lock: List[int], key: List[int], total_height: int = 7) -> bool:
     """Check if a lock and key pair are compatible.
     
     In Part 2, the total height has increased to 7 units and we need to ensure
     the key fits exactly with no gaps or overlaps with the lock pins.
     """
     # In Part 2, we want exact fits - the sum of lock and key heights should equal total_height - 1
-    return all(lock_height + key_height <= total_height - 1 for lock_height, key_height in zip(lock, key))
+    return all(lock_height + key_height == total_height - 1 for lock_height, key_height in zip(lock, key))
 
 
 def count_valid_lock_key_combinations(input_text: str) -> int:
