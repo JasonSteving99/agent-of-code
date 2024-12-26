@@ -29,8 +29,11 @@ def check_fit(lock_heights: str, key_heights: str) -> str:
     lock = [int(h) for h in lock_heights.split(',')]
     key = [int(h) for h in key_heights.split(',')]
     
-    total_height = 6  # Based on input examples showing 7 rows (0-6)
+    total_height = 6 # Default height
 
+    if len(lock) > 0 and len(key) > 0:
+      total_height = len(lock) + 1 if len(lock) > 0 else 6
+    
     # Check each corresponding position
     for l, k in zip(lock, key):
         if l + k > total_height:  # Check for overlap
