@@ -1,20 +1,17 @@
 """
-Tests for the check_fit function that determines if a key pattern can fit into a lock pattern.
+Unit tests for counting compatible lock and key pairs.
 
-The tests verify:
-1. Detection of overlaps in different columns (first, second, and last)
-2. Successful fit scenarios where key and lock patterns are compatible
-3. Correct interpretation of the height patterns for both key and lock
-
-Each test includes a key pattern (first string block) and lock pattern (second string block),
-comparing their vertical heights to determine compatibility.
+The tests verify the function's ability to:
+1. Parse input string containing schematics for both locks and keys
+2. Interpret pin height patterns correctly
+3. Compare lock and key schematics to determine compatibility
+4. Count and return the number of unique compatible pairs
 """
 
-from solution import check_fit
+from solution import count_compatible_lock_key_pairs
 
-
-def test_overlap_in_last_column():
-    key_lock_pattern = """#####
+def test_complex_lock_key_example():
+    schematic = """#####
 .####
 .####
 .####
@@ -22,62 +19,7 @@ def test_overlap_in_last_column():
 .#...
 .....
 
-.....
-#....
-#....
-#...#
-#.#.#
-#.###
-#####"""
-    lock_str, key_str = key_lock_pattern.split('\n\n')
-    assert check_fit(lock_str, key_str) == "0,5,3,4,3 and 5,0,2,1,3: overlap in the last column", \
-        f"Expected overlap detection in last column for pattern:\n{key_lock_pattern}"
-
-
-def test_overlap_in_second_column():
-    key_lock_pattern = """#####
-.####
-.####
-.####
-.#.#.
-.#...
-.....
-
-.....
-.....
-#.#..
-###..
-###.#
-###.#
-#####"""
-    lock_str, key_str = key_lock_pattern.split('\n\n')
-    assert check_fit(lock_str, key_str) == "0,5,3,4,3 and 4,3,4,0,2: overlap in the second column", \
-        f"Expected overlap detection in second column for pattern:\n{key_lock_pattern}"
-
-
-def test_successful_fit_first_key():
-    key_lock_pattern = """#####
-.####
-.####
-.####
-.#.#.
-.#...
-.....
-
-.....
-.....
-.....
-#....
-#.#..
-#.#.#
-#####"""
-    lock_str, key_str = key_lock_pattern.split('\n\n')
-    assert check_fit(lock_str, key_str) == "0,5,3,4,3 and 3,0,2,0,1: all columns fit!", \
-        f"Expected successful fit for pattern:\n{key_lock_pattern}"
-
-
-def test_overlap_in_first_column():
-    key_lock_pattern = """#####
+#####
 ##.##
 .#.##
 ...##
@@ -91,20 +33,7 @@ def test_overlap_in_first_column():
 #...#
 #.#.#
 #.###
-#####"""
-    lock_str, key_str = key_lock_pattern.split('\n\n')
-    assert check_fit(lock_str, key_str) == "1,2,0,5,3 and 5,0,2,1,3: overlap in the first column", \
-        f"Expected overlap detection in first column for pattern:\n{key_lock_pattern}"
-
-
-def test_successful_fit_second_key():
-    key_lock_pattern = """#####
-##.##
-.#.##
-...##
-...#.
-...#.
-.....
+#####
 
 .....
 .....
@@ -112,20 +41,7 @@ def test_successful_fit_second_key():
 ###..
 ###.#
 ###.#
-#####"""
-    lock_str, key_str = key_lock_pattern.split('\n\n')
-    assert check_fit(lock_str, key_str) == "1,2,0,5,3 and 4,3,4,0,2: all columns fit!", \
-        f"Expected successful fit for pattern:\n{key_lock_pattern}"
-
-
-def test_successful_fit_third_key():
-    key_lock_pattern = """#####
-##.##
-.#.##
-...##
-...#.
-...#.
-.....
+#####
 
 .....
 .....
@@ -134,6 +50,12 @@ def test_successful_fit_third_key():
 #.#..
 #.#.#
 #####"""
-    lock_str, key_str = key_lock_pattern.split('\n\n')
-    assert check_fit(lock_str, key_str) == "1,2,0,5,3 and 3,0,2,0,1: all columns fit!", \
-        f"Expected successful fit for pattern:\n{key_lock_pattern}"
+
+    result = count_compatible_lock_key_pairs(schematic)
+    
+    # The test asserts that for this complex pattern of 
+    # multiple locks and keys, exactly 3 compatible pairs exist
+    assert result == 3, (
+        f"Expected 3 compatible lock-key pairs for the given schematic, "
+        f"but got {result}. Input schematic:\n{schematic}"
+    )

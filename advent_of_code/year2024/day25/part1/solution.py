@@ -1,105 +1,78 @@
-"""Solve day 25 puzzle - counting valid lock/key combinations."""
-from dataclasses import dataclass
-from typing import List, Set, Tuple
+"""Solution for counting compatible lock and key pairs."""
+from typing import List, Tuple
 
 
-@dataclass
-class PinDefinition:
-    """Class to hold a pin definition matrix."""
-    matrix: List[List[str]]
+def parse_schematic(schematic: str) -> List[List[str]]:
+    """Parse a schematic string into a 2D grid."""
+    return [list(line) for line in schematic.strip().split('\n')]
 
-    @classmethod
-    def parse(cls, definition: List[str]) -> "PinDefinition":
-        """Parse a pin definition string into a matrix."""
-        matrix = [list(line.strip()) for line in definition]
-        return cls(matrix)
 
-    def get_heights(self) -> List[int]:
-        """Calculate heights for each column (pin)."""
-        heights = []
-        rows = len(self.matrix)
-        if rows == 0: return []
-        cols = len(self.matrix[0])
-
-        for col in range(cols):
-            height = 0
+def get_heights(grid: List[List[str]], is_lock: bool) -> List[int]:
+    """Get heights for a lock or key from its grid representation."""
+    heights = []
+    rows = len(grid)
+    cols = len(grid[0])
+    
+    for col in range(cols):
+        height = 0
+        if is_lock:
+            # For locks, count from top down
             for row in range(rows):
-                if self.matrix[row][col] == '#':
-                  height = rows - row -1
-                  break
-            heights.append(height)
-
-        return heights
-
-
-def check_fit(lock_str: str, key_str: str) -> str:
-    """Check if a key fits a lock without any column overlaps."""
+                if grid[row][col] == '#':
+                    height = rows - row - 1
+        else:
+            # For keys, count from bottom up
+            for row in range(rows-1, -1, -1):
+                if grid[row][col] == '#':
+                    height = row
+                    break
+        heights.append(height)
     
-    lock_lines = lock_str.strip().split('\n')
-    key_lines = key_str.strip().split('\n')
+    return heights
 
-    lock = PinDefinition.parse(lock_lines)
-    key = PinDefinition.parse(key_lines)
-    
-    lock_heights = lock.get_heights()
-    key_heights = key.get_heights()
 
-    
-    # For a lock and key to fit, their pin heights when added together
-    # should not exceed the matrix height - 1 in any column
-    for i, (lock_h, key_h) in enumerate(zip(lock_heights, key_heights)):
-        if lock_h + key_h > len(lock.matrix) - 1:
-            return f"{','.join(map(str,lock_heights))} and {','.join(map(str,key_heights))}: overlap in the {get_column_name(i+1)} column"
-    
-    return f"{','.join(map(str,lock_heights))} and {','.join(map(str,key_heights))}: all columns fit!"
-
-def get_column_name(column_number: int) -> str:
-    if column_number == 1:
-        return "first"
-    if column_number == 2:
-        return "second"
-    if column_number == 3:
-       return "third"
-    if column_number == 4:
-        return "fourth"
-    if column_number == 5:
-        return "fifth"
-    return str(column_number)
-
-def solution() -> int:
-    """Read schematics and count valid lock/key pairs."""
-    # Read all input until empty line
-    input_lines: List[str] = []
-    current_matrix: List[str] = []
-    try:
-        while True:
-            line = input()
-            if not line.strip():
-                if current_matrix:
-                    input_lines.append('\n'.join(current_matrix))
-                    current_matrix = []
-            else:
-                current_matrix.append(line)
-    except EOFError:
-        if current_matrix:
-            input_lines.append('\n'.join(current_matrix))
-
-    # Separate locks and keys
-    # Locks have '#' in first row, keys have '.' in first row
+def parse_input(input_text: str) -> Tuple[List[List[int]], List[List[int]]]:
+    """Parse input text into lists of lock and key heights."""
+    schematics = input_text.strip().split('\n\n')
     locks = []
     keys = []
     
-    for matrix in input_lines:
-        if matrix.split('\n')[0].startswith('#'):
-            locks.append(matrix)
-        else:
-            keys.append(matrix)
+    for schematic in schematics:
+        grid = parse_schematic(schematic)
+        # If top row is filled, it's a lock
+        if all(c == '#' for c in grid[0]):
+            locks.append(get_heights(grid, True))
+        # If bottom row is filled, it's a key
+        elif all(c == '#' for c in grid[-1]):
+            keys.append(get_heights(grid, False))
+            
+    return locks, keys
+
+
+def is_compatible(lock: List[int], key: List[int], total_height: int = 6) -> bool:
+    """Check if a lock and key pair are compatible."""
+    return all(lock_height + key_height <= total_height - 1 for lock_height, key_height in zip(lock, key))
+
+
+def count_compatible_lock_key_pairs(input_text: str) -> int:
+    """Count the number of compatible lock and key pairs."""
+    locks, keys = parse_input(input_text)
     
-    # Count valid pairs
-    valid_pairs = 0
+    compatible_pairs = 0
     for lock in locks:
         for key in keys:
-            if check_fit(lock, key).endswith("all columns fit!"):
-                valid_pairs += 1
-    
-    return valid_pairs
+            if is_compatible(lock, key):
+                compatible_pairs += 1
+                
+    return compatible_pairs
+
+
+def solution() -> int:
+    """Read from stdin and return the result."""
+    import sys
+    input_text = sys.stdin.read()
+    return count_compatible_lock_key_pairs(input_text)
+
+
+if __name__ == "__main__":
+    print(solution())
