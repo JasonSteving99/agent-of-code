@@ -1,94 +1,86 @@
-from collections.abc import Generator
-from typing import TypeAlias
+"""Solve day 25 puzzle - counting valid lock/key combinations."""
+from dataclasses import dataclass
+from typing import List, Set, Tuple
 
-Point: TypeAlias = tuple[int, int]
-Grid: TypeAlias = list[str]
-HeightList: TypeAlias = list[int]
-LockKeyPair: TypeAlias = tuple[HeightList, HeightList]
 
-def get_first_filled_index(col: str, reverse: bool = False) -> int | None:
-    """Get index of first '#' in the column, searching from specified direction."""
-    indices = range(len(col) - 1, -1, -1) if reverse else range(len(col))
-    for i in indices:
-        if col[i] == '#':
-            return i
-    return None
+@dataclass
+class PinDefinition:
+    """Class to hold a pin definition matrix."""
+    matrix: List[List[str]]
 
-def get_column_height(col: str, is_lock: bool = True) -> int:
-    """Calculate height of a column in the grid."""
-    first_filled = get_first_filled_index(col, not is_lock)
-    if first_filled is None:
-        return 0
-    return len(col) - 1 - first_filled if is_lock else first_filled
+    @classmethod
+    def parse(cls, definition: str) -> "PinDefinition":
+        """Parse a pin definition string into a matrix."""
+        matrix = [list(line) for line in definition.strip().split('\n')]
+        return cls(matrix)
 
-def transpose_grid(grid: Grid) -> Generator[str, None, None]:
-    """Transpose a grid to get columns."""
-    for col in range(len(grid[0])):
-        yield ''.join(row[col] for row in grid)
+    def get_heights(self) -> List[int]:
+        """Calculate heights for each column (pin)."""
+        heights = []
+        rows = len(self.matrix)
+        cols = len(self.matrix[0])
+        
+        for col in range(cols):
+            height = 0
+            for row in range(rows):
+                if self.matrix[row][col] == '#':
+                    height = max(height, rows - row - 1)
+            heights.append(height)
+            
+        return heights
 
-def parse_grid(grid: Grid, is_lock: bool = True) -> HeightList:
-    """Parse grid into list of heights."""
-    return [get_column_height(col, is_lock) for col in transpose_grid(grid)]
 
-def parse_schematic_group(lines: list[str]) -> tuple[list[HeightList], list[HeightList]]:
-    """Parse a group of schematics into height lists and separate into locks and keys."""
-    locks: list[HeightList] = []
-    keys: list[HeightList] = []
-    current_grid: Grid = []
+def check_fit(lock_str: str, key_str: str) -> str:
+    """Check if a key fits a lock without any column overlaps."""
+    lock = PinDefinition.parse(lock_str)
+    key = PinDefinition.parse(key_str)
     
-    for line in lines:
-        if line and line.strip():
-            current_grid.append(line)
-        elif current_grid:
-            # Check if it's a lock (top row filled) or key (bottom row filled)
-            is_lock = '#' in current_grid[0]
-            heights = parse_grid(current_grid, is_lock)
-            if is_lock:
-                locks.append(heights)
-            else:
-                keys.append(heights)
-            current_grid = []
+    lock_heights = lock.get_heights()
+    key_heights = key.get_heights()
     
-    if current_grid:  # Handle last grid if no trailing newline
-        is_lock = '#' in current_grid[0]
-        heights = parse_grid(current_grid, is_lock)
-        if is_lock:
-           locks.append(heights)
-        else:
-            keys.append(heights)
+    # For a lock and key to fit, their pin heights when added together
+    # should not exceed the matrix height - 1 in any column
+    for lock_h, key_h in zip(lock_heights, key_heights):
+        if lock_h + key_h > len(lock.matrix) - 1:
+            return "overlap"
+    
+    return "fit"
 
-    return locks, keys
-
-def check_fit(lock: HeightList, key: HeightList, grid_height: int) -> bool:
-    """Check if a key fits a lock without overlapping."""
-    return all(l + k <= grid_height for l, k in zip(lock, key))
-
-def parse_schematics(input_data: str) -> list[LockKeyPair]:
-    """Parse input into list of valid lock-key pairs.
-    
-    Args:
-        input_data: String containing lock and key schematics
-    
-    Returns:
-        List of tuples, each containing (lock_heights, key_heights) for valid pairs
-    """
-    # Split input into lines and remove empty lines at start/end
-    lines = [line for line in input_data.strip().split('\n')]
-    
-    # Parse all schematics
-    locks, keys = parse_schematic_group(lines)
-    
-    # Find all valid pairs
-    valid_pairs: list[LockKeyPair] = []
-    for lock, key in zip(locks, keys):
-         grid_height = len(lines[0]) -1
-         if check_fit(lock, key, grid_height):
-              valid_pairs.append((lock, key))
-    
-    return valid_pairs
 
 def solution() -> int:
-    """Read from stdin and return the number of unique valid lock/key pairs."""
-    import sys
-    input_data = sys.stdin.read()
-    return len(parse_schematics(input_data))
+    """Read schematics and count valid lock/key pairs."""
+    # Read all input until empty line
+    input_lines: List[str] = []
+    current_matrix: List[str] = []
+    try:
+        while True:
+            line = input()
+            if not line.strip():
+                if current_matrix:
+                    input_lines.append('\n'.join(current_matrix))
+                    current_matrix = []
+            else:
+                current_matrix.append(line)
+    except EOFError:
+        if current_matrix:
+            input_lines.append('\n'.join(current_matrix))
+
+    # Separate locks and keys
+    # Locks have '#' in first row, keys have '.' in first row
+    locks = []
+    keys = []
+    
+    for matrix in input_lines:
+        if matrix.split('\n')[0].startswith('#'):
+            locks.append(matrix)
+        else:
+            keys.append(matrix)
+    
+    # Count valid pairs
+    valid_pairs = 0
+    for lock in locks:
+        for key in keys:
+            if check_fit(lock, key) == "fit":
+                valid_pairs += 1
+    
+    return valid_pairs
