@@ -1,88 +1,73 @@
-"""Solution for checking whether a key fits a lock."""
-from typing import List
+"""Solution for checking lock and key compatibility."""
+from typing import List, Set
 import sys
 
+def parse_schematic(schematic: str) -> List[int]:
+    """Parse a schematic into a list of heights."""
+    lines = schematic.strip().split('\n')
+    heights = []
+    for col in range(len(lines[0])):
+        height = 0
+        for row in range(len(lines)):
+            if lines[row][col] == '#':
+                if height == 0:  # Starting position
+                    height = len(lines) - row - 1
+        heights.append(height)
+    return heights
 
-def check_key_fit(pair: List[List[int]]) -> str:
-    """Check if a key fits a lock based on pin heights.
+def check_fit(lock_heights: str, key_heights: str) -> str:
+    """Check if a key fits a lock based on their height patterns.
     
     Args:
-        pair: A list containing two lists of integers representing pin heights:
-             - pair[0]: Lock pin heights
-             - pair[1]: Key pin heights
-             
+        lock_heights: Comma-separated string of lock pin heights
+        key_heights: Comma-separated string of key heights
+    
     Returns:
-        'fit' if the key fits without overlapping, 'overlap' otherwise
+        'fit' if the key fits the lock, 'overlap' if there's an overlap
     """
-    lock_pins = pair[0]
-    key_pins = pair[1]
+    # Convert height strings to lists of integers
+    lock = [int(h) for h in lock_heights.split(',')]
+    key = [int(h) for h in key_heights.split(',')]
     
-    for lock_height, key_height in zip(lock_pins, key_pins):
-        # If the sum of pin heights exceeds 5 (space available), they overlap
-        if lock_height + key_height > 5:
-            return "overlap"
-    
-    return "fit"
-
-
-def parse_input() -> List[List[List[int]]]:
-    """Parse the input from stdin into lists of lock and key pin heights."""
-    locks: List[List[int]] = []
-    keys: List[List[int]] = []
-    current: List[List[str]] = []
-    
-    # Read all lines from stdin
-    lines = [line.strip() for line in sys.stdin]
-    
-    # Process the input line by line
-    for line in lines:
-        if line and any(c in '#.' for c in line):
-            current.append(list(line))
-        elif current:  # Empty line indicates end of current schematic
-            # Convert schematic to heights
-            heights = []
-            for col in range(len(current[0])):
-                height = 0
-                for row in range(len(current)):
-                    if current[row][col] == '#':
-                        height += 1
-                heights.append(height)
-            
-            # If top row is filled, it's a lock; if bottom row is filled, it's a key
-            if current[0][0] == '#':
-                locks.append([len(current) - h for h in heights])
-            else:
-                keys.append(heights)
-            current = []
-    
-    # Process the last schematic if present
-    if current:
-        heights = []
-        for col in range(len(current[0])):
-            height = 0
-            for row in range(len(current)):
-                if current[row][col] == '#':
-                    height += 1
-            heights.append(height)
-            
-        if current[0][0] == '#':
-            locks.append([len(current) - h for h in heights])
-        else:
-            keys.append(heights)
-    
-    return [locks, keys]
-
+    # Check each corresponding position
+    total_height = 6  # Based on input examples showing 7 rows (0-6)
+    for l, k in zip(lock, key):
+        if l + k > total_height:  # Check for overlap
+            return 'overlap'
+    return 'fit'
 
 def solution() -> int:
-    """Solve the puzzle and return the number of unique lock/key pairs that fit."""
-    parsed_data = parse_input()
-    locks, keys = parsed_data
+    """Process stdin input and return the number of unique lock/key pairs that fit."""
+    # Read all input
+    input_data = sys.stdin.read().strip()
+    schematics = input_data.split('\n\n')
+    
+    # Separate locks and keys
+    locks: List[List[int]] = []
+    keys: List[List[int]] = []
+    
+    for schematic in schematics:
+        # If first row contains #, it's a lock
+        if '#' in schematic.split('\n')[0]:
+            locks.append(parse_schematic(schematic))
+        # If last row contains #, it's a key
+        elif '#' in schematic.split('\n')[-1]:
+            keys.append(parse_schematic(schematic))
     
     # Count fitting pairs
-    fit_count = 0
+    valid_pairs = 0
+    seen_pairs: Set[tuple[tuple[int, ...], tuple[int, ...]]] = set()
+    
     for lock in locks:
         for key in keys:
-            if check_key_fit([lock, key]) == "fit":
-                fit_count += 1
-                
-    return fit_count
+            lock_str = ','.join(map(str, lock))
+            key_str = ','.join(map(str, key))
+            
+            if check_fit(lock_str, key_str) == 'fit':
+                # Convert to tuples for hashable comparison
+                pair = (tuple(lock), tuple(key))
+                if pair not in seen_pairs:
+                    seen_pairs.add(pair)
+                    valid_pairs += 1
+    
+    return valid_pairs
