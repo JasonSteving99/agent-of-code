@@ -10,20 +10,20 @@ def check_fit(lock: List[int], key: List[int]) -> str:
         key: List of key pin heights from left to right
     
     Returns:
-        "fits" if the key fits the lock without overlaps,
-        "overlaps" if there are any overlapping columns
+        "fit" if the key fits the lock without overlaps,
+        "overlap" if there are any overlapping columns
     """
     # The lock and key must have same number of pins
     if len(lock) != len(key):
-        return "overlaps"
+        return "overlap"
     
     # Check each column for overlaps
     for lock_height, key_height in zip(lock, key):
         # If sum of heights > 5 (total space), they overlap
         if lock_height + key_height > 5:
-            return "overlaps"
+            return "overlap"
     
-    return "fits"
+    return "fit"
 
 def parse_schematic(lines: List[str], is_lock: bool) -> List[int]:
     """
@@ -88,7 +88,7 @@ def solution() -> int:
     fitting_pairs = 0
     for lock in locks:
         for key in keys:
-            if check_fit(lock, key) == "fits":
+            if check_fit(lock, key) == "fit":
                 fitting_pairs += 1
     
     return fitting_pairs
