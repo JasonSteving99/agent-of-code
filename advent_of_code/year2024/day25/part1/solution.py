@@ -37,20 +37,33 @@ def check_fit(lock_str: str, key_str: str) -> str:
     lock_lines = lock_str.strip().split('\n')
     key_lines = key_str.strip().split('\n')
 
-    lock = PinDefinition.parse('\n'.join(lock_lines[:len(lock_lines)//2]))
-    key = PinDefinition.parse('\n'.join(key_lines[len(key_lines)//2:]))
+    lock = PinDefinition.parse(lock_lines)
+    key = PinDefinition.parse(key_lines)
     
     lock_heights = lock.get_heights()
     key_heights = key.get_heights()
+
     
     # For a lock and key to fit, their pin heights when added together
     # should not exceed the matrix height - 1 in any column
-    for lock_h, key_h in zip(lock_heights, key_heights):
+    for i, (lock_h, key_h) in enumerate(zip(lock_heights, key_heights)):
         if lock_h + key_h > len(lock.matrix) - 1:
-            return "overlap"
+            return f"{','.join(map(str,lock_heights))} and {','.join(map(str,key_heights))}: overlap in the {get_column_name(i+1)} column"
     
-    return "fit"
+    return f"{','.join(map(str,lock_heights))} and {','.join(map(str,key_heights))}: all columns fit!"
 
+def get_column_name(column_number: int) -> str:
+    if column_number == 1:
+        return "first"
+    if column_number == 2:
+        return "second"
+    if column_number == 3:
+       return "third"
+    if column_number == 4:
+        return "fourth"
+    if column_number == 5:
+        return "fifth"
+    return str(column_number)
 
 def solution() -> int:
     """Read schematics and count valid lock/key pairs."""
