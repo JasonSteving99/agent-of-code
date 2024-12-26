@@ -73,13 +73,9 @@ def count_fitting_lock_key_pairs(input_text: str) -> int:
     compatible_pairs = 0
     for lock in locks:
         for key_rotations in keys:
-            is_pair_compatible = False
-            for key in key_rotations:
-              if is_compatible(lock, key):
-                is_pair_compatible = True
-            if is_pair_compatible:
-              compatible_pairs +=1
-                
+          if any(is_compatible(lock, key) for key in key_rotations):
+             compatible_pairs += 1
+
     return compatible_pairs
 
 
