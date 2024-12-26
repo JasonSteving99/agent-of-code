@@ -1,49 +1,152 @@
+"""Unit tests for the parse_schematics function.
+
+The parse_schematics function takes a string input containing ASCII art representations of 
+lock and key schematics separated by empty lines, where:
+- Each schematic is 7 lines high
+- '#' represents solid material
+- '.' represents empty space
+- Each line should be 5 characters wide
+
+The function should return a list of tuples, where each tuple contains two lists of integers 
+representing the heights of lock and key pins calculated from the schematics.
+The heights are determined by counting the '#' characters from bottom to top in each column.
 """
-This test suite verifies the check_fit function which determines whether a key fits a lock based on pin heights.
-The function accepts two lists of integers representing:
-1. Lock pin heights (first argument)
-2. Key pin heights (second argument)
-And returns either "fit" or "overlap" as a string based on whether the key properly fits the lock.
 
-A key fits a lock when its pin heights, when added to the lock's pin heights, create a valid pin setup.
-A key overlaps when its pin heights would interfere with the lock's pin heights.
-"""
+from solution import parse_schematics
 
-from solution import check_fit
-import pytest
 
-def test_first_example_key_overlaps_lock():
-    lock_pins = [0, 5, 3, 4, 3]
-    key_pins = [5, 0, 2, 1, 3]
-    result = check_fit(lock_pins, key_pins)
-    assert result == "overlap", f"Expected 'overlap' for lock pins {lock_pins} and key pins {key_pins}, but got '{result}'"
+def test_parse_two_schematics():
+    input_str = """#####
+.####
+.####
+.####
+.#.#.
+.#...
+.....
 
-def test_second_example_key_overlaps_lock():
-    lock_pins = [0, 5, 3, 4, 3]
-    key_pins = [4, 3, 4, 0, 2]
-    result = check_fit(lock_pins, key_pins)
-    assert result == "overlap", f"Expected 'overlap' for lock pins {lock_pins} and key pins {key_pins}, but got '{result}'"
+.....
+#....
+#....
+#...#
+#.#.#
+#.###
+#####"""
+    
+    result = parse_schematics(input_str)
+    assert len(result) == 1, f"Expected 1 lock-key pair, but got {len(result)}"
+    lock_heights, key_heights = result[0]
+    
+    expected_lock = [0, 5, 3, 4, 3]
+    expected_key = [5, 0, 2, 1, 3]
+    
+    assert lock_heights == expected_lock, \
+        f"Lock heights mismatch. Expected {expected_lock}, got {lock_heights}"
+    assert key_heights == expected_key, \
+        f"Key heights mismatch. Expected {expected_key}, got {key_heights}"
 
-def test_third_example_key_fits_lock():
-    lock_pins = [0, 5, 3, 4, 3]
-    key_pins = [3, 0, 2, 0, 1]
-    result = check_fit(lock_pins, key_pins)
-    assert result == "fit", f"Expected 'fit' for lock pins {lock_pins} and key pins {key_pins}, but got '{result}'"
 
-def test_fourth_example_key_overlaps_lock():
-    lock_pins = [1, 2, 0, 5, 3]
-    key_pins = [5, 0, 2, 1, 3]
-    result = check_fit(lock_pins, key_pins)
-    assert result == "overlap", f"Expected 'overlap' for lock pins {lock_pins} and key pins {key_pins}, but got '{result}'"
+def test_parse_four_schematics():
+    input_str = """#####
+.####
+.####
+.####
+.#.#.
+.#...
+.....
 
-def test_fifth_example_key_fits_lock():
-    lock_pins = [1, 2, 0, 5, 3]
-    key_pins = [4, 3, 4, 0, 2]
-    result = check_fit(lock_pins, key_pins)
-    assert result == "fit", f"Expected 'fit' for lock pins {lock_pins} and key pins {key_pins}, but got '{result}'"
+#####
+##.##
+.#.##
+...##
+...#.
+...#.
+.....
 
-def test_sixth_example_key_fits_lock():
-    lock_pins = [1, 2, 0, 5, 3]
-    key_pins = [3, 0, 2, 0, 1]
-    result = check_fit(lock_pins, key_pins)
-    assert result == "fit", f"Expected 'fit' for lock pins {lock_pins} and key pins {key_pins}, but got '{result}'"
+.....
+#....
+#....
+#...#
+#.#.#
+#.###
+#####
+
+.....
+.....
+#.#..
+###..
+###.#
+###.#
+#####"""
+    
+    result = parse_schematics(input_str)
+    assert len(result) == 2, f"Expected 2 lock-key pairs, but got {len(result)}"
+    
+    expected_pairs = [
+        ([0, 5, 3, 4, 3], [1, 2, 0, 5, 3]),
+        ([5, 0, 2, 1, 3], [4, 3, 4, 0, 2])
+    ]
+    
+    for i, (lock_heights, key_heights) in enumerate(result):
+        expected_lock, expected_key = expected_pairs[i]
+        assert lock_heights == expected_lock, \
+            f"Lock heights mismatch for pair {i}. Expected {expected_lock}, got {lock_heights}"
+        assert key_heights == expected_key, \
+            f"Key heights mismatch for pair {i}. Expected {expected_key}, got {key_heights}"
+
+
+def test_parse_five_schematics():
+    input_str = """#####
+.####
+.####
+.####
+.#.#.
+.#...
+.....
+
+#####
+##.##
+.#.##
+...##
+...#.
+...#.
+.....
+
+.....
+#....
+#....
+#...#
+#.#.#
+#.###
+#####
+
+.....
+.....
+#.#..
+###..
+###.#
+###.#
+#####
+
+.....
+.....
+.....
+#....
+#.#..
+#.#.#
+#####"""
+    
+    result = parse_schematics(input_str)
+    assert len(result) == 3, f"Expected 3 lock-key pairs, but got {len(result)}"
+    
+    expected_pairs = [
+        ([0, 5, 3, 4, 3], [1, 2, 0, 5, 3]),
+        ([5, 0, 2, 1, 3], [4, 3, 4, 0, 2]),
+        ([3, 0, 2, 0, 1], [3, 0, 2, 0, 1])
+    ]
+    
+    for i, (lock_heights, key_heights) in enumerate(result):
+        expected_lock, expected_key = expected_pairs[i]
+        assert lock_heights == expected_lock, \
+            f"Lock heights mismatch for pair {i}. Expected {expected_lock}, got {lock_heights}"
+        assert key_heights == expected_key, \
+            f"Key heights mismatch for pair {i}. Expected {expected_key}, got {key_heights}"

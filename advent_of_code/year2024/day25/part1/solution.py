@@ -1,94 +1,90 @@
-from typing import List
-from sys import stdin
+from collections.abc import Generator
+from typing import TypeAlias
 
-def check_fit(lock: List[int], key: List[int]) -> str:
-    """
-    Check if a key fits into a lock by comparing their pin heights.
-    
-    Args:
-        lock: List of lock pin heights from left to right
-        key: List of key pin heights from left to right
-    
-    Returns:
-        "fit" if the key fits the lock without overlaps,
-        "overlap" if there are any overlapping columns
-    """
-    # The lock and key must have same number of pins
-    if len(lock) != len(key):
-        return "overlap"
-    
-    # Check each column for overlaps
-    for lock_height, key_height in zip(lock, key):
-        # If sum of heights > 5 (total space), they overlap
-        if lock_height + key_height > 5:
-            return "overlap"
-    
-    return "fit"
+Point: TypeAlias = tuple[int, int]
+Grid: TypeAlias = list[str]
+HeightList: TypeAlias = list[int]
+LockKeyPair: TypeAlias = tuple[HeightList, HeightList]
 
-def parse_schematic(lines: List[str], is_lock: bool) -> List[int]:
-    """
-    Parse a schematic into a list of heights.
-    
-    Args:
-        lines: List of strings representing the schematic
-        is_lock: True if parsing a lock, False if parsing a key
-    
-    Returns:
-        List of heights for each column
-    """
-    heights = []
-    height = len(lines)
-    width = len(lines[0])
-    
-    for col in range(width):
-        col_height = 0
-        for row in range(height):
-            if lines[row][col] == '#':
-                if is_lock:
-                    # For locks, measure from top
-                    col_height = height - 1 - row
-                    break
-                else:
-                    # For keys, measure from bottom
-                    col_height = row
-        heights.append(col_height)
-    
-    return heights
+def get_first_filled_index(col: str, reverse: bool = False) -> int | None:
+    """Get index of first '#' in the column, searching from specified direction."""
+    indices = range(len(col) - 1, -1, -1) if reverse else range(len(col))
+    for i in indices:
+        if col[i] == '#':
+            return i
+    return None
 
-def solution() -> int:
-    # Read all lines from stdin
-    lines = [line.strip() for line in stdin]
-    
-    # Split input into individual schematics
-    schematics: List[List[str]] = []
-    current_schematic: List[str] = []
+def get_column_height(col: str, is_lock: bool = True) -> int:
+    """Calculate height of a column in the grid."""
+    first_filled = get_first_filled_index(col, not is_lock)
+    if first_filled is None:
+        return 0
+    return len(col) - 1 - first_filled if is_lock else first_filled
+
+def transpose_grid(grid: Grid) -> Generator[str, None, None]:
+    """Transpose a grid to get columns."""
+    for col in range(len(grid[0])):
+        yield ''.join(row[col] for row in grid)
+
+def parse_grid(grid: Grid, is_lock: bool = True) -> HeightList:
+    """Parse grid into list of heights."""
+    return [get_column_height(col, is_lock) for col in transpose_grid(grid)]
+
+def parse_schematic_group(lines: list[str]) -> list[HeightList]:
+    """Parse a group of schematics into height lists."""
+    result = []
+    current_grid: Grid = []
     
     for line in lines:
-        if line:
-            current_schematic.append(line)
-        elif current_schematic:
-            schematics.append(current_schematic)
-            current_schematic = []
+        if line and line.strip():
+            current_grid.append(line)
+        elif current_grid:
+            # Check if it's a lock (top row filled) or key (bottom row filled)
+            is_lock = '#' in current_grid[0]
+            result.append(parse_grid(current_grid, is_lock))
+            current_grid = []
     
-    if current_schematic:
-        schematics.append(current_schematic)
+    if current_grid:  # Handle last grid if no trailing newline
+        is_lock = '#' in current_grid[0]
+        result.append(parse_grid(current_grid, is_lock))
     
-    # First part are locks (top filled), second part are keys (bottom filled)
-    locks = []
-    keys = []
+    return result
+
+def check_fit(lock: HeightList, key: HeightList) -> bool:
+    """Check if a key fits a lock without overlapping."""
+    grid_height = 5  # Based on the problem description
+    return all(l + k <= grid_height for l, k in zip(lock, key))
+
+def parse_schematics(input_data: str) -> list[LockKeyPair]:
+    """Parse input into list of valid lock-key pairs.
     
-    for schematic in schematics:
-        # Check if it's a lock (top row filled) or key (top row empty)
-        if schematic[0] == '#' * len(schematic[0]):
-            locks.append(parse_schematic(schematic, True))
-        else:
-            keys.append(parse_schematic(schematic, False))
+    Args:
+        input_data: String containing lock and key schematics
     
-    # Count fitting pairs
-    fitting_pairs = 0
+    Returns:
+        List of tuples, each containing (lock_heights, key_heights) for valid pairs
+    """
+    # Split input into lines and remove empty lines at start/end
+    lines = [line for line in input_data.strip().split('\n')]
+    
+    # Parse all schematics
+    height_lists = parse_schematic_group(lines)
+    
+    # Separate locks and keys
+    locks = [h for h in height_lists if h[0] == 0]  # Locks have pin at top
+    keys = [h for h in height_lists if h[0] != 0]   # Keys build from bottom
+    
+    # Find all valid pairs
+    valid_pairs: list[LockKeyPair] = []
     for lock in locks:
         for key in keys:
-            if check_fit(lock, key) == "fit":
-                fitting_pairs += 1
+            if check_fit(lock, key):
+                valid_pairs.append((lock, key))
     
-    return fitting_pairs
+    return valid_pairs
+
+def solution() -> int:
+    """Read from stdin and return the number of unique valid lock/key pairs."""
+    import sys
+    input_data = sys.stdin.read()
+    return len(parse_schematics(input_data))
