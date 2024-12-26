@@ -29,8 +29,16 @@ def check_fit(lock_heights: str, key_heights: str) -> str:
     lock = [int(h) for h in lock_heights.split(',')]
     key = [int(h) for h in key_heights.split(',')]
     
+    total_height = 6 # Default height
+    
+    # Determine total height of schematic, based on length of the lock, if provided
+    if len(lock) > 0 and len(key) > 0:
+      total_height = 0
+      for l, k in zip(lock,key):
+        total_height = max(total_height, l+k)
+      total_height = max(total_height, 6)
+
     # Check each corresponding position
-    total_height = 6  # Based on input examples showing 7 rows (0-6)
     for l, k in zip(lock, key):
         if l + k > total_height:  # Check for overlap
             return 'overlap'
