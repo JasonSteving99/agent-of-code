@@ -17,9 +17,7 @@ def get_first_filled_index(col: str, reverse: bool = False) -> int | None:
 def get_column_height(col: str, is_lock: bool = True) -> int:
     """Calculate height of a column in the grid."""
     first_filled = get_first_filled_index(col, not is_lock)
-    if first_filled is None:
-        return 0
-    return len(col) - 1 - first_filled if is_lock else first_filled
+    return len(col) - 1 - first_filled if first_filled is not None and is_lock else first_filled if first_filled is not None else 0
 
 def transpose_grid(grid: Grid) -> Generator[str, None, None]:
     """Transpose a grid to get columns."""
