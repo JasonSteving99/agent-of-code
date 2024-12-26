@@ -25,8 +25,9 @@ def get_heights(grid: List[List[str]], is_lock: bool) -> List[int]:
             # For keys, count from bottom up
             for row in range(rows - 1, -1, -1):
                 if grid[row][col] == '#':
-                    height = row
-                    break
+                  height = row - (rows -1)
+                  height = abs(height)
+                  break
 
         heights.append(height)
     
