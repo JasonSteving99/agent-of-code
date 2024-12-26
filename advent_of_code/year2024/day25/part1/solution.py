@@ -80,10 +80,7 @@ def parse_schematics(input_data: str) -> list[LockKeyPair]:
     locks, keys = parse_schematic_group(lines)
     
     # Find all valid pairs
-    valid_pairs: list[LockKeyPair] = []
-    for lock in locks:
-        for key in keys:
-            valid_pairs.append((lock, key))
+    valid_pairs: list[LockKeyPair] = list(zip(locks,keys))
     
     return valid_pairs
 
